@@ -498,11 +498,11 @@ Similarly, environmental variables have qualified names like
 * observe - watch for an observation file and indicate when it arrives.
 * oct - display an argument number in octal.
 * phex - display standard input in a printable form.
-* pinchange - execute a command when a GPIO pin changes state.
-* pintool - manipulate GPIO pins.
+* pinchange - execute a command when a GPIO pin changes state. (DEPRECATED)
+* pintool - manipulate GPIO pins. (DEPRECATED)
 * platform - generate the platform description used in the README.
 * posixtime - converts a timestamp into seconds since the POSIX epoch.
-* pps - uses Diminuto pintool to multiplex on a 1PPS GPIO pin.
+* pps - uses Diminuto pintool to multiplex on a 1PPS GPIO pin. (DEPRECATED)
 * renametool - atomically rename or swap files in the same file system.
 * serialtool - manipulate serial ports.
 * shaper - shape traffic in a pipeline.
@@ -524,9 +524,9 @@ Similarly, environmental variables have qualified names like
 * lbktest - loopback on serial port (Serial).
 * luxcontroller - LED and lux sensor PID loop (Pin, Modulator, I2C, Controller).
 * luxrheostat - LED and lux sensor rheostat (Pin, Modulator, I2C).
-* pinchange - multiplexing of GPIO pins (Pin).
+* pinchange - multiplexing of GPIO pins (Pin). (DEPRECATED)
 * pincleanup - clean up pins exported to hardware test fixture (Pin).
-* pintest - setting and getting GPIO pins (Pin).
+* pintest - setting and getting GPIO pins (Pin). (DEPRECATED)
 * timestuff - tries out the underlying glibc time functions.
 * walker - walk the file system tree starting at a specified root (FS).
 
@@ -1071,10 +1071,7 @@ project leads to a virtuous cycle of organic growth in Diminuto.
 ## Feature Deprecations
 
 The Pin feature, which makes it easy to manipulate General Purpose Input/Output
-(GPIO) pins, uses the deprecated sysfs ABI. I'm looking at the new ABIs. While
-the new ABIs offer a higher level interface, my initial impression is that
-they don't easily support the kinds of weird GPIO doings with special devices
-that I am often called upon to do.
+(GPIO) pins, uses the deprecated sysfs ABI.
 
 ## Build Warnings
 
@@ -1306,6 +1303,9 @@ K. Kumar, "Linux TCP SO_REUSEPORT - Usage and implementation", 2019-08-19, <http
 L. Lamport, "Time, Clocks, and the Ordering of Events in a Distributed System", CACM, 21.7, 1978-07, pp. 558-565
 
 B. Lampson, D. Redell, "Experience with Processes and Monitors in Mesa", CACM, 23.2, 1980-02
+
+D. Le, "Control GPIO using the new Linux user space GPIO API",
+2020-01-10, <https://blog.lxsang.me/post/id/33>
 
 D. Lemire, "In C, how do you know if the dynamic allocation succeeded?",
 2021-10-27(?), <https://lemire.me/blog/2021/10/27/in-c-how-do-you-know-if-the-dynamic-allocation-succeeded/>

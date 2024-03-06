@@ -4,9 +4,9 @@
 
 /**
  * @file
- * @copyright Copyright 2013-2023 Digital Aggregates Corporation, Colorado, USA.
+ * @copyright Copyright 2013-2024 Digital Aggregates Corporation, Colorado, USA.
  * @note Licensed under the terms in LICENSE.txt.
- * @brief Provides an interface to handle GPIO pins via the /sys file system.
+ * @brief Provides an interface to handle GPIO pins via the /sys file system (DEPRECATED).
  * @author Chip Overclock <mailto:coverclock@diag.com>
  * @see Diminuto <https://github.com/coverclock/com-diag-diminuto>
  * @details
