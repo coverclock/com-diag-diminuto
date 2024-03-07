@@ -13,12 +13,39 @@
 
 #include "com/diag/diminuto/diminuto_line.h"
 #include "com/diag/diminuto/diminuto_log.h"
+#include "com/diag/diminuto/diminuto_criticalsection.h"
 #include "com/diag/diminuto/diminuto_countof.h"
 #include "com/diag/diminuto/diminuto_error.h"
 #include "com/diag/diminuto/diminuto_types.h"
 #include <fcntl.h>
 #include <string.h>
 #include <sys/ioctl.h>
+
+/*******************************************************************************
+ * STATICS
+ ******************************************************************************/
+
+static pthread_mutex_t mutex = PTHREAD_MUTEX_INITIALIZER;
+
+static const char * consumer = __FILE__;
+
+/*******************************************************************************
+ * DEBUGGING
+ ******************************************************************************/
+
+const char * diminuto_line_consumer(const char * next)
+{
+    const char * prior = (const char *)0;
+
+    if (next != (const char *)0) {
+        DIMINUTO_CRITICAL_SECTION_BEGIN(&mutex);
+            prior = consumer;
+            consumer = next;
+        DIMINUTO_CRITICAL_SECTION_END;
+    }
+
+    return prior;
+}
 
 /*******************************************************************************
  * OPENING, CLOSING
@@ -34,7 +61,7 @@ int diminuto_line_open_generic(const char * path, const unsigned int line[], siz
 
     do {
 
-        fd = open(path, 0);
+        fd = open(path, O_RDWR | O_CLOEXEC);
         if (fd < 0) {
             diminuto_perror(path);
             break;
@@ -48,7 +75,9 @@ int diminuto_line_open_generic(const char * path, const unsigned int line[], siz
         }
         request.num_lines = lines;
 
-        strncpy(request.consumer, __FILE__, sizeof(request.consumer));
+        DIMINUTO_CRITICAL_SECTION_BEGIN(&mutex);
+            strncpy(request.consumer, consumer, sizeof(request.consumer));
+        DIMINUTO_CRITICAL_SECTION_END;
         request.consumer[sizeof(request.consumer) - 1] = '\0';
 
         request.config.flags = flags;
@@ -59,7 +88,7 @@ int diminuto_line_open_generic(const char * path, const unsigned int line[], siz
             break;
         }
 
-        result = rc;
+        result = request.fd;
 
     } while (0);
 
