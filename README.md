@@ -1070,8 +1070,13 @@ project leads to a virtuous cycle of organic growth in Diminuto.
 
 ## Feature Deprecations
 
-The Pin feature, which makes it easy to manipulate General Purpose Input/Output
-(GPIO) pins, uses the deprecated sysfs ABI.
+The Pin feature, which makes it easy to manipulate General Purpose
+Input/Output (GPIO) pins, uses the deprecated Linux sysfs ABI. You can
+expect this feature to build, and even pass unit testing (which does not
+use hardware or the actual Linux ABI),  but not work in later Linux-based
+platforms. The Line feature replaces Pin, uses the newer ioctl ABI,
+and necessarily has a different API. The Line feature will not build on
+older Linux platforms because the required header file will be missing.
 
 ## Build Warnings
 

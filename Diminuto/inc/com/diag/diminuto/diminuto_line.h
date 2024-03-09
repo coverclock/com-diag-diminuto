@@ -61,6 +61,10 @@ extern const char * diminuto_line_consumer(const char * next);
  * PARSING
  ******************************************************************************/
 
+/*
+ * e.g. "/dev/gpiochip4:-15" == /dev/gpiochip4 line 15 inverted.
+ */
+
 extern char * diminuto_line_parse(char * parameter, int * linep);
 
 /*******************************************************************************
@@ -74,18 +78,20 @@ extern int diminuto_line_get_generic(int fd, uint64_t mask, uint64_t * bitsp);
 extern int diminuto_line_put_generic(int fd, uint64_t mask, uint64_t bits);
 
 /*******************************************************************************
- * BASE
+ * BASIC
  ******************************************************************************/
 
-extern int diminuto_line_close(int fd);
+static inline int diminuto_line_open(const char * path, unsigned int line, uint64_t flags) {
+    return diminuto_line_open_generic(path, &line, 1, flags);
+}
 
 extern int diminuto_line_query(int fd);
 
-/*******************************************************************************
- * DERIVED
- ******************************************************************************/
+extern int diminuto_line_close(int fd);
 
-extern int diminuto_line_open(const char * path, unsigned int line, bool input, bool output, bool low, bool rising, bool falling, bool drain, bool source, bool up, bool down);
+/*******************************************************************************
+ * OPERATORS
+ ******************************************************************************/
 
 extern int diminuto_line_get(int fd, unsigned int line);
 
@@ -96,19 +102,19 @@ extern int diminuto_line_put(int fd, unsigned int line, int bit);
  ******************************************************************************/
 
 static inline int diminuto_line_open_input(const char * path, unsigned int line) {
-    return diminuto_line_open(path, line, true, false, false, false, false, false, false, false, false);
+    return diminuto_line_open(path, line, DIMINUTO_LINE_FLAG_INPUT);
 }
 
 static inline int diminuto_line_open_input_inverted(const char * path, unsigned int line) {
-    return diminuto_line_open(path, line, true, false, true, false, false, false, false, false, false);
+    return diminuto_line_open(path, line, DIMINUTO_LINE_FLAG_INPUT | DIMINUTO_LINE_FLAG_ACTIVE_LOW);
 }
 
 static inline int diminuto_line_open_output(const char * path, unsigned int line) {
-    return diminuto_line_open(path, line, false, true, false, false, false, false, false, false, false);
+    return diminuto_line_open(path, line, DIMINUTO_LINE_FLAG_OUTPUT);
 }
 
 static inline int diminuto_line_open_output_inverted(const char * path, unsigned int line) {
-    return diminuto_line_open(path, line, false, true, true, false, false, false, false, false, false);
+    return diminuto_line_open(path, line, DIMINUTO_LINE_FLAG_OUTPUT | DIMINUTO_LINE_FLAG_ACTIVE_LOW);
 }
 
 static inline int diminuto_line_set(int fd, unsigned int line)

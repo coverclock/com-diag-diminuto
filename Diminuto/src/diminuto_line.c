@@ -152,23 +152,6 @@ int diminuto_line_open_generic(const char * path, const unsigned int line[], siz
     return result;
 }
 
-int diminuto_line_open(const char * path, unsigned int line, bool input, bool output, bool low, bool rising, bool falling, bool drain, bool source, bool up, bool down)
-{
-    uint64_t flags = 0;
-
-    if (input)      { flags |= DIMINUTO_LINE_FLAG_INPUT; }
-    if (output)     { flags |= DIMINUTO_LINE_FLAG_OUTPUT; }
-    if (low)        { flags |= DIMINUTO_LINE_FLAG_ACTIVE_LOW; }
-    if (rising)     { flags |= DIMINUTO_LINE_FLAG_EDGE_RISING; }
-    if (falling)    { flags |= DIMINUTO_LINE_FLAG_EDGE_FALLING; }
-    if (drain)      { flags |= DIMINUTO_LINE_FLAG_OPEN_DRAIN; }
-    if (source)     { flags |= DIMINUTO_LINE_FLAG_OPEN_SOURCE; }
-    if (up)         { flags |= DIMINUTO_LINE_FLAG_BIAS_PULL_UP; }
-    if (down)       { flags |= DIMINUTO_LINE_FLAG_BIAS_PULL_DOWN; }
-
-    return diminuto_line_open_generic(path, &line, 1, flags);
-}
-
 int diminuto_line_close(int fd)
 {
     if (fd < 0) {
@@ -279,11 +262,12 @@ int diminuto_line_query(int fd)
         if (rc < 0) {
             diminuto_perror("diminuto_line_query");
             break;
-        }
-        if (rc != sizeof(event)) {
+        } else if (rc != sizeof(event)) {
             errno = EIO;
             diminuto_perror("diminuto_line_query");
             break;
+        } else {
+            /* Do nothing. */
         }
 
         switch (event.id) {
