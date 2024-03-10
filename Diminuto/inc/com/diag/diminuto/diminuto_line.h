@@ -81,9 +81,7 @@ extern int diminuto_line_put_generic(int fd, uint64_t mask, uint64_t bits);
  * BASIC
  ******************************************************************************/
 
-static inline int diminuto_line_open(const char * path, unsigned int line, uint64_t flags) {
-    return diminuto_line_open_generic(path, &line, 1, flags);
-}
+extern int diminuto_line_open(const char * path, unsigned int line, uint64_t flags);
 
 extern int diminuto_line_query(int fd);
 
