@@ -18,6 +18,7 @@
 #include "com/diag/diminuto/diminuto_error.h"
 #include "com/diag/diminuto/diminuto_minmaxof.h"
 #include "com/diag/diminuto/diminuto_typeof.h"
+#include "com/diag/diminuto/diminuto_widthof.h"
 #include <fcntl.h>
 #include <stdlib.h>
 #include <string.h>
@@ -176,6 +177,12 @@ int diminuto_line_get_generic(int fd, uint64_t mask, uint64_t * bitsp)
 
     do {
 
+        if (mask == 0x0) {
+            errno = ERANGE;
+            diminuto_perror("diminuto_line_get");
+            break;
+        }
+
         values.mask = mask;
 
         rc = ioctl(fd, GPIO_V2_LINE_GET_VALUES_IOCTL, &values);
@@ -198,11 +205,24 @@ int diminuto_line_get(int fd, unsigned int line)
     uint64_t mask = 0;
     uint64_t bits = 0;
 
-    mask = 1ULL << line;
-    rc = diminuto_line_get_generic(fd, mask, &bits);
-    if (rc >= 0) {
+    do {
+
+        if (line >= widthof(uint64_t)) {
+            errno = ERANGE;
+            diminuto_perror("diminuto_line_get");
+            break;
+        }
+
+        mask = 1ULL << line;
+
+        rc = diminuto_line_get_generic(fd, mask, &bits);
+        if (rc < 0) {
+            break;
+        }
+
         result = !!(bits & mask);
-    }
+
+    } while (0);
 
     return result;
 }
@@ -216,13 +236,24 @@ int diminuto_line_put_generic(int fd, uint64_t mask, uint64_t bits)
     int rc = 0;
     struct gpio_v2_line_values values = { 0, };
 
-    values.mask = mask;
-    values.bits = bits;
+    do {
 
-    rc = ioctl(fd, GPIO_V2_LINE_SET_VALUES_IOCTL, &values);
-    if (rc < 0) {
-        diminuto_perror("diminuto_line_get_generic");
-    }
+        if (mask == 0x0) {
+            errno = ERANGE;
+            diminuto_perror("diminuto_line_put_generic");
+            break;
+        }
+
+        values.mask = mask;
+        values.bits = bits;
+
+        rc = ioctl(fd, GPIO_V2_LINE_SET_VALUES_IOCTL, &values);
+        if (rc < 0) {
+            diminuto_perror("diminuto_line_put_generic");
+            break;
+        }
+
+    } while (0);
 
     return rc;
 }
@@ -234,14 +265,28 @@ int diminuto_line_put(int fd, unsigned int line, int bit)
     uint64_t mask = 0;
     uint64_t bits = 0;
 
-    mask = 1ULL << line;
-    bits = !!bit;
-    bits <<= line;
+    do {
 
-    rc = diminuto_line_put_generic(fd, mask, bits);
-    if (rc >= 0) {
+        if (line >= widthof(uint64_t)) {
+            errno = ERANGE;
+            diminuto_perror("diminuto_line_put");
+            break;
+        }
+
+        mask = 1ULL << line;
+
+        bit = !!bit;
+        bits = bit;
+        bits <<= line;
+
+        rc = diminuto_line_put_generic(fd, mask, bits);
+        if (rc < 0) {
+            break;
+        }
+
         result = bit;
-    }
+
+    } while (0);
 
     return result;
 }
