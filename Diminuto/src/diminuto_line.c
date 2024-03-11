@@ -111,18 +111,31 @@ int diminuto_line_open_generic(const char * path, const unsigned int line[], siz
 
     do {
 
-        fd = open(path, O_RDWR | O_CLOEXEC);
-        if (fd < 0) {
+        if (path == (const char *)0) {
+            errno = ENODEV;
             diminuto_perror(path);
             break;
         }
 
-        if (lines > countof(request.offsets)) {
-            lines = countof(request.offsets);
+        if (lines >= countof(request.offsets)) {
+            errno = E2BIG;
+            diminuto_perror(path);
+            break;
         }
+
         for (ii = 0; ii < lines; ++ii) {
-            request.offsets[ii] = line[ii];
+            if (line[ii] >= widthof(uint64_t)) {
+                errno = ERANGE;
+                diminuto_perror(path);
+                break;
+            } else {
+                request.offsets[ii] = line[ii];
+            }
         }
+        if (ii != lines) {
+            break;
+        }
+
         request.num_lines = lines;
 
         DIMINUTO_CRITICAL_SECTION_BEGIN(&mutex);
@@ -131,6 +144,12 @@ int diminuto_line_open_generic(const char * path, const unsigned int line[], siz
         request.consumer[sizeof(request.consumer) - 1] = '\0';
 
         request.config.flags = flags;
+
+        fd = open(path, 0);
+        if (fd < 0) {
+            diminuto_perror(path);
+            break;
+        }
 
         rc = ioctl(fd, GPIO_V2_GET_LINE_IOCTL, &request);
         if (rc < 0) {
@@ -149,30 +168,6 @@ int diminuto_line_open_generic(const char * path, const unsigned int line[], siz
     } else {
         /* Do nothing. */
     }
-
-    return result;
-}
-
-int diminuto_line_open(const char * path, unsigned int line, uint64_t flags) {
-    int result = -1;
-
-    do {
-
-        if (line >= widthof(uint64_t)) {
-            errno = ERANGE;
-            diminuto_perror("diminuto_line_open");
-            break;
-        }
-
-        if (flags == 0x0) {
-            errno = ENODEV;
-            diminuto_perror("diminuto_line_open");
-            break;
-        }
-
-        result = diminuto_line_open_generic(path, &line, 1, flags);
-
-    } while (0);
 
     return result;
 }
@@ -231,7 +226,7 @@ int diminuto_line_get(int fd, unsigned int line)
 
     do {
 
-        if (line >= widthof(uint64_t)) {
+        if (line >= widthof(typeof(mask))) {
             errno = ERANGE;
             diminuto_perror("diminuto_line_get");
             break;
@@ -291,7 +286,7 @@ int diminuto_line_put(int fd, unsigned int line, int bit)
 
     do {
 
-        if (line >= widthof(uint64_t)) {
+        if (line >= widthof(typeof(mask))) {
             errno = ERANGE;
             diminuto_perror("diminuto_line_put");
             break;
