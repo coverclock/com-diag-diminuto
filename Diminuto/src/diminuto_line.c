@@ -294,7 +294,7 @@ int diminuto_line_put(int fd, int bit)
  * WATCHING
  ******************************************************************************/
 
-int diminuto_line_query(int fd)
+int diminuto_line_read(int fd)
 {
     int result = 0;
     ssize_t rc = -1;
@@ -304,11 +304,11 @@ int diminuto_line_query(int fd)
 
         rc = read(fd, &event, sizeof(event));
         if (rc < 0) {
-            diminuto_perror("diminuto_line_query");
+            diminuto_perror("diminuto_line_read");
             break;
         } else if (rc != sizeof(event)) {
             errno = E2BIG;
-            diminuto_perror("diminuto_line_query");
+            diminuto_perror("diminuto_line_read");
             break;
         } else {
             /* Do nothing. */
@@ -323,7 +323,7 @@ int diminuto_line_query(int fd)
             break;
         default:
             errno = ERANGE;
-            diminuto_perror("diminuto_line_query");
+            diminuto_perror("diminuto_line_read");
             break;
         }
 

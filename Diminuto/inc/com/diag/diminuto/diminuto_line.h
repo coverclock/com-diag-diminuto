@@ -85,7 +85,7 @@ static inline int diminuto_line_open(const char * path, unsigned int line, uint6
     return diminuto_line_open_generic(path, &line, 1, flags);
 }
 
-extern int diminuto_line_query(int fd);
+extern int diminuto_line_read(int fd);
 
 extern int diminuto_line_close(int fd);
 

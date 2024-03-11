@@ -278,7 +278,8 @@ int main(int argc, char * argv[])
 
         case 'd':
             debug = !0;
-            if (debug) { fprintf(stderr, "%s -%c\n", program, opt); }
+            fprintf(stderr, "%s -%c\n", program, opt);
+            fprintf(stderr, "%s (\"%s\" %u 0x%llx)\n", program, (path == (const char *)0) ? "" : path, line, (unsigned long long)flags);
             break;
 
         case 'e':
@@ -360,12 +361,15 @@ int main(int argc, char * argv[])
                 }
                 if (nfds > 0) {
                     while (!0) {
-                        if ((ready = diminuto_mux_ready_interrupt(&mux)) < 0) {
+                        if ((ready = diminuto_mux_ready_read(&mux)) < 0) {
+                            fail = !0;
                             break;
                         } else if (ready != fd) {
-                            /* Should be impossible. */
-                            continue;
-                        } else if ((edge = diminuto_line_query(fd)) == 0) {
+                            errno = EBADF;
+                            diminuto_perror("diminuto_mux_ready_read");
+                            fail = !0;
+                            break;
+                        } else if ((edge = diminuto_line_read(fd)) == 0) {
                             fail = !0;
                             break;
                         } else {
