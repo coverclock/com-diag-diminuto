@@ -4,7 +4,7 @@
 
 /**
  * @file
- * @copyright Copyright 2018-2020 Digital Aggregates Corporation, Colorado, USA.
+ * @copyright Copyright 2018-2024 Digital Aggregates Corporation, Colorado, USA.
  * @note Licensed under the terms in LICENSE.txt.
  * @brief Support the functional test fixture.
  * @author Chip Overclock <mailto:coverclock@diag.com>
@@ -15,13 +15,18 @@
  * on which I run the functional tests. The HTF is a breadboard
  * I purpose built so I could test Diminuto features like Pin
  * (GPIO), Modulator (PWM), and Controller (PID), that really
- * reauire actual hardware for verification.
+ * reauire actual hardware for verification. THis is specific to
+ * the Raspberry Pi.
  *
  * SEE ALSO: hardware_test_fixture.sh
  */
 
 #include "avago/apds9301.h"
 #include "ti/ads1115.h"
+
+#define COM_DIAG_DIMINUTO_HARDWARE_TEST_FIXTURE_DEVICE "/dev/gpiochip4"
+
+static const char HARDWARE_TEST_FIXTURE_DEVICE[] = COM_DIAG_DIMINUTO_HARDWARE_TEST_FIXTURE_DEVICE;
 
 enum HardwareTestFixture {
     HARDWARE_TEST_FIXTURE_BUS_I2C           = 1, /* Specific to Raspberry Pi. */

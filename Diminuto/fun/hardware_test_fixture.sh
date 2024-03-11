@@ -7,7 +7,8 @@
 # ABSTRACT
 # 
 # Defines the pinins and pinouts of the hardware test fixture
-# on which I run the functional tests.
+# on which I run the functional tests. This is specific to the
+# Raspberru Pi.
 #
 # USAGE
 #
@@ -17,6 +18,8 @@
 #
 # hardware_test_fixture.h
 #
+
+HARDWARE_TEST_FIXTURE_DEVICE="/dev/gpiochip4"
 
 HARDWARE_TEST_FIXTURE_BUS_I2C=1
 HARDWARE_TEST_FIXTURE_DEV_I2C_LUX=0x39

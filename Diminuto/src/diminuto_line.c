@@ -307,7 +307,7 @@ int diminuto_line_query(int fd)
             diminuto_perror("diminuto_line_query");
             break;
         } else if (rc != sizeof(event)) {
-            errno = EIO;
+            errno = E2BIG;
             diminuto_perror("diminuto_line_query");
             break;
         } else {
@@ -322,11 +322,16 @@ int diminuto_line_query(int fd)
             result = -1;
             break;
         default:
-            /* Do nothing. */
+            errno = ERANGE;
+            diminuto_perror("diminuto_line_query");
             break;
         }
 
     } while (0);
+
+    /*
+     * N.B. a return of zero is an error.
+     */
 
     return result;
 }

@@ -366,13 +366,10 @@ int main(int argc, char * argv[])
                             /* Should be impossible. */
                             continue;
                         } else if ((edge = diminuto_line_query(fd)) == 0) {
-                            /* Should be impossible. */
-                            continue;
-                        } else if ((state = diminuto_line_get(fd)) < 0) {
                             fail = !0;
                             break;
                         } else {
-                            state = !!state;
+                            state = (edge < 0) ? 0 /* FALLING */ : !0 /* RISING */;
                             active = (!unique) || (prior < 0) || (prior != state);
                             if (!active) {
                                 /* Do nothing. */
