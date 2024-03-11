@@ -93,9 +93,9 @@ extern int diminuto_line_close(int fd);
  * OPERATORS
  ******************************************************************************/
 
-extern int diminuto_line_get(int fd, unsigned int line);
+extern int diminuto_line_get(int fd);
 
-extern int diminuto_line_put(int fd, unsigned int line, int bit);
+extern int diminuto_line_put(int fd, int bit);
 
 /*******************************************************************************
  * HELPERS
@@ -117,14 +117,14 @@ static inline int diminuto_line_open_output_inverted(const char * path, unsigned
     return diminuto_line_open(path, line, DIMINUTO_LINE_FLAG_OUTPUT | DIMINUTO_LINE_FLAG_ACTIVE_LOW);
 }
 
-static inline int diminuto_line_set(int fd, unsigned int line)
+static inline int diminuto_line_set(int fd)
 {
-    return diminuto_line_put(fd, line, !0);
+    return diminuto_line_put(fd, !0);
 }
 
-static inline int diminuto_line_clear(int fd, unsigned int line)
+static inline int diminuto_line_clear(int fd)
 {
-    return diminuto_line_put(fd, line, 0);
+    return diminuto_line_put(fd, 0);
 }
 
 #endif

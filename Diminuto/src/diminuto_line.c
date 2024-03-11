@@ -145,7 +145,7 @@ int diminuto_line_open_generic(const char * path, const unsigned int line[], siz
 
         request.config.flags = flags;
 
-        fd = open(path, 0);
+        fd = open(path, 0x0);
         if (fd < 0) {
             diminuto_perror(path);
             break;
@@ -198,7 +198,7 @@ int diminuto_line_get_generic(int fd, uint64_t mask, uint64_t * bitsp)
 
         if (mask == 0x0) {
             errno = ERANGE;
-            diminuto_perror("diminuto_line_get");
+            diminuto_perror("diminuto_line_get_generic");
             break;
         }
 
@@ -217,29 +217,20 @@ int diminuto_line_get_generic(int fd, uint64_t mask, uint64_t * bitsp)
     return rc;
 }
 
-int diminuto_line_get(int fd, unsigned int line)
+int diminuto_line_get(int fd)
 {
     int result = -1;
     int rc = -1;
-    uint64_t mask = 0;
     uint64_t bits = 0;
 
     do {
 
-        if (line >= widthof(typeof(mask))) {
-            errno = ERANGE;
-            diminuto_perror("diminuto_line_get");
-            break;
-        }
-
-        mask = 1ULL << line;
-
-        rc = diminuto_line_get_generic(fd, mask, &bits);
+        rc = diminuto_line_get_generic(fd, 1, &bits);
         if (rc < 0) {
             break;
         }
 
-        result = !!(bits & mask);
+        result = !!bits;
 
     } while (0);
 
@@ -277,28 +268,17 @@ int diminuto_line_put_generic(int fd, uint64_t mask, uint64_t bits)
     return rc;
 }
 
-int diminuto_line_put(int fd, unsigned int line, int bit)
+int diminuto_line_put(int fd, int bit)
 {
     int result = -1;
     int rc = -1;
-    uint64_t mask = 0;
     uint64_t bits = 0;
 
     do {
 
-        if (line >= widthof(typeof(mask))) {
-            errno = ERANGE;
-            diminuto_perror("diminuto_line_put");
-            break;
-        }
+        bits = !!bit;
 
-        mask = 1ULL << line;
-
-        bit = !!bit;
-        bits = bit;
-        bits <<= line;
-
-        rc = diminuto_line_put_generic(fd, mask, bits);
+        rc = diminuto_line_put_generic(fd, 1, bits);
         if (rc < 0) {
             break;
         }
