@@ -10,10 +10,11 @@
  *
  * EXAMPLES
  *
- * linetool -D /dev/gpiochip4 -p 20 -i -x -b 10000<BR>
- * linetool -D /dev/gpiochip4 -p 20 -i -B -U -x -m 10000<BR>
- * linetool -D /dev/gpiochip4 -p 20 -i -B -U -M 1000000 -x -m 10000-x<BR>
- * linetool -D /dev/gpiochip4 -p 160 -o -H -x -r -s -r -u 5000000 -r -c -r -p 161 -x -h -r -w 0 -r -u 5000000 -r -w 1 -r -p 160 -n -p 161 -n<BR>
+ * linetool -D /dev/gpiochip4 -p 20 -i -x -b 10000
+ *
+ * linetool -D /dev/gpiochip4 -p 21 -i -B -U -M 1000000 -x -m 10000
+ *
+ * linetool -D /dev/gpiochip4 -p 16 -o -H -x -r -s -r -u 5000000 -r -c -r -e -p 18 -x -r -w 0 -r -u 5000000 -r -w 1 -r -n
  *
  * ABSTRACT
  *
@@ -49,15 +50,25 @@
 #include <unistd.h>
 #include <stdio.h>
 
+/*******************************************************************************
+ * CODE GENERATORS
+ ******************************************************************************/
+
 #define PRINTOPTION (debug ? fprintf(stderr, "%s -%c\n", program, opt) : 0)
 
 #define PRINTSTRINGOPTION (debug ? fprintf(stderr, "%s -%c \"%s\"\n", program, opt, optarg) : 0)
 
 #define PRINTNUMERICOPTION (debug ? fprintf(stderr, "%s -%c %s\n", program, opt, optarg) : 0)
 
-#define PRINTCONTEXT (debug ? fprintf(stderr, "%s (\"%s\" %u 0x%llx %u)\n", program, (path == (const char *)0) ? "" : path, line, (unsigned long long)flags, useconds) : 0)
+#define PRINTCONTEXT (debug ? fprintf(stderr, "%s [%d] { \"%s\" %u 0x%llx %u }\n", program, (int)getpid(), (path == (const char *)0) ? "" : path, line, (unsigned long long)flags, useconds) : 0)
 
 #define CLEARCONTEXT do { path = (const char *)0; line = maximumof(typeof(line)); flags = 0x0; useconds = 0; } while (0)
+
+#define PRINTSTATE (debug ? fprintf(stderr, "%s [%d] (%d)\n", program, (int)getpid(), state) : 0)
+
+/*******************************************************************************
+ * STATICS
+ ******************************************************************************/
 
 static const char OPTIONS[] = "1BD:FHLM:NP:RSUX:b:cdefhilm:nop:rstu:vw:x?";
 
@@ -75,6 +86,10 @@ static const char USAGE[] = "[ -d ] "
                             "[ -u USECONDS ] "
                             "[ -n | -e ] "
                             "[ ... ] ";
+
+/*******************************************************************************
+ * HELPERS
+ ******************************************************************************/
 
 static void usage(const char * program)
 {
@@ -113,6 +128,10 @@ static void usage(const char * program)
     fprintf(stderr, "       -?              Print menu.\n");
 }
 
+/*******************************************************************************
+ * MAIN
+ ******************************************************************************/
+
 int main(int argc, char * argv[])
 {
     int xc = 0;
@@ -150,7 +169,7 @@ int main(int argc, char * argv[])
 
     program = ((program = strrchr(argv[0], '/')) == (char *)0) ? argv[0] : program + 1;
 
-    diminuto_line_consumer(__FILE__);
+    (void)diminuto_line_consumer(__FILE__);
 
     while ((opt = getopt(argc, argv, OPTIONS)) >= 0) {
 
@@ -225,6 +244,9 @@ int main(int argc, char * argv[])
         case 'P':
             PRINTSTRINGOPTION;
             path = diminuto_line_parse(optarg, &sline);
+            if (path == (const char *)0) {
+                break;
+            }
             if (sline < 0) {
                 flags |= DIMINUTO_LINE_FLAG_ACTIVE_LOW;
                 line = -sline;
@@ -279,6 +301,7 @@ int main(int argc, char * argv[])
                 fail = !0;
                 break;
             }
+            PRINTSTATE;
             printf("%d\n", state);
             fflush(stdout);
             diminuto_cue_init(&cue, state);
@@ -291,6 +314,7 @@ int main(int argc, char * argv[])
                 }
                 state = diminuto_cue_debounce(&cue, !!state);
                 if (state != prior) {
+                    PRINTSTATE;
                     printf("%d\n", state);
                     fflush(stdout);
                 }
@@ -306,10 +330,11 @@ int main(int argc, char * argv[])
                 errno = EBADF;
                 diminuto_perror(sopt);
                 fail = !0;
-            } else if (diminuto_line_put(fd, 0) < 0) {
+            } else if (diminuto_line_clear(fd) < 0) {
                 fail = !0;
             } else {
                 state = 0;
+                PRINTSTATE;
             }
             break;
 
@@ -373,6 +398,7 @@ int main(int argc, char * argv[])
                 break;
             } else {
                 state = !!state;
+                PRINTSTATE;
                 printf("%d\n", state);
                 fflush(stdout);
                 prior = state;
@@ -414,6 +440,7 @@ int main(int argc, char * argv[])
                                     break;
                                 }
                             } else {
+                                PRINTSTATE;
                                 printf("%d\n", state);
                                 fflush(stdout);
                             }
@@ -440,6 +467,7 @@ int main(int argc, char * argv[])
                             break;
                         }
                     } else {
+                        PRINTSTATE;
                         printf("%d\n", state);
                         fflush(stdout);
                     }
@@ -505,21 +533,22 @@ int main(int argc, char * argv[])
             } else if ((state = diminuto_line_get(fd)) < 0) {
                 fail = !0;
             } else {
+                PRINTSTATE;
                 printf("%d\n", state);
             }
             break;
 
         case 's':
             PRINTOPTION;
-            state = !0;
             if (fd < 0) {
                 errno = EBADF;
                 diminuto_perror(sopt);
                 fail = !0;
-            } else if (diminuto_line_put(fd, state) < 0) {
+            } else if (diminuto_line_set(fd) < 0) {
                 fail = !0;
             } else {
-                /* Do nothing. */
+                state = !0;
+                PRINTSTATE;
             }
             break;
 
@@ -548,10 +577,11 @@ int main(int argc, char * argv[])
                 errno = EBADF;
                 diminuto_perror(sopt);
                 fail = !0;
-            } else if (diminuto_line_put(fd, state = !!uvalue) < 0) {
+            } else if (diminuto_line_put(fd, uvalue = !!uvalue) < 0) {
                 fail = !0;
             } else {
-                /* Do nothoing. */
+                state = uvalue;
+                PRINTSTATE;
             }
             break;
 
@@ -561,7 +591,7 @@ int main(int argc, char * argv[])
                 errno = EBADF;
                 diminuto_perror(sopt);
                 fail = !0;
-            } else if ((fd = diminuto_line_open_base(path, line, flags, useconds)) < 0) {
+            } else if ((fd = diminuto_line_open_read(path, line, flags, useconds)) < 0) {
                 fail = !0;
             } else {
                 /* Do nothing. */

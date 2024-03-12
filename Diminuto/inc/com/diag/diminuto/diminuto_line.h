@@ -68,7 +68,7 @@ extern const char * diminuto_line_consumer(const char * next);
 extern char * diminuto_line_parse(char * parameter, int * linep);
 
 /*******************************************************************************
- * GENERIC
+ * GENERICS
  ******************************************************************************/
 
 extern int diminuto_line_open_generic(const char * path, const unsigned int line[], size_t lines, uint64_t flags, uint32_t useconds);
@@ -78,32 +78,32 @@ extern int diminuto_line_get_generic(int fd, uint64_t mask, uint64_t * bitsp);
 extern int diminuto_line_put_generic(int fd, uint64_t mask, uint64_t bits);
 
 /*******************************************************************************
- * BASE
+ * MUTIPLEXING
  ******************************************************************************/
 
-static inline int diminuto_line_open_base(const char * path, unsigned int line, uint64_t flags, uint32_t useconds) {
+static inline int diminuto_line_open_read(const char * path, unsigned int line, uint64_t flags, uint32_t useconds) {
     return diminuto_line_open_generic(path, &line, 1, flags, useconds);
 }
+
+extern int diminuto_line_read(int fd);
 
 /*******************************************************************************
  * DEFAULT
  ******************************************************************************/
 
 static inline int diminuto_line_open(const char * path, unsigned int line, uint64_t flags) {
-    return diminuto_line_open_base(path, line, flags, 0);
+    return diminuto_line_open_read(path, line, flags, 0);
 }
 
 extern int diminuto_line_close(int fd);
 
 /*******************************************************************************
- * OPERATORS
+ * GETTORS/SETTORS
  ******************************************************************************/
 
 extern int diminuto_line_get(int fd);
 
 extern int diminuto_line_put(int fd, int bit);
-
-extern int diminuto_line_read(int fd);
 
 /*******************************************************************************
  * HELPERS
