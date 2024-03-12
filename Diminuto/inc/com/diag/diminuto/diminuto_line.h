@@ -13,15 +13,15 @@
  * WORK IN PROGRESS
  *
  * This implementation is based on the Linux kernel's GPIO character device
- * drivers and their ABI. Why not use libgpiod? Maybe I should. But that
- * library needs to be all things to all people, while what I need is just the
- * stuff I need. Also, after canvassing all of my various systems on which
- * older versions of the Diminuto Library runs, which include Raspberry Pi 2s,
- * 3s, 4s, and a Raspberry Pi 5, an Orange Pi, two RISC-V SBCs, and a couple
- * of Intel systems, I found that all but the oldest ones have
- * /usr/include/linux/gpio.h, while only the newest ones had or can install
- * /usr/include/libgpiod.h and its friends. Putting my own lightweight wrapper
- * around the Linux GPIO ABI was, for me, just pressing the "easy" button.
+ * drivers and their ABI.
+ *
+ * Why not use libgpiod? Maybe I should have. But that library needs to be
+ * all things to all people, while what I need is just the stuff I need. Also,
+ * after canvassing all of my various systems on which older versions of the
+ * Diminuto Library runs, which include Raspberry Pi 2s, 3s, 4s, a Raspberry
+ * Pi 5, an Orange Pi, two RISC-V SBCs, and a couple of Intel systems, I
+ * found that all but the oldest ones have /usr/include/linux/gpio.h. while
+ * the availability of libgpiod may be problematic.
  *
  * REFERENCES
  *
