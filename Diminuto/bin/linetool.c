@@ -70,7 +70,7 @@ static const char USAGE[] = "[ -d ] "
                             "[ -N | -R | -F | -B ] "
                             "[ -M USECONDS ] "
                             "[ -x ] "
-                            "[ -r | -w 0 | -w 1 | -s | -c | [ -1 ] [ -U ] -m USECONDS [ -X COMMAND ] | -b USECONDS ] "
+                            "[ -r | -w 0 | -w 1 | -s | -c | [ -1 ] [ -U ] [ -X COMMAND ] -m USECONDS | -b USECONDS ] "
                             "[ -t | -f ] "
                             "[ -u USECONDS ] "
                             "[ -n | -e ] "
@@ -210,7 +210,7 @@ int main(int argc, char * argv[])
                 diminuto_perror(optarg);
                 error = !0;
             } else {
-                useconds = svalue;
+                useconds = uvalue;
                 PRINTCONTEXT;
             }
             break;

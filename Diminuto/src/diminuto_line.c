@@ -15,6 +15,7 @@
 #include "com/diag/diminuto/diminuto_log.h"
 #include "com/diag/diminuto/diminuto_criticalsection.h"
 #include "com/diag/diminuto/diminuto_countof.h"
+#include "com/diag/diminuto/diminuto_delay.h"
 #include "com/diag/diminuto/diminuto_error.h"
 #include "com/diag/diminuto/diminuto_minmaxof.h"
 #include "com/diag/diminuto/diminuto_typeof.h"
@@ -313,6 +314,10 @@ int diminuto_line_read(int fd)
 
         rc = read(fd, &event, sizeof(event));
         if (rc < 0) {
+            diminuto_perror("diminuto_line_read");
+            break;
+        } else if (rc == 0) {
+            errno = ENODEV;
             diminuto_perror("diminuto_line_read");
             break;
         } else if (rc != sizeof(event)) {
