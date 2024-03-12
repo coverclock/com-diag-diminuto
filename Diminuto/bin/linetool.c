@@ -61,18 +61,33 @@
 
 static const char OPTIONS[] = "1BD:FHLM:NP:RSUX:b:cdefhilm:nop:rstu:vw:x?";
 
+static const char USAGE[] = "[ -d ] "
+                            "[ -S ] "
+                            "[ [ -D DEVICE -p LINE ] | [ -P DEVICE:LINE ] ] "
+                            "[ -i ] [ -o ] "
+                            "[ -H | -L ]"
+                            "[ -h | -l ] "
+                            "[ -N | -R | -F | -B ] "
+                            "[ -M USECONDS ] "
+                            "[ -x ] "
+                            "[ -r | -w 0 | -w 1 | -s | -c | [ -1 ] [ -U ] -m USECONDS [ -X COMMAND ] | -b USECONDS ] "
+                            "[ -t | -f ] "
+                            "[ -u USECONDS ] "
+                            "[ -n | -e ] "
+                            "[ ... ] ";
+
 static void usage(const char * program)
 {
-    fprintf(stderr, "usage: %s [ -d ] [ -S ] [ [ -D DEVICE ] [ -p LINE ] [ -P PATH:LINE ] ] [ -x ] [ -i | -o ] [ -h | -l ] [ -N | -R | -F | -B ] [ -1 ] [ -b USECONDS ] [ -X COMMAND ] [ -m USECONDS ] [ -r | -M USECONDS | -b USECONDS | -w BOOLEAN | -s | -c ] [ -U ] [ -t | -f ] [ -u USECONDS ] [ -n | -e ] [ ... ]\n", program);
+    fprintf(stderr, "usage: %s %s\n", program, USAGE);
     fprintf(stderr, "       -1              Read LINE initially when multiplexing.\n");
     fprintf(stderr, "       -B              Configure LINE edge to both.\n");
-    fprintf(stderr, "       -D DEVICE       Close and use DEVICE:LINE subsequently.\n");
+    fprintf(stderr, "       -D DEVICE       Close and configure context to DEVICE.\n");
     fprintf(stderr, "       -F              Configure context edge to falling.\n");
     fprintf(stderr, "       -H              Configure context active to high.\n");
     fprintf(stderr, "       -L              Configure context active to low.\n");
     fprintf(stderr, "       -M USECONDS     Configure context debounce to USECONDS.\n");
     fprintf(stderr, "       -N              Configure context edge to none.\n");
-    fprintf(stderr, "       -P DEVICE:LINE  Close and use DEVICE:LINE subsequently.\n");
+    fprintf(stderr, "       -P DEVICE:LINE  Close and configure context to DEVICE:LINE.\n");
     fprintf(stderr, "       -R              Configure context edge to rising.\n");
     fprintf(stderr, "       -S              Daemonize.\n");
     fprintf(stderr, "       -U              Filter out non-unique edge changes.\n");
@@ -88,12 +103,12 @@ static void usage(const char * program)
     fprintf(stderr, "       -m USECONDS     Multiplex with driver debounce with a timeout of USECONDS microseconds.\n");
     fprintf(stderr, "       -n              Close LINE and clear context.\n");
     fprintf(stderr, "       -o              Configure context direction to output.\n");
-    fprintf(stderr, "       -p LINE         Close and use DEVICE:LINE subsequently.\n");
+    fprintf(stderr, "       -p LINE         Close and configure context to LINE.\n");
     fprintf(stderr, "       -r              Read LINE and print to standard output.\n");
     fprintf(stderr, "       -s              Set LINE by writing !0.\n");
     fprintf(stderr, "       -t              Proceed if the last LINE state was !0.\n");
     fprintf(stderr, "       -u USECONDS     Delay for USECONDS microseconds.\n");
-    fprintf(stderr, "       -w BOOLEAN      Write BOOLEAN to LINE.\n");
+    fprintf(stderr, "       -w [ 0 | 1 ]    Write STATE to LINE.\n");
     fprintf(stderr, "       -x              Configure LINE with context and open.\n");
     fprintf(stderr, "       -?              Print menu.\n");
 }
