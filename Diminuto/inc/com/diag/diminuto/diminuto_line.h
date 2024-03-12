@@ -51,6 +51,12 @@ typedef enum DiminutoLineFlag {
 	DIMINUTO_LINE_FLAG_BIAS_PULL_DOWN =     GPIO_V2_LINE_FLAG_BIAS_PULL_DOWN,
 } diminuto_line_flag_t;
 
+typedef unsigned int diminuto_line_offset_t;
+
+typedef uint64_t diminuto_line_bits_t;
+
+typedef uint32_t diminuto_line_duration_t;
+
 /*******************************************************************************
  * DEBUGGING
  ******************************************************************************/
@@ -71,17 +77,17 @@ extern char * diminuto_line_parse(char * parameter, int * linep);
  * GENERICS
  ******************************************************************************/
 
-extern int diminuto_line_open_generic(const char * path, const unsigned int line[], size_t lines, uint64_t flags, uint32_t useconds);
+extern int diminuto_line_open_generic(const char * path, const diminuto_line_offset_t line[], size_t lines, diminuto_line_bits_t flags, diminuto_line_duration_t useconds);
 
-extern int diminuto_line_get_generic(int fd, uint64_t mask, uint64_t * bitsp);
+extern int diminuto_line_get_generic(int fd, diminuto_line_bits_t mask, diminuto_line_bits_t * bitsp);
 
-extern int diminuto_line_put_generic(int fd, uint64_t mask, uint64_t bits);
+extern int diminuto_line_put_generic(int fd, diminuto_line_bits_t mask, diminuto_line_bits_t bits);
 
 /*******************************************************************************
  * MUTIPLEXING
  ******************************************************************************/
 
-static inline int diminuto_line_open_read(const char * path, unsigned int line, uint64_t flags, uint32_t useconds) {
+static inline int diminuto_line_open_read(const char * path, diminuto_line_offset_t line, diminuto_line_bits_t flags, diminuto_line_duration_t useconds) {
     return diminuto_line_open_generic(path, &line, 1, flags, useconds);
 }
 
@@ -91,7 +97,7 @@ extern int diminuto_line_read(int fd);
  * DEFAULT
  ******************************************************************************/
 
-static inline int diminuto_line_open(const char * path, unsigned int line, uint64_t flags) {
+static inline int diminuto_line_open(const char * path, diminuto_line_offset_t line, diminuto_line_bits_t flags) {
     return diminuto_line_open_read(path, line, flags, 0);
 }
 
@@ -109,19 +115,19 @@ extern int diminuto_line_put(int fd, int bit);
  * HELPERS
  ******************************************************************************/
 
-static inline int diminuto_line_open_input(const char * path, unsigned int line) {
+static inline int diminuto_line_open_input(const char * path, diminuto_line_offset_t line) {
     return diminuto_line_open(path, line, DIMINUTO_LINE_FLAG_INPUT);
 }
 
-static inline int diminuto_line_open_input_inverted(const char * path, unsigned int line) {
+static inline int diminuto_line_open_input_inverted(const char * path, diminuto_line_offset_t line) {
     return diminuto_line_open(path, line, DIMINUTO_LINE_FLAG_INPUT | DIMINUTO_LINE_FLAG_ACTIVE_LOW);
 }
 
-static inline int diminuto_line_open_output(const char * path, unsigned int line) {
+static inline int diminuto_line_open_output(const char * path, diminuto_line_offset_t line) {
     return diminuto_line_open(path, line, DIMINUTO_LINE_FLAG_OUTPUT);
 }
 
-static inline int diminuto_line_open_output_inverted(const char * path, unsigned int line) {
+static inline int diminuto_line_open_output_inverted(const char * path, diminuto_line_offset_t line) {
     return diminuto_line_open(path, line, DIMINUTO_LINE_FLAG_OUTPUT | DIMINUTO_LINE_FLAG_ACTIVE_LOW);
 }
 

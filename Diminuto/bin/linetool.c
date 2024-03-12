@@ -54,17 +54,19 @@
  * CODE GENERATORS
  ******************************************************************************/
 
-#define PRINTOPTION (debug ? fprintf(stderr, "%s -%c\n", program, opt) : 0)
+#define PRINTOPTION (debug ? fprintf(stderr, "%s [%d] -%c\n", program, (int)pid, opt) : 0)
 
-#define PRINTSTRINGOPTION (debug ? fprintf(stderr, "%s -%c \"%s\"\n", program, opt, optarg) : 0)
+#define PRINTSTRINGOPTION (debug ? fprintf(stderr, "%s [%d] -%c \"%s\"\n", program, (int)pid, opt, optarg) : 0)
 
-#define PRINTNUMERICOPTION (debug ? fprintf(stderr, "%s -%c %s\n", program, opt, optarg) : 0)
+#define PRINTNUMERICOPTION (debug ? fprintf(stderr, "%s [%d] -%c %s\n", program, (int)pid, opt, optarg) : 0)
 
-#define PRINTCONTEXT (debug ? fprintf(stderr, "%s [%d] { \"%s\" %u 0x%llx %u }\n", program, (int)getpid(), (path == (const char *)0) ? "" : path, line, (unsigned long long)flags, useconds) : 0)
+#define PRINTCONTEXT (debug ? fprintf(stderr, "%s [%d] { \"%s\" %u 0x%llx %u }\n", program, (int)pid, (path == (const char *)0) ? "" : path, line, (unsigned long long)flags, useconds) : 0)
 
 #define CLEARCONTEXT do { path = (const char *)0; line = maximumof(typeof(line)); flags = 0x0; useconds = 0; } while (0)
 
-#define PRINTSTATE (debug ? fprintf(stderr, "%s [%d] (%d)\n", program, (int)getpid(), state) : 0)
+#define PRINTEDGE (debug ? fprintf(stderr, "%s [%d] <%d>\n", program, (int)pid, edge) : 0)
+
+#define PRINTSTATE (debug ? fprintf(stderr, "%s [%d] (%d)\n", program, (int)pid, state) : 0)
 
 /*******************************************************************************
  * STATICS
@@ -136,6 +138,7 @@ int main(int argc, char * argv[])
 {
     int xc = 0;
     const char * program = "linetool";
+    pid_t pid = -1;
     int done = 0;
     int fail = 0;
     int error = 0;
@@ -151,10 +154,10 @@ int main(int argc, char * argv[])
     int ready = -1;
     int nfds = 0;
     int rc = -1;
-    uint64_t flags = 0x0; /* Context. */
-    uint32_t useconds = 0; /* Context. */
     const char * path = (const char *)0; /* Context. */
-    unsigned int line = maximumof(unsigned int); /* Context. */
+    diminuto_line_offset_t line = maximumof(diminuto_line_offset_t); /* Context. */
+    diminuto_line_bits_t flags = 0x0; /* Context. */
+    diminuto_line_duration_t useconds = 0; /* Context. */
     const char * command = (const char *)0;
     diminuto_unsigned_t uvalue = 0;
     diminuto_signed_t svalue = -1;
@@ -168,6 +171,8 @@ int main(int argc, char * argv[])
     extern char * optarg;
 
     program = ((program = strrchr(argv[0], '/')) == (char *)0) ? argv[0] : program + 1;
+
+    pid = getpid();
 
     (void)diminuto_line_consumer(__FILE__);
 
@@ -427,6 +432,7 @@ int main(int argc, char * argv[])
                             fail = !0;
                             break;
                         } else {
+                            PRINTEDGE;
                             state = (edge < 0) ? 0 /* FALLING */ : !0 /* RISING */;
                             active = (!unique) || (prior < 0) || (prior != state);
                             if (!active) {
