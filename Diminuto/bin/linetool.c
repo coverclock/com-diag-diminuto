@@ -1,7 +1,7 @@
 /* vi: set ts=4 expandtab shiftwidth=4: */
 /**
  * @file
- * @copyright Copyright 2014-2024 Digital Aggregates Corporation, Colorado, USA.
+ * @copyright Copyright 2024 Digital Aggregates Corporation, Colorado, USA.
  * @note Licensed under the terms in LICENSE.txt.
  * @brief Manipulate GPIO pins using the ioctl ABI.
  * @author Chip Overclock <mailto:coverclock@diag.com>
@@ -11,8 +11,8 @@
  * EXAMPLES
  *
  * linetool -D /dev/gpiochip4 -p 20 -i -x -b 10000<BR>
- * linetool -D /dev/gpiochip4 -p 20 -i -B -x -U -M<BR>
- * linetool -D /dev/gpiochip4 -p 20 -i -B -U -x -m 1000000<BR>
+ * linetool -D /dev/gpiochip4 -p 20 -i -B -U -x -m 10000<BR>
+ * linetool -D /dev/gpiochip4 -p 20 -i -B -U -M 1000000 -x -m 10000-x<BR>
  * linetool -D /dev/gpiochip4 -p 160 -o -H -x -r -s -r -u 5000000 -r -c -r -p 161 -x -h -r -w 0 -r -u 5000000 -r -w 1 -r -p 160 -n -p 161 -n<BR>
  *
  * ABSTRACT
@@ -22,11 +22,11 @@
  * Probably must be run as root or, on some platforms (e.g. Raspian on the
  * Raspberry Pi) as a user in the gpio group (e.g. pi).
  *
- * Note that although the syntax of linetool looks a lot like taht of pintool,
+ * N.B. Although the syntax of linetool looks a lot like taht of pintool,
  * the semantics are completely different. See the scripts that use linetool
- * for examples.
+ * (like linetest.sh) for examples.
  *
- * Note that how a particularly GPIO line may be configured and what operations
+ * N.B. How a particularly GPIO line may be configured and what operations
  * may be performed on it depends on the underlying hardware and how its device
  * driver is implemented and configured.
  *
@@ -49,23 +49,35 @@
 #include <unistd.h>
 #include <stdio.h>
 
+#define PRINTOPTION (debug ? fprintf(stderr, "%s -%c\n", program, opt) : 0)
+
+#define PRINTSTRINGOPTION (debug ? fprintf(stderr, "%s -%c \"%s\"\n", program, opt, optarg) : 0)
+
+#define PRINTNUMERICOPTION (debug ? fprintf(stderr, "%s -%c %s\n", program, opt, optarg) : 0)
+
+#define PRINTCONTEXT (debug ? fprintf(stderr, "%s (\"%s\" %u 0x%llx %u)\n", program, (path == (const char *)0) ? "" : path, line, (unsigned long long)flags, useconds) : 0)
+
+#define CLEARCONTEXT do { path = (const char *)0; line = maximumof(typeof(line)); flags = 0x0; useconds = 0; } while (0)
+
+static const char OPTIONS[] = "1BD:FHLM:NP:RSUX:b:cdefhilm:nop:rstu:vw:x?";
+
 static void usage(const char * program)
 {
-    fprintf(stderr, "usage: %s [ -d ] [ -S ] [ [ -D DEVICE ] [ -p LINE ] [ -P PATH:LINE ] ] [ -x ] [ -i | -o ] [ -h | -l ] [ -N | -R | -F | -B ] [ -1 ] [ -b USECONDS ] [ -X COMMAND ] [ -r | -m USECONDS | -M | -b USECONDS | -w BOOLEAN | -s | -c ] [ -U ] [ -t | -f ] [ -u USECONDS ] [ -n | -e ] [ ... ]\n", program);
+    fprintf(stderr, "usage: %s [ -d ] [ -S ] [ [ -D DEVICE ] [ -p LINE ] [ -P PATH:LINE ] ] [ -x ] [ -i | -o ] [ -h | -l ] [ -N | -R | -F | -B ] [ -1 ] [ -b USECONDS ] [ -X COMMAND ] [ -m USECONDS ] [ -r | -M USECONDS | -b USECONDS | -w BOOLEAN | -s | -c ] [ -U ] [ -t | -f ] [ -u USECONDS ] [ -n | -e ] [ ... ]\n", program);
     fprintf(stderr, "       -1              Read LINE initially when multiplexing.\n");
     fprintf(stderr, "       -B              Configure LINE edge to both.\n");
     fprintf(stderr, "       -D DEVICE       Close and use DEVICE:LINE subsequently.\n");
     fprintf(stderr, "       -F              Configure context edge to falling.\n");
     fprintf(stderr, "       -H              Configure context active to high.\n");
     fprintf(stderr, "       -L              Configure context active to low.\n");
-    fprintf(stderr, "       -M              Multiplex upon edge.\n");
+    fprintf(stderr, "       -M USECONDS     Configure context debounce to USECONDS.\n");
     fprintf(stderr, "       -N              Configure context edge to none.\n");
     fprintf(stderr, "       -P DEVICE:LINE  Close and use DEVICE:LINE subsequently.\n");
     fprintf(stderr, "       -R              Configure context edge to rising.\n");
     fprintf(stderr, "       -S              Daemonize.\n");
     fprintf(stderr, "       -U              Filter out non-unique edge changes.\n");
     fprintf(stderr, "       -X COMMAND      Execute COMMAND DEVICE LINE STATE PRIOR in shell when multiplexed edge changes.\n");
-    fprintf(stderr, "       -b USECONDS     Poll with debounce every USECONDS (try 10000) microseconds.\n");
+    fprintf(stderr, "       -b              Poll with software debounce.\n");
     fprintf(stderr, "       -c              Clear LINE by writing 0.\n");
     fprintf(stderr, "       -d              Enable debug mode.\n");
     fprintf(stderr, "       -e              Close LINE but keep context.\n");
@@ -73,7 +85,7 @@ static void usage(const char * program)
     fprintf(stderr, "       -h              Configure context direction to output and active to high.\n");
     fprintf(stderr, "       -i              Configure context direction to input.\n");
     fprintf(stderr, "       -l              Configure context direction to output and active to low.\n");
-    fprintf(stderr, "       -m USECONDS     Multiplex upon LINE edge or until USECONDS microseconds.\n");
+    fprintf(stderr, "       -m USECONDS     Multiplex with driver debounce with a timeout of USECONDS microseconds.\n");
     fprintf(stderr, "       -n              Close LINE and clear context.\n");
     fprintf(stderr, "       -o              Configure context direction to output.\n");
     fprintf(stderr, "       -p LINE         Close and use DEVICE:LINE subsequently.\n");
@@ -100,21 +112,22 @@ int main(int argc, char * argv[])
     int prior = 0;
     int active = 0;
     int edge = 0;
-    uint64_t flags = 0x0;
-    const char * path = (const char *)0;
-    unsigned int line = maximumof(unsigned int);
     int sline = -1;
-    const char * command = (const char *)0;
-    diminuto_unsigned_t uvalue = 0;
-    diminuto_signed_t svalue = -1;
-    diminuto_mux_t mux = { 0 };
-    diminuto_ticks_t ticks = 0;
-    diminuto_sticks_t sticks = -2;
-    diminuto_cue_state_t cue = { 0 };
     int fd = -1;
     int ready = -1;
     int nfds = 0;
     int rc = -1;
+    uint64_t flags = 0x0; /* Context. */
+    uint32_t useconds = 0; /* Context. */
+    const char * path = (const char *)0; /* Context. */
+    unsigned int line = maximumof(unsigned int); /* Context. */
+    const char * command = (const char *)0;
+    diminuto_unsigned_t uvalue = 0;
+    diminuto_signed_t svalue = -1;
+    diminuto_mux_t mux = { 0 };
+    diminuto_ticks_t uticks = 0;
+    diminuto_sticks_t sticks = -2;
+    diminuto_cue_state_t cue = { 0 };
     char sopt[2] = { '\0', '\0' };
     char buffer[1024] = { '\0' };
     int opt = '\0';
@@ -124,7 +137,7 @@ int main(int argc, char * argv[])
 
     diminuto_line_consumer(__FILE__);
 
-    while ((opt = getopt(argc, argv, "1BD:FHLMNP:RSUX:b:cdefhilm:nop:rstu:vw:x?")) >= 0) {
+    while ((opt = getopt(argc, argv, OPTIONS)) >= 0) {
 
         sopt[0] = opt;
 
@@ -134,54 +147,68 @@ int main(int argc, char * argv[])
         switch (opt) {
 
         case '1':
-            if (debug) { fprintf(stderr, "%s -%c\n", program, opt); }
+            PRINTOPTION;
             first = !0;
             break;
 
         case 'B':
-            if (debug) { fprintf(stderr, "%s -%c\n", program, opt); }
+            PRINTOPTION;
             flags |= DIMINUTO_LINE_FLAG_EDGE_RISING;
             flags |= DIMINUTO_LINE_FLAG_EDGE_FALLING;
-            if (debug) { fprintf(stderr, "%s (\"%s\" %u 0x%llx)\n", program, (path == (const char *)0) ? "" : path, line, (unsigned long long)flags); }
+            PRINTCONTEXT;
             break;
 
         case 'D':
-            if (debug) { fprintf(stderr, "%s -%c \"%s\"\n", program, opt, optarg); }
+            PRINTSTRINGOPTION;
             path = optarg;
-            if (debug) { fprintf(stderr, "%s (\"%s\" %u 0x%llx)\n", program, (path == (const char *)0) ? "" : path, line, (unsigned long long)flags); }
+            PRINTCONTEXT;
             if ((fd = diminuto_line_close(fd)) >= 0) {
                 fail = !0;
             }
             break;
 
         case 'F':
-            if (debug) { fprintf(stderr, "%s -%c\n", program, opt); }
-            flags &= ~DIMINUTO_LINE_FLAG_EDGE_RISING;
+            PRINTOPTION;
             flags |= DIMINUTO_LINE_FLAG_EDGE_FALLING;
-            if (debug) { fprintf(stderr, "%s (\"%s\" %u 0x%llx)\n", program, (path == (const char *)0) ? "" : path, line, (unsigned long long)flags); }
+            PRINTCONTEXT;
             break;
 
         case 'H':
-            if (debug) { fprintf(stderr, "%s -%c\n", program, opt); }
+            PRINTOPTION;
             flags &= ~DIMINUTO_LINE_FLAG_ACTIVE_LOW;
-            if (debug) { fprintf(stderr, "%s (\"%s\" %u 0x%llx)\n", program, (path == (const char *)0) ? "" : path, line, (unsigned long long)flags); }
+            PRINTCONTEXT;
             break;
 
         case 'L':
-            if (debug) { fprintf(stderr, "%s -%c\n", program, opt); }
+            PRINTOPTION;
             flags |= DIMINUTO_LINE_FLAG_ACTIVE_LOW;
-            if (debug) { fprintf(stderr, "%s (\"%s\" %u 0x%llx)\n", program, (path == (const char *)0) ? "" : path, line, (unsigned long long)flags); }
+            PRINTCONTEXT;
+            break;
+
+        case 'M':
+            PRINTNUMERICOPTION;
+            if ((*diminuto_number_unsigned(optarg, &uvalue) != '\0')) {
+                diminuto_perror(optarg);
+                error = !0;
+            } else if (uvalue > maximumof(typeof(useconds))) {
+                errno = ERANGE;
+                diminuto_perror(optarg);
+                error = !0;
+            } else {
+                useconds = svalue;
+                PRINTCONTEXT;
+            }
             break;
 
         case 'N':
-            if (debug) { fprintf(stderr, "%s -%c\n", program, opt); }
+            PRINTOPTION;
             flags &= ~DIMINUTO_LINE_FLAG_EDGE_RISING;
             flags &= ~DIMINUTO_LINE_FLAG_EDGE_FALLING;
-            if (debug) { fprintf(stderr, "%s (\"%s\" %u 0x%llx)\n", program, (path == (const char *)0) ? "" : path, line, (unsigned long long)flags); }
+            PRINTCONTEXT;
             break;
 
         case 'P':
-            if (debug) { fprintf(stderr, "%s -%c %s\n", program, opt, optarg); }
+            PRINTSTRINGOPTION;
             path = diminuto_line_parse(optarg, &sline);
             if (sline < 0) {
                 flags |= DIMINUTO_LINE_FLAG_ACTIVE_LOW;
@@ -189,22 +216,20 @@ int main(int argc, char * argv[])
             } else {
                 line = sline;
             }
-            if (debug) { fprintf(stderr, "%s (\"%s\" %u 0x%llx)\n", program, (path == (const char *)0) ? "" : path, line, (unsigned long long)flags); }
+            PRINTCONTEXT;
             if ((fd = diminuto_line_close(fd)) >= 0) {
                 fail = !0;
-                break;
             }
             break;
 
         case 'R':
-            if (debug) { fprintf(stderr, "%s -%c\n", program, opt); }
+            PRINTOPTION;
             flags |= DIMINUTO_LINE_FLAG_EDGE_RISING;
-            flags &= ~DIMINUTO_LINE_FLAG_EDGE_FALLING;
-            if (debug) { fprintf(stderr, "%s (\"%s\" %u 0x%llx)\n", program, (path == (const char *)0) ? "" : path, line, (unsigned long long)flags); }
+            PRINTCONTEXT;
             break;
 
         case 'S':
-            if (debug) { fprintf(stderr, "%s -%c\n", program, opt); }
+            PRINTOPTION;
             rc = diminuto_daemon(program);
             if (rc < 0) {
                 fail = !0;
@@ -212,25 +237,23 @@ int main(int argc, char * argv[])
             break;
 
         case 'U':
-            if (debug) { fprintf(stderr, "%s -%c\n", program, opt); }
+            PRINTOPTION;
             unique = !0;
             break;
 
         case 'X':
-            if (debug) { fprintf(stderr, "%s -%c \"%s\"\n", program, opt, optarg); }
+            PRINTSTRINGOPTION;
             command = optarg;
             break;
 
         case 'b':
-            if (debug) { fprintf(stderr, "%s -%c %s\n", program, opt, optarg); }
+            PRINTNUMERICOPTION;
             if ((*diminuto_number_unsigned(optarg, &uvalue) != '\0')) {
                 diminuto_perror(optarg);
                 error = !0;
                 break;
             }
-            ticks = uvalue;
-            ticks *= diminuto_frequency();
-            ticks /= 1000000;
+            uticks = diminuto_frequency_units2ticks(uvalue, 1000000);
             if (fd < 0) {
                 errno = EBADF;
                 diminuto_perror(sopt);
@@ -246,7 +269,7 @@ int main(int argc, char * argv[])
             diminuto_cue_init(&cue, state);
             while (!0) {
                 prior = state;
-                diminuto_delay(ticks, 0);
+                diminuto_delay(uticks, 0);
                 if ((state = diminuto_line_get(fd)) < 0) {
                     fail = !0;
                     break;
@@ -263,74 +286,64 @@ int main(int argc, char * argv[])
             break;
 
         case 'c':
-            if (debug) { fprintf(stderr, "%s -%c\n", program, opt); }
-            state = 0;
+            PRINTOPTION;
             if (fd < 0) {
                 errno = EBADF;
                 diminuto_perror(sopt);
                 fail = !0;
-            } else if (diminuto_line_put(fd, state) < 0) {
+            } else if (diminuto_line_put(fd, 0) < 0) {
                 fail = !0;
             } else {
-                /* Do nothing. */
+                state = 0;
             }
             break;
 
         case 'd':
             debug = !0;
-            fprintf(stderr, "%s -%c\n", program, opt);
-            fprintf(stderr, "%s (\"%s\" %u 0x%llx)\n", program, (path == (const char *)0) ? "" : path, line, (unsigned long long)flags);
+            PRINTOPTION;
+            PRINTCONTEXT;
             break;
 
         case 'e':
-            if (debug) { fprintf(stderr, "%s -%c\n", program, opt); }
+            PRINTOPTION;
             if ((fd = diminuto_line_close(fd)) >= 0) {
                 fail = !0;
             }
             break;
 
         case 'f':
-            if (debug) { fprintf(stderr, "%s -%c\n", program, opt); }
+            PRINTOPTION;
             done = !!state;
             break;
 
         case 'h':
-            if (debug) { fprintf(stderr, "%s -%c\n", program, opt); }
+            PRINTOPTION;
             flags = DIMINUTO_LINE_FLAG_OUTPUT;
             flags &= ~DIMINUTO_LINE_FLAG_ACTIVE_LOW;
-            if (debug) { fprintf(stderr, "%s (\"%s\" %u 0x%llx)\n", program, (path == (const char *)0) ? "" : path, line, (unsigned long long)flags); }
+            PRINTCONTEXT;
             break;
 
         case 'i':
-            if (debug) { fprintf(stderr, "%s -%c\n", program, opt); }
+            PRINTOPTION;
             flags |= DIMINUTO_LINE_FLAG_INPUT;
-            if (debug) { fprintf(stderr, "%s (\"%s\" %u 0x%llx)\n", program, (path == (const char *)0) ? "" : path, line, (unsigned long long)flags); }
+            PRINTCONTEXT;
             break;
 
         case 'l':
-            if (debug) { fprintf(stderr, "%s -%c\n", program, opt); }
+            PRINTOPTION;
             flags = DIMINUTO_LINE_FLAG_OUTPUT;
             flags |= DIMINUTO_LINE_FLAG_ACTIVE_LOW;
-            if (debug) { fprintf(stderr, "%s (\"%s\" %u 0x%llx)\n", program, (path == (const char *)0) ? "" : path, line, (unsigned long long)flags); }
+            PRINTCONTEXT;
             break;
 
         case 'm':
-            if (debug) { fprintf(stderr, "%s -%c %s\n", program, opt, optarg); }
+            PRINTNUMERICOPTION;
             if ((*diminuto_number_signed(optarg, &svalue) != '\0')) {
                 diminuto_perror(optarg);
                 error = !0;
                 break;
-            } else if (svalue > 0) {
-                sticks = svalue;
-                sticks *= diminuto_frequency();
-                sticks /= 1000000;
-            } else {
-                sticks = svalue;
             }
-            /* Fall through. */
-
-        case 'M':
-            if (debug) { fprintf(stderr, "%s -%c\n", program, opt); }
+            sticks = diminuto_frequency_units2ticks(svalue, 1000000);
             if (fd < 0) {
                 errno = EBADF;
                 diminuto_perror(sopt);
@@ -420,7 +433,6 @@ int main(int argc, char * argv[])
             }
             if (diminuto_mux_unregister_interrupt(&mux, fd) < 0) {
                 fail = !0;
-                break;
             }
             if (fail) {
                 break;
@@ -428,24 +440,25 @@ int main(int argc, char * argv[])
             break;
 
         case 'n':
-            if (debug) { fprintf(stderr, "%s -%c\n", program, opt); }
-            path = (const char *)0;
-            line = maximumof(typeof(line));
-            flags = 0x0;
-            if (debug) { fprintf(stderr, "%s (\"%s\" %u 0x%llx)\n", program, (path == (const char *)0) ? "" : path, line, (unsigned long long)flags); }
+            PRINTOPTION;
+            CLEARCONTEXT;
+            PRINTCONTEXT;
+            /*
+             * It is not an error to close a closed line.
+             */
             if ((fd = diminuto_line_close(fd)) >= 0) {
                 fail = !0;
             }
             break;
 
         case 'o':
-            if (debug) { fprintf(stderr, "%s -%c\n", program, opt); }
+            PRINTOPTION;
             flags |= DIMINUTO_LINE_FLAG_OUTPUT;
-            if (debug) { fprintf(stderr, "%s (\"%s\" %u 0x%llx)\n", program, (path == (const char *)0) ? "" : path, line, (unsigned long long)flags); }
+            PRINTCONTEXT;
             break;
 
         case 'p':
-            if (debug) { fprintf(stderr, "%s -%c %s\n", program, opt, optarg); }
+            PRINTNUMERICOPTION;
             if (*diminuto_number_signed(optarg, &svalue) != '\0') {
                 diminuto_perror(optarg);
                 error = !0;
@@ -461,7 +474,7 @@ int main(int argc, char * argv[])
                 } else {
                     line = sline;
                 }
-                if (debug) { fprintf(stderr, "%s (\"%s\" %u 0x%llx)\n", program, (path == (const char *)0) ? "" : path, line, (unsigned long long)flags); }
+                PRINTCONTEXT;
                 if ((fd = diminuto_line_close(fd)) >= 0) {
                     fail = !0;
                 }
@@ -469,7 +482,7 @@ int main(int argc, char * argv[])
             break;
 
         case 'r':
-            if (debug) { fprintf(stderr, "%s -%c\n", program, opt); }
+            PRINTOPTION;
             if (fd < 0) {
                 errno = EBADF;
                 diminuto_perror(sopt);
@@ -482,7 +495,7 @@ int main(int argc, char * argv[])
             break;
 
         case 's':
-            if (debug) { fprintf(stderr, "%s -%c\n", program, opt); }
+            PRINTOPTION;
             state = !0;
             if (fd < 0) {
                 errno = EBADF;
@@ -496,25 +509,23 @@ int main(int argc, char * argv[])
             break;
 
         case 't':
-            if (debug) { fprintf(stderr, "%s -%c\n", program, opt); }
+            PRINTOPTION;
             done = (state == 0);
             break;
 
         case 'u':
-            if (debug) { fprintf(stderr, "%s -%c %s\n", program, opt, optarg); }
+            PRINTNUMERICOPTION;
             if ((*diminuto_number_unsigned(optarg, &uvalue) != '\0')) {
                 diminuto_perror(optarg);
                 error = !0;
             } else {
-                ticks = uvalue;
-                ticks *= diminuto_frequency();
-                ticks /= 1000000;
-                diminuto_delay(ticks, 0);
+                uticks = diminuto_frequency_units2ticks(uvalue, 1000000);
+                diminuto_delay(uticks, 0);
             }
             break;
 
         case 'w':
-            if (debug) { fprintf(stderr, "%s -%c %s\n", program, opt, optarg); }
+            PRINTNUMERICOPTION;
             if (*diminuto_number_unsigned(optarg, &uvalue) != '\0') {
                 diminuto_perror(optarg);
                 error = !0;
@@ -530,12 +541,12 @@ int main(int argc, char * argv[])
             break;
 
         case 'x':
-            if (debug) { fprintf(stderr, "%s -%c\n", program, opt); }
+            PRINTOPTION;
             if (fd >= 0) {
                 errno = EBADF;
                 diminuto_perror(sopt);
                 fail = !0;
-            } else if ((fd = diminuto_line_open(path, line, flags)) < 0) {
+            } else if ((fd = diminuto_line_open_base(path, line, flags, useconds)) < 0) {
                 fail = !0;
             } else {
                 /* Do nothing. */

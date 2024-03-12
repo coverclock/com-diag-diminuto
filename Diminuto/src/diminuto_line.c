@@ -26,7 +26,7 @@
 #include <unistd.h>
 
 /*******************************************************************************
- * PRIVATE GLOBALS
+ * STATICS
  ******************************************************************************/
 
 static pthread_mutex_t mutex = PTHREAD_MUTEX_INITIALIZER;
@@ -101,7 +101,7 @@ char * diminuto_line_parse(char * parameter, int * linep)
  * OPENING, CLOSING
  ******************************************************************************/
 
-int diminuto_line_open_generic(const char * path, const unsigned int line[], size_t lines, uint64_t flags)
+int diminuto_line_open_generic(const char * path, const unsigned int line[], size_t lines, uint64_t flags, uint32_t useconds)
 {
     int result = -1;
     int rc = -1;
@@ -117,7 +117,7 @@ int diminuto_line_open_generic(const char * path, const unsigned int line[], siz
             break;
         }
 
-        if (lines >= countof(request.offsets)) {
+        if (!((0 < lines) && (lines < countof(request.offsets)))) {
             errno = E2BIG;
             diminuto_perror(path);
             break;
@@ -138,12 +138,21 @@ int diminuto_line_open_generic(const char * path, const unsigned int line[], siz
 
         request.num_lines = lines;
 
+        if (useconds > 0) {
+            request.config.num_attrs = 1;
+            for (ii = 0; ii < lines; ++ii) {
+                request.config.attrs[0].mask |= 1ULL << ii;
+            }
+            request.config.attrs[0].attr.id = GPIO_V2_LINE_ATTR_ID_DEBOUNCE;
+            request.config.attrs[0].attr.debounce_period_us = useconds;
+        }
+
+        request.config.flags = flags;
+
         DIMINUTO_CRITICAL_SECTION_BEGIN(&mutex);
             strncpy(request.consumer, consumer, sizeof(request.consumer));
         DIMINUTO_CRITICAL_SECTION_END;
         request.consumer[sizeof(request.consumer) - 1] = '\0';
-
-        request.config.flags = flags;
 
         fd = open(path, 0x0);
         if (fd < 0) {
