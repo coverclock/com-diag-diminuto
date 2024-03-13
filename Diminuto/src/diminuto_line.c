@@ -126,14 +126,13 @@ int diminuto_line_open_generic(const char * path, const unsigned int line[], siz
 
         for (ii = 0; ii < lines; ++ii) {
             if (line[ii] >= widthof(uint64_t)) {
-                errno = ERANGE;
-                diminuto_perror(path);
                 break;
-            } else {
-                request.offsets[ii] = line[ii];
             }
+            request.offsets[ii] = line[ii];
         }
         if (ii != lines) {
+            errno = ERANGE;
+            diminuto_perror(path);
             break;
         }
 
@@ -235,7 +234,7 @@ int diminuto_line_get(int fd)
 
     do {
 
-        rc = diminuto_line_get_generic(fd, 1, &bits);
+        rc = diminuto_line_get_generic(fd, 0x1, &bits);
         if (rc < 0) {
             break;
         }
@@ -288,7 +287,7 @@ int diminuto_line_put(int fd, int bit)
 
         bits = !!bit;
 
-        rc = diminuto_line_put_generic(fd, 1, bits);
+        rc = diminuto_line_put_generic(fd, 0x1, bits);
         if (rc < 0) {
             break;
         }

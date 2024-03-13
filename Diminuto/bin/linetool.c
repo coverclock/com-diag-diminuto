@@ -29,22 +29,25 @@
  *
  * N.B. How a particularly GPIO line may be configured and what operations
  * may be performed on it depends on the underlying hardware and how its device
- * driver is implemented and configured.
+ * driver is implemented and configured. (I've used GPIO controllers on
+ * ARM-based SOCs that had remarkably broad and versatile capabilities, like
+ * supporting configuration of internal pull-up resisters with no external
+ * hardware, but this won't be the case on all platforms.)
  *
  * The utility strace(1) was useful when testing this.
  */
 
 #include "com/diag/diminuto/diminuto_line.h"
+#include "com/diag/diminuto/diminuto_cue.h"
+#include "com/diag/diminuto/diminuto_core.h"
+#include "com/diag/diminuto/diminuto_daemon.h"
+#include "com/diag/diminuto/diminuto_delay.h"
+#include "com/diag/diminuto/diminuto_error.h"
+#include "com/diag/diminuto/diminuto_frequency.h"
+#include "com/diag/diminuto/diminuto_minmaxof.h"
+#include "com/diag/diminuto/diminuto_mux.h"
 #include "com/diag/diminuto/diminuto_number.h"
 #include "com/diag/diminuto/diminuto_string.h"
-#include "com/diag/diminuto/diminuto_delay.h"
-#include "com/diag/diminuto/diminuto_frequency.h"
-#include "com/diag/diminuto/diminuto_mux.h"
-#include "com/diag/diminuto/diminuto_poll.h"
-#include "com/diag/diminuto/diminuto_cue.h"
-#include "com/diag/diminuto/diminuto_daemon.h"
-#include "com/diag/diminuto/diminuto_error.h"
-#include "com/diag/diminuto/diminuto_minmaxof.h"
 #include <stdio.h>
 #include <errno.h>
 #include <unistd.h>
@@ -67,6 +70,8 @@
 #define PRINTEDGE (debug ? fprintf(stderr, "%s [%d] <%d>\n", program, (int)pid, edge) : 0)
 
 #define PRINTSTATE (debug ? fprintf(stderr, "%s [%d] (%d)\n", program, (int)pid, state) : 0)
+
+#define PRINTEXIT (debug ? fprintf(stderr, "%s [%d] %d\n", program, (int)pid, xc) : 0)
 
 /*******************************************************************************
  * STATICS
@@ -147,8 +152,8 @@ int main(int argc, char * argv[])
     int unique = 0;
     int state = 0;
     int prior = 0;
-    int active = 0;
     int edge = 0;
+    int effective = 0;
     int sline = -1;
     int fd = -1;
     int ready = -1;
@@ -169,6 +174,8 @@ int main(int argc, char * argv[])
     char buffer[1024] = { '\0' };
     int opt = '\0';
     extern char * optarg;
+
+    (void)diminuto_core_enable();
 
     program = ((program = strrchr(argv[0], '/')) == (char *)0) ? argv[0] : program + 1;
 
@@ -324,9 +331,6 @@ int main(int argc, char * argv[])
                     fflush(stdout);
                 }
             }
-            if (fail) {
-                break;
-            }
             break;
 
         case 'c':
@@ -387,11 +391,19 @@ int main(int argc, char * argv[])
                 diminuto_perror(optarg);
                 error = !0;
                 break;
+            } else if (svalue > 0) {
+                sticks = diminuto_frequency_units2ticks(svalue, 1000000);
+            } else {
+                /* Do nothing: 0 == poll, <0 == blocking. */
             }
-            sticks = diminuto_frequency_units2ticks(svalue, 1000000);
             if (fd < 0) {
                 errno = EBADF;
                 diminuto_perror(sopt);
+                fail = !0;
+                break;
+            }
+            diminuto_mux_init(&mux);
+            if (diminuto_mux_register_read(&mux, fd) < 0) {
                 fail = !0;
                 break;
             }
@@ -408,83 +420,61 @@ int main(int argc, char * argv[])
                 fflush(stdout);
                 prior = state;
             }
-            diminuto_mux_init(&mux);
-            if (diminuto_mux_register_interrupt(&mux, fd) < 0) {
-                fail = !0;
-                break;
-            }
             while (!0) {
+fprintf(stderr, "WAITING %lld\n", (long long)sticks);
                 if ((nfds = diminuto_mux_wait(&mux, sticks)) < 0) {
                     fail = !0;
                     break;
-                }
-                if (nfds > 0) {
-                    while (!0) {
-                        if ((ready = diminuto_mux_ready_read(&mux)) < 0) {
-                            fail = !0;
-                            break;
-                        } else if (ready != fd) {
-                            errno = EBADF;
-                            diminuto_perror("diminuto_mux_ready_read");
-                            fail = !0;
-                            break;
-                        } else if ((edge = diminuto_line_read(fd)) == 0) {
-                            fail = !0;
-                            break;
-                        } else {
-                            PRINTEDGE;
-                            state = (edge < 0) ? 0 /* FALLING */ : !0 /* RISING */;
-                            active = (!unique) || (prior < 0) || (prior != state);
-                            if (!active) {
-                                /* Do nothing. */
-                            } else if (command != (const char *)0) {
-                                snprintf(buffer, sizeof(buffer), "%s %s %u %d %d", command, path, line, state, prior);
-                                buffer[sizeof(buffer) - 1] = '\0';
-                                rc = diminuto_system(buffer);
-                                if (rc < 0) {
-                                    fail = !0;
-                                    break;
-                                }
-                            } else {
-                                PRINTSTATE;
-                                printf("%d\n", state);
-                                fflush(stdout);
-                            }
-                            prior = state;
-                        }
-                    }
-                    if (fail) {
-                        break;
-                    }
-                } else if ((state = diminuto_line_get(fd)) < 0) {
-                    fail = !0;
-                    break;
+                } else if (nfds == 0) {
+                    diminuto_yield();
+                    continue;
                 } else {
-                    state = !!state;
-                    active = (!unique) || (prior < 0) || (prior != state);
-                    if (!active) {
-                        /* Do nothing. */
-                    } else if (command != (const char *)0) {
-                        snprintf(buffer, sizeof(buffer), "%s %s %d %d %d", command,path, line, state, prior);
-                        buffer[sizeof(buffer) - 1] = '\0';
-                        rc = diminuto_system(buffer);
-                        if (rc < 0) {
-                            fail = !0;
-                            break;
-                        }
+                    /* Do nothing. */
+                }
+fprintf(stderr, "WAITED %d\n", nfds);
+                while (!0) {
+fprintf(stderr, "READY\n");
+                    if ((ready = diminuto_mux_ready_read(&mux)) < 0) {
+                        fail = !0;
+                        break;
+                    } else if (ready != fd) {
+                        errno = EBADF;
+                        diminuto_perror("diminuto_mux_ready_read");
+                        fail = !0;
+                        break;
+                    } else if ((edge = diminuto_line_read(fd)) == 0) {
+                        fail = !0;
+                        break;
                     } else {
-                        PRINTSTATE;
-                        printf("%d\n", state);
-                        fflush(stdout);
+                        PRINTEDGE;
+                        state = (edge < 0) ? 0 /* FALLING */ : !0 /* RISING */;
+                        effective = (!unique) || (prior < 0) || (prior != state);
+fprintf(stderr, "FD %d EDGE %d STATE %d EFFECTIVE %d\n", fd, edge, state, effective);
+                        if (!effective) {
+                            /* Do nothing. */
+                        } else if (command != (const char *)0) {
+                            snprintf(buffer, sizeof(buffer), "%s %s %u %d %d", command, path, line, state, prior);
+                            buffer[sizeof(buffer) - 1] = '\0';
+                            rc = diminuto_system(buffer);
+                            if (rc < 0) {
+                                fail = !0;
+                                break;
+                            }
+                        } else {
+fprintf(stderr, "STATE %d\n", state);
+                            PRINTSTATE;
+                            printf("%d\n", state);
+                            fflush(stdout);
+                        }
+                        prior = state;
                     }
-                    prior = state;
+                }
+                if (fail) {
+                    break;
                 }
             }
-            if (diminuto_mux_unregister_interrupt(&mux, fd) < 0) {
+            if (diminuto_mux_unregister_read(&mux, fd) < 0) {
                 fail = !0;
-            }
-            if (fail) {
-                break;
             }
             break;
 
@@ -560,7 +550,7 @@ int main(int argc, char * argv[])
 
         case 't':
             PRINTOPTION;
-            done = (state == 0);
+            done = !state;
             break;
 
         case 'u':
@@ -632,6 +622,8 @@ int main(int argc, char * argv[])
     }
 
     (void)diminuto_line_close(fd);
+
+    PRINTEXIT;
 
     return xc;
 }
