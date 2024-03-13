@@ -47,6 +47,7 @@
 #include "com/diag/diminuto/diminuto_minmaxof.h"
 #include "com/diag/diminuto/diminuto_mux.h"
 #include "com/diag/diminuto/diminuto_number.h"
+#include "com/diag/diminuto/diminuto_pipe.h"
 #include "com/diag/diminuto/diminuto_string.h"
 #include <stdio.h>
 #include <errno.h>
@@ -421,56 +422,45 @@ int main(int argc, char * argv[])
                 prior = state;
             }
             while (!0) {
-fprintf(stderr, "WAITING %lld\n", (long long)sticks);
                 if ((nfds = diminuto_mux_wait(&mux, sticks)) < 0) {
                     fail = !0;
                     break;
                 } else if (nfds == 0) {
                     diminuto_yield();
                     continue;
-                } else {
-                    /* Do nothing. */
-                }
-fprintf(stderr, "WAITED %d\n", nfds);
-                while (!0) {
-fprintf(stderr, "READY\n");
-                    if ((ready = diminuto_mux_ready_read(&mux)) < 0) {
-                        fail = !0;
-                        break;
-                    } else if (ready != fd) {
-                        errno = EBADF;
-                        diminuto_perror("diminuto_mux_ready_read");
-                        fail = !0;
-                        break;
-                    } else if ((edge = diminuto_line_read(fd)) == 0) {
-                        fail = !0;
-                        break;
-                    } else {
-                        PRINTEDGE;
-                        state = (edge < 0) ? 0 /* FALLING */ : !0 /* RISING */;
-                        effective = (!unique) || (prior < 0) || (prior != state);
-fprintf(stderr, "FD %d EDGE %d STATE %d EFFECTIVE %d\n", fd, edge, state, effective);
-                        if (!effective) {
-                            /* Do nothing. */
-                        } else if (command != (const char *)0) {
-                            snprintf(buffer, sizeof(buffer), "%s %s %u %d %d", command, path, line, state, prior);
-                            buffer[sizeof(buffer) - 1] = '\0';
-                            rc = diminuto_system(buffer);
-                            if (rc < 0) {
-                                fail = !0;
-                                break;
-                            }
-                        } else {
-fprintf(stderr, "STATE %d\n", state);
-                            PRINTSTATE;
-                            printf("%d\n", state);
-                            fflush(stdout);
-                        }
-                        prior = state;
-                    }
-                }
-                if (fail) {
+                } else if ((ready = diminuto_mux_ready_read(&mux)) < 0) {
+                    errno = ENOENT;
+                    diminuto_perror("diminuto_mux_ready_read");
+                    fail = !0;
                     break;
+                } else if (ready != fd) {
+                    errno = EBADF;
+                    diminuto_perror("diminuto_mux_ready_read");
+                    fail = !0;
+                    break;
+                } else if ((edge = diminuto_line_read(fd)) < 0) {
+                    fail = !0;
+                    break;
+                } else {
+                    PRINTEDGE;
+                    state = !!edge;
+                    effective = (!unique) || (prior < 0) || (prior != state);
+                    if (!effective) {
+                        diminuto_yield();
+                    } else if (command != (const char *)0) {
+                        snprintf(buffer, sizeof(buffer), "%s %s %u %d %d", command, path, line, state, prior);
+                        buffer[sizeof(buffer) - 1] = '\0';
+                        rc = diminuto_system(buffer);
+                        if (rc < 0) {
+                            fail = !0;
+                            break;
+                        }
+                    } else {
+                        PRINTSTATE;
+                        printf("%d\n", state);
+                        fflush(stdout);
+                    }
+                    prior = state;
                 }
             }
             if (diminuto_mux_unregister_read(&mux, fd) < 0) {

@@ -305,7 +305,7 @@ int diminuto_line_put(int fd, int bit)
 
 int diminuto_line_read(int fd)
 {
-    int result = 0;
+    int result = -1;
     ssize_t rc = -1;
     struct gpio_v2_line_event event = { 0, };
 
@@ -332,7 +332,7 @@ int diminuto_line_read(int fd)
             result = 1;
             break;
         case GPIO_V2_LINE_EVENT_FALLING_EDGE:
-            result = -1;
+            result = 0;
             break;
         default:
             errno = ERANGE;
@@ -341,10 +341,6 @@ int diminuto_line_read(int fd)
         }
 
     } while (0);
-
-    /*
-     * N.B. a return of zero is an error.
-     */
 
     return result;
 }
