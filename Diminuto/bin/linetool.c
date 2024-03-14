@@ -38,6 +38,7 @@
  */
 
 #include "com/diag/diminuto/diminuto_line.h"
+#include "com/diag/diminuto/diminuto_assert.h"
 #include "com/diag/diminuto/diminuto_cue.h"
 #include "com/diag/diminuto/diminuto_core.h"
 #include "com/diag/diminuto/diminuto_daemon.h"
@@ -49,30 +50,34 @@
 #include "com/diag/diminuto/diminuto_number.h"
 #include "com/diag/diminuto/diminuto_pipe.h"
 #include "com/diag/diminuto/diminuto_string.h"
-#include <stdio.h>
 #include <errno.h>
-#include <unistd.h>
+#include <signal.h>
 #include <stdio.h>
+#include <unistd.h>
 
 /*******************************************************************************
  * CODE GENERATORS
  ******************************************************************************/
 
-#define PRINTOPTION (debug ? fprintf(stderr, "%s [%d] -%c\n", program, (int)pid, opt) : 0)
+#define DEBUGOPTION (debug ? fprintf(stderr, "%s [%d] -%c\n", program, (int)pid, opt) : 0)
 
-#define PRINTSTRINGOPTION (debug ? fprintf(stderr, "%s [%d] -%c \"%s\"\n", program, (int)pid, opt, optarg) : 0)
+#define DEBUGSTRINGOPTION (debug ? fprintf(stderr, "%s [%d] -%c \"%s\"\n", program, (int)pid, opt, optarg) : 0)
 
-#define PRINTNUMERICOPTION (debug ? fprintf(stderr, "%s [%d] -%c %s\n", program, (int)pid, opt, optarg) : 0)
+#define DEBUGNUMERICOPTION (debug ? fprintf(stderr, "%s [%d] -%c %s\n", program, (int)pid, opt, optarg) : 0)
 
-#define PRINTCONTEXT (debug ? fprintf(stderr, "%s [%d] { \"%s\" %u 0x%llx %u }\n", program, (int)pid, (path == (const char *)0) ? "" : path, line, (unsigned long long)flags, useconds) : 0)
+#define DEBUGCONTEXT (debug ? fprintf(stderr, "%s [%d] { \"%s\" %u 0x%llx %u }\n", program, (int)pid, (path == (const char *)0) ? "" : path, line, (unsigned long long)flags, useconds) : 0)
 
 #define CLEARCONTEXT do { path = (const char *)0; line = maximumof(typeof(line)); flags = 0x0; useconds = 0; } while (0)
 
-#define PRINTEDGE (debug ? fprintf(stderr, "%s [%d] <%d>\n", program, (int)pid, edge) : 0)
+#define DEBUGEDGE (debug ? fprintf(stderr, "%s [%d] <%d>\n", program, (int)pid, edge) : 0)
 
-#define PRINTSTATE (debug ? fprintf(stderr, "%s [%d] (%d)\n", program, (int)pid, state) : 0)
+#define DEBUGSTATE (debug ? fprintf(stderr, "%s [%d] (%d)\n", program, (int)pid, state) : 0)
 
-#define PRINTEXIT (debug ? fprintf(stderr, "%s [%d] %d\n", program, (int)pid, xc) : 0)
+#define DEBUGWAIT (debug ? fprintf(stderr, "%s [%d] ?\n", program, (int)pid) : 0)
+
+#define DEBUGPIPE (debug ? fprintf(stderr, "%s [%d] %d!\n", program, (int)pid, SIGPIPE) : 0)
+
+#define DEBUGEXIT (debug ? fprintf(stderr, "%s [%d] %d %d %d %d\n", program, (int)pid, error, fail, done, xc) : 0)
 
 /*******************************************************************************
  * STATICS
@@ -160,10 +165,6 @@ int main(int argc, char * argv[])
     int ready = -1;
     int nfds = 0;
     int rc = -1;
-    const char * path = (const char *)0; /* Context. */
-    diminuto_line_offset_t line = maximumof(diminuto_line_offset_t); /* Context. */
-    diminuto_line_bits_t flags = 0x0; /* Context. */
-    diminuto_line_duration_t useconds = 0; /* Context. */
     const char * command = (const char *)0;
     diminuto_unsigned_t uvalue = 0;
     diminuto_signed_t svalue = -1;
@@ -175,16 +176,32 @@ int main(int argc, char * argv[])
     char buffer[1024] = { '\0' };
     int opt = '\0';
     extern char * optarg;
+    /* CONTEXT BEGIN */
+    const char * path = (const char *)0;
+    diminuto_line_offset_t line = maximumof(diminuto_line_offset_t);
+    diminuto_line_bits_t flags = 0x0;
+    diminuto_line_duration_t useconds = 0;
+    /* CONTEXT END */
 
-    (void)diminuto_core_enable();
+    rc = diminuto_core_enable();
+    diminuto_contract(rc >= 0);
 
     program = ((program = strrchr(argv[0], '/')) == (char *)0) ? argv[0] : program + 1;
 
     pid = getpid();
 
+    rc = diminuto_pipe_install(0);
+    diminuto_contract(rc >= 0);
+
     (void)diminuto_line_consumer(__FILE__);
 
     while ((opt = getopt(argc, argv, OPTIONS)) >= 0) {
+
+        if (diminuto_pipe_check()) {
+            DEBUGPIPE;
+            done = !0;
+            break;
+        }
 
         sopt[0] = opt;
 
@@ -194,46 +211,46 @@ int main(int argc, char * argv[])
         switch (opt) {
 
         case '1':
-            PRINTOPTION;
+            DEBUGOPTION;
             first = !0;
             break;
 
         case 'B':
-            PRINTOPTION;
+            DEBUGOPTION;
             flags |= DIMINUTO_LINE_FLAG_EDGE_RISING;
             flags |= DIMINUTO_LINE_FLAG_EDGE_FALLING;
-            PRINTCONTEXT;
+            DEBUGCONTEXT;
             break;
 
         case 'D':
-            PRINTSTRINGOPTION;
+            DEBUGSTRINGOPTION;
             path = optarg;
-            PRINTCONTEXT;
+            DEBUGCONTEXT;
             if ((fd = diminuto_line_close(fd)) >= 0) {
                 fail = !0;
             }
             break;
 
         case 'F':
-            PRINTOPTION;
+            DEBUGOPTION;
             flags |= DIMINUTO_LINE_FLAG_EDGE_FALLING;
-            PRINTCONTEXT;
+            DEBUGCONTEXT;
             break;
 
         case 'H':
-            PRINTOPTION;
+            DEBUGOPTION;
             flags &= ~DIMINUTO_LINE_FLAG_ACTIVE_LOW;
-            PRINTCONTEXT;
+            DEBUGCONTEXT;
             break;
 
         case 'L':
-            PRINTOPTION;
+            DEBUGOPTION;
             flags |= DIMINUTO_LINE_FLAG_ACTIVE_LOW;
-            PRINTCONTEXT;
+            DEBUGCONTEXT;
             break;
 
         case 'M':
-            PRINTNUMERICOPTION;
+            DEBUGNUMERICOPTION;
             if ((*diminuto_number_unsigned(optarg, &uvalue) != '\0')) {
                 diminuto_perror(optarg);
                 error = !0;
@@ -243,19 +260,19 @@ int main(int argc, char * argv[])
                 error = !0;
             } else {
                 useconds = uvalue;
-                PRINTCONTEXT;
+                DEBUGCONTEXT;
             }
             break;
 
         case 'N':
-            PRINTOPTION;
+            DEBUGOPTION;
             flags &= ~DIMINUTO_LINE_FLAG_EDGE_RISING;
             flags &= ~DIMINUTO_LINE_FLAG_EDGE_FALLING;
-            PRINTCONTEXT;
+            DEBUGCONTEXT;
             break;
 
         case 'P':
-            PRINTSTRINGOPTION;
+            DEBUGSTRINGOPTION;
             path = diminuto_line_parse(optarg, &sline);
             if (path == (const char *)0) {
                 break;
@@ -266,20 +283,20 @@ int main(int argc, char * argv[])
             } else {
                 line = sline;
             }
-            PRINTCONTEXT;
+            DEBUGCONTEXT;
             if ((fd = diminuto_line_close(fd)) >= 0) {
                 fail = !0;
             }
             break;
 
         case 'R':
-            PRINTOPTION;
+            DEBUGOPTION;
             flags |= DIMINUTO_LINE_FLAG_EDGE_RISING;
-            PRINTCONTEXT;
+            DEBUGCONTEXT;
             break;
 
         case 'S':
-            PRINTOPTION;
+            DEBUGOPTION;
             rc = diminuto_daemon(program);
             if (rc < 0) {
                 fail = !0;
@@ -287,17 +304,17 @@ int main(int argc, char * argv[])
             break;
 
         case 'U':
-            PRINTOPTION;
+            DEBUGOPTION;
             unique = !0;
             break;
 
         case 'X':
-            PRINTSTRINGOPTION;
+            DEBUGSTRINGOPTION;
             command = optarg;
             break;
 
         case 'b':
-            PRINTNUMERICOPTION;
+            DEBUGNUMERICOPTION;
             if ((*diminuto_number_unsigned(optarg, &uvalue) != '\0')) {
                 diminuto_perror(optarg);
                 error = !0;
@@ -314,11 +331,16 @@ int main(int argc, char * argv[])
                 fail = !0;
                 break;
             }
-            PRINTSTATE;
+            DEBUGSTATE;
             printf("%d\n", state);
             fflush(stdout);
             diminuto_cue_init(&cue, state);
             while (!0) {
+                if (diminuto_pipe_check()) {
+                    DEBUGPIPE;
+                    done = !0;
+                    break;
+                }
                 prior = state;
                 diminuto_delay(uticks, 0);
                 if ((state = diminuto_line_get(fd)) < 0) {
@@ -327,7 +349,7 @@ int main(int argc, char * argv[])
                 }
                 state = diminuto_cue_debounce(&cue, !!state);
                 if (state != prior) {
-                    PRINTSTATE;
+                    DEBUGSTATE;
                     printf("%d\n", state);
                     fflush(stdout);
                 }
@@ -335,7 +357,7 @@ int main(int argc, char * argv[])
             break;
 
         case 'c':
-            PRINTOPTION;
+            DEBUGOPTION;
             if (fd < 0) {
                 errno = EBADF;
                 diminuto_perror(sopt);
@@ -344,50 +366,54 @@ int main(int argc, char * argv[])
                 fail = !0;
             } else {
                 state = 0;
-                PRINTSTATE;
+                DEBUGSTATE;
             }
             break;
 
         case 'd':
             debug = !0;
-            PRINTOPTION;
-            PRINTCONTEXT;
+            DEBUGOPTION;
+            DEBUGCONTEXT;
+            {
+                extern int diminuto_pipe_debug;
+                diminuto_pipe_debug = !0;
+            }
             break;
 
         case 'e':
-            PRINTOPTION;
+            DEBUGOPTION;
             if ((fd = diminuto_line_close(fd)) >= 0) {
                 fail = !0;
             }
             break;
 
         case 'f':
-            PRINTOPTION;
+            DEBUGOPTION;
             done = !!state;
             break;
 
         case 'h':
-            PRINTOPTION;
+            DEBUGOPTION;
             flags = DIMINUTO_LINE_FLAG_OUTPUT;
             flags &= ~DIMINUTO_LINE_FLAG_ACTIVE_LOW;
-            PRINTCONTEXT;
+            DEBUGCONTEXT;
             break;
 
         case 'i':
-            PRINTOPTION;
+            DEBUGOPTION;
             flags |= DIMINUTO_LINE_FLAG_INPUT;
-            PRINTCONTEXT;
+            DEBUGCONTEXT;
             break;
 
         case 'l':
-            PRINTOPTION;
+            DEBUGOPTION;
             flags = DIMINUTO_LINE_FLAG_OUTPUT;
             flags |= DIMINUTO_LINE_FLAG_ACTIVE_LOW;
-            PRINTCONTEXT;
+            DEBUGCONTEXT;
             break;
 
         case 'm':
-            PRINTNUMERICOPTION;
+            DEBUGNUMERICOPTION;
             if ((*diminuto_number_signed(optarg, &svalue) != '\0')) {
                 diminuto_perror(optarg);
                 error = !0;
@@ -416,33 +442,49 @@ int main(int argc, char * argv[])
                 break;
             } else {
                 state = !!state;
-                PRINTSTATE;
+                DEBUGSTATE;
                 printf("%d\n", state);
                 fflush(stdout);
                 prior = state;
             }
             while (!0) {
-                if ((nfds = diminuto_mux_wait(&mux, sticks)) < 0) {
-                    fail = !0;
+                DEBUGWAIT;
+                if (diminuto_pipe_check()) {
+                    DEBUGPIPE;
+                    done = !0;
                     break;
+                } else if ((nfds = diminuto_mux_wait(&mux, sticks)) < 0) {
+                    if (errno == EINTR) {
+                        /* SIGPIPE presumably. */
+                        diminuto_yield();
+                        continue;
+                    } else {
+                        fail = !0;
+                        break;
+                    }
                 } else if (nfds == 0) {
+                    /* Timeout presumably. */
                     diminuto_yield();
                     continue;
                 } else if ((ready = diminuto_mux_ready_read(&mux)) < 0) {
+                    fail = !0;
+                    break;
+                } else if (ready != fd) {
                     errno = ENOENT;
                     diminuto_perror("diminuto_mux_ready_read");
                     fail = !0;
                     break;
-                } else if (ready != fd) {
-                    errno = EBADF;
-                    diminuto_perror("diminuto_mux_ready_read");
-                    fail = !0;
-                    break;
                 } else if ((edge = diminuto_line_read(fd)) < 0) {
-                    fail = !0;
-                    break;
+                    if (errno == EINTR) {
+                        /* SIGPIPE presumably. */
+                        diminuto_yield();
+                        continue;
+                    } else {
+                        fail = !0;
+                        break;
+                    }
                 } else {
-                    PRINTEDGE;
+                    DEBUGEDGE;
                     state = !!edge;
                     effective = (!unique) || (prior < 0) || (prior != state);
                     if (!effective) {
@@ -456,7 +498,7 @@ int main(int argc, char * argv[])
                             break;
                         }
                     } else {
-                        PRINTSTATE;
+                        DEBUGSTATE;
                         printf("%d\n", state);
                         fflush(stdout);
                     }
@@ -469,9 +511,9 @@ int main(int argc, char * argv[])
             break;
 
         case 'n':
-            PRINTOPTION;
+            DEBUGOPTION;
             CLEARCONTEXT;
-            PRINTCONTEXT;
+            DEBUGCONTEXT;
             /*
              * It is not an error to close a closed line.
              */
@@ -481,13 +523,13 @@ int main(int argc, char * argv[])
             break;
 
         case 'o':
-            PRINTOPTION;
+            DEBUGOPTION;
             flags |= DIMINUTO_LINE_FLAG_OUTPUT;
-            PRINTCONTEXT;
+            DEBUGCONTEXT;
             break;
 
         case 'p':
-            PRINTNUMERICOPTION;
+            DEBUGNUMERICOPTION;
             if (*diminuto_number_signed(optarg, &svalue) != '\0') {
                 diminuto_perror(optarg);
                 error = !0;
@@ -503,7 +545,7 @@ int main(int argc, char * argv[])
                 } else {
                     line = sline;
                 }
-                PRINTCONTEXT;
+                DEBUGCONTEXT;
                 if ((fd = diminuto_line_close(fd)) >= 0) {
                     fail = !0;
                 }
@@ -511,7 +553,7 @@ int main(int argc, char * argv[])
             break;
 
         case 'r':
-            PRINTOPTION;
+            DEBUGOPTION;
             if (fd < 0) {
                 errno = EBADF;
                 diminuto_perror(sopt);
@@ -519,13 +561,13 @@ int main(int argc, char * argv[])
             } else if ((state = diminuto_line_get(fd)) < 0) {
                 fail = !0;
             } else {
-                PRINTSTATE;
+                DEBUGSTATE;
                 printf("%d\n", state);
             }
             break;
 
         case 's':
-            PRINTOPTION;
+            DEBUGOPTION;
             if (fd < 0) {
                 errno = EBADF;
                 diminuto_perror(sopt);
@@ -534,17 +576,17 @@ int main(int argc, char * argv[])
                 fail = !0;
             } else {
                 state = !0;
-                PRINTSTATE;
+                DEBUGSTATE;
             }
             break;
 
         case 't':
-            PRINTOPTION;
+            DEBUGOPTION;
             done = !state;
             break;
 
         case 'u':
-            PRINTNUMERICOPTION;
+            DEBUGNUMERICOPTION;
             if ((*diminuto_number_unsigned(optarg, &uvalue) != '\0')) {
                 diminuto_perror(optarg);
                 error = !0;
@@ -555,7 +597,7 @@ int main(int argc, char * argv[])
             break;
 
         case 'w':
-            PRINTNUMERICOPTION;
+            DEBUGNUMERICOPTION;
             if (*diminuto_number_unsigned(optarg, &uvalue) != '\0') {
                 diminuto_perror(optarg);
                 error = !0;
@@ -567,12 +609,12 @@ int main(int argc, char * argv[])
                 fail = !0;
             } else {
                 state = uvalue;
-                PRINTSTATE;
+                DEBUGSTATE;
             }
             break;
 
         case 'x':
-            PRINTOPTION;
+            DEBUGOPTION;
             if (fd >= 0) {
                 errno = EBADF;
                 diminuto_perror(sopt);
@@ -613,7 +655,7 @@ int main(int argc, char * argv[])
 
     (void)diminuto_line_close(fd);
 
-    PRINTEXIT;
+    DEBUGEXIT;
 
     return xc;
 }

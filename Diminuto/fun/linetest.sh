@@ -106,6 +106,7 @@ linetool ${DEBUG} -D ${HARDWARE_TEST_FIXTURE_DEVICE} -p ${HARDWARE_TEST_FIXTURE_
 	PIN22=$(linetool ${DEBUG} -D ${HARDWARE_TEST_FIXTURE_DEVICE} -p ${HARDWARE_TEST_FIXTURE_PIN_BUT_LOW} -i -L -x -r)
 echo PIN22=${PIN22} PIN27=${PIN27} 1>&2
 	if [[ ${PIN22} -ne 0 ]]; then
+echo BAILING 1>&2
 		break
 	elif [[ ${PIN27} -ne 0 ]]; then
 		VALUE=$((${VALUE} + 1))
@@ -122,6 +123,7 @@ echo PIN22=${PIN22} PIN27=${PIN27} 1>&2
 		:
 	fi
 done
+echo BAILED 1>&2
 
 linetool ${DEBUG} -D ${HARDWARE_TEST_FIXTURE_DEVICE} -p ${HARDWARE_TEST_FIXTURE_PIN_LED_1} -o -x -c
 linetool ${DEBUG} -D ${HARDWARE_TEST_FIXTURE_DEVICE} -p ${HARDWARE_TEST_FIXTURE_PIN_LED_2} -o -x -c

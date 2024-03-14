@@ -324,20 +324,18 @@ int diminuto_line_read(int fd)
             diminuto_perror("diminuto_line_read");
             break;
         } else {
-            /* Do nothing. */
-        }
-
-        switch (event.id) {
-        case GPIO_V2_LINE_EVENT_RISING_EDGE:
-            result = 1;
-            break;
-        case GPIO_V2_LINE_EVENT_FALLING_EDGE:
-            result = 0;
-            break;
-        default:
-            errno = ERANGE;
-            diminuto_perror("diminuto_line_read");
-            break;
+            switch (event.id) {
+            case GPIO_V2_LINE_EVENT_RISING_EDGE:
+                result = 1;
+                break;
+            case GPIO_V2_LINE_EVENT_FALLING_EDGE:
+                result = 0;
+                break;
+            default:
+                errno = ERANGE;
+                diminuto_perror("diminuto_line_read");
+                break;
+            }
         }
 
     } while (0);
