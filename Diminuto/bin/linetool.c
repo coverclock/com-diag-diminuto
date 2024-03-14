@@ -190,6 +190,12 @@ int main(int argc, char * argv[])
 
     pid = getpid();
 
+    /*
+     * The SIGPIPE is not received until the application tries to
+     * write to the orphaned pipe. This doesn't for -b until the
+     * debounced state changes from its prior value, and not for -m
+     * until the driver indicates a new event.
+     */
     rc = diminuto_pipe_install(0);
     diminuto_contract(rc >= 0);
 
