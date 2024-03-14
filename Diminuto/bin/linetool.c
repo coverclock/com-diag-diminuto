@@ -107,19 +107,19 @@ static const char USAGE[] = "[ -d ] "
 static void usage(const char * program)
 {
     fprintf(stderr, "usage: %s %s\n", program, USAGE);
-    fprintf(stderr, "       -1              Read LINE initially when multiplexing.\n");
+    fprintf(stderr, "       -1              Read LINE initially for -m.\n");
     fprintf(stderr, "       -B              Configure LINE edge to both.\n");
     fprintf(stderr, "       -D DEVICE       Close and configure context to DEVICE.\n");
     fprintf(stderr, "       -F              Configure context edge to falling.\n");
     fprintf(stderr, "       -H              Configure context active to high.\n");
     fprintf(stderr, "       -L              Configure context active to low.\n");
-    fprintf(stderr, "       -M USECONDS     Configure context debounce to USECONDS.\n");
+    fprintf(stderr, "       -M USECONDS     Configure context debounce period to USECONDS for -m.\n");
     fprintf(stderr, "       -N              Configure context edge to none.\n");
     fprintf(stderr, "       -P DEVICE:LINE  Close and configure context to DEVICE:LINE.\n");
     fprintf(stderr, "       -R              Configure context edge to rising.\n");
     fprintf(stderr, "       -S              Daemonize.\n");
-    fprintf(stderr, "       -U              Filter out non-unique edge changes.\n");
-    fprintf(stderr, "       -X COMMAND      Execute COMMAND DEVICE LINE STATE PRIOR in shell when multiplexed edge changes.\n");
+    fprintf(stderr, "       -U              Filter non-unique LINE changes for for -m.\n");
+    fprintf(stderr, "       -X COMMAND      Execute COMMAND DEVICE LINE STATE PRIOR in shell for -m.\n");
     fprintf(stderr, "       -b              Poll with software debounce.\n");
     fprintf(stderr, "       -c              Clear LINE by writing 0.\n");
     fprintf(stderr, "       -d              Enable debug mode.\n");
@@ -340,6 +340,7 @@ int main(int argc, char * argv[])
             DEBUGSTATE;
             printf("%d\n", state);
             fflush(stdout);
+            prior = state;
             diminuto_cue_init(&cue, state);
             while (!0) {
                 if (diminuto_pipe_check()) {
@@ -347,7 +348,6 @@ int main(int argc, char * argv[])
                     done = !0;
                     break;
                 }
-                prior = state;
                 diminuto_delay(uticks, 0);
                 if ((state = diminuto_line_get(fd)) < 0) {
                     fail = !0;
@@ -358,6 +358,7 @@ int main(int argc, char * argv[])
                     DEBUGSTATE;
                     printf("%d\n", state);
                     fflush(stdout);
+                    prior = state;
                 }
             }
             break;
@@ -440,9 +441,8 @@ int main(int argc, char * argv[])
                 fail = !0;
                 break;
             }
-            prior = -1;
             if (!first) {
-                /* Do nothing. */
+                prior = -1;
             } else if ((state = diminuto_line_get(fd)) < 0) {
                 fail = !0;
                 break;
@@ -494,7 +494,7 @@ int main(int argc, char * argv[])
                     state = !!edge;
                     effective = (!unique) || (prior < 0) || (prior != state);
                     if (!effective) {
-                        diminuto_yield();
+                        /* Do nothing. */
                     } else if (command != (const char *)0) {
                         snprintf(buffer, sizeof(buffer), "%s %s %u %d %d", command, path, line, state, prior);
                         buffer[sizeof(buffer) - 1] = '\0';

@@ -10,7 +10,7 @@ DEBUG=$1
 . $(readlink -e $(dirname ${0})/../bin)/setup
 . $(readlink -e $(dirname ${0})/../fun)/hardware_test_fixture
 
-linetool ${DEBUG} -D ${HARDWARE_TEST_FIXTURE_DEVICE} -p ${HARDWARE_TEST_FIXTURE_PIN_BUT_HIGH} -i -H -R -x -1 -b ${HARDWARE_TEST_FIXTURE_DEBOUNCE_LIB_USEC} | while read VALUE; do
+linetool ${DEBUG} -D ${HARDWARE_TEST_FIXTURE_DEVICE} -p ${HARDWARE_TEST_FIXTURE_PIN_BUT_HIGH} -i -H -R -x -1 -U -b ${HARDWARE_TEST_FIXTURE_DEBOUNCE_LIB_USEC} | while read VALUE; do
     echo ${PROGRAM} $$ ${VALUE} 1>&2
     break
 done
