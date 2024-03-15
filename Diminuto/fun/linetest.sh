@@ -13,6 +13,14 @@
 # displayed on the LEDs, or press the button pn line 22 simultaneously
 # with line 27 to exit. You will probably have to run this as root.
 #
+# NOTES
+#
+# The GPIO devices are different for the RPI4 versus the RPI5,
+# The hardware test fixture script assumes the RPi5 but can be
+# trivially edited to use the RPI4.
+#
+# The multiplexing test may take a second button press to exit.
+#
 # SEE ALSO
 #
 # hardware_test_fixture.sh
