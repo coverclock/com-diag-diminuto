@@ -60,9 +60,11 @@ Diminuto provides, in no particular order:
 * display stack traces to the console (```diminuto_stacktrace```);
 * daemonizing applications (```diminuto_daemon```);
 * helper functions for the dynamic run-time linker for user-space loadable modules (```diminuto_modules```);
-* using General Purpose Input/Output (GPIO) pins via the standard /sysfs interface (```diminuto_pins```) (DEPRECATED) and debouncing digital inputs (```diminuto_cue```);
-* Time keeping (```diminuto_time```) and delays (```diminuto_delay```) with a consistent unit of tick;
-* A fair first-come-first-served readers-writers synchronization solution (```diminuto_readerwriter```);
+* using General Purpose Input/Output (GPIO) pins via the standard /sysfs interface (```diminuto_pins```) (DEPRECATED);
+* using General Purpose Input/Output (GPIO) lines via the standard ioctl interface (```diminuto_lines```);
+* debouncing digital inputs and detecting edges in software (```diminuto_cue```);
+* time keeping (```diminuto_time```) and delays (```diminuto_delay```) with a consistent unit of tick;
+* a fair first-come-first-served readers-writers synchronization solution (```diminuto_readerwriter```);
 * Proportional, Integral, Derivative (PID) controller (```diminuto_controller```) in user space;
 * Pulse Width Modulation (PWM) (```diminuto_modulator```) in user space.
 * programmatic ping for IPv4 (```diminuto_ping4```) and IPv6 (```diminuto_ping6```) when run as root;
@@ -442,8 +444,9 @@ Similarly, environmental variables have qualified names like
 * cue - logic level debouncer and edge detector.
 * framer - HDLC-like framing of binary serial streams using byte stuffing.
 * i2c - simplified thread-safe API around Linux I2C API.
-* pin - get and set GPIO pins using the sysfs interface (DEPRECATED).
+* line - get and set GPIO lines using the ioctl interface.
 * modulator - software pulse width modulation (PWM) generator.
+* pin - get and set GPIO pins using the sysfs interface (DEPRECATED).
 * serial - get and set parameters for a serial port.
 
 ## System
@@ -490,6 +493,7 @@ Similarly, environmental variables have qualified names like
 * iso8601 - converts seconds since the UNIX epoch into an ISO8601 timestamp.
 * juliantime - converts a timestamp into a year, julian day, and seconds.
 * juliet - display the local time in ISO 8601 format.
+* linetool - manipulate GPIO lines using the ioctl interface.
 * log - log from command line and/or stdin using Diminuto log functions.
 * logging - display the configuration and state of the log feature.
 * loopback - provide a configurable serial port loopback.
@@ -499,7 +503,7 @@ Similarly, environmental variables have qualified names like
 * oct - display an argument number in octal.
 * phex - display standard input in a printable form.
 * pinchange - execute a command when a GPIO pin changes state. (DEPRECATED)
-* pintool - manipulate GPIO pins. (DEPRECATED)
+* pintool - manipulate GPIO pins using the /sysfs interface. (DEPRECATED)
 * platform - generate the platform description used in the README.
 * posixtime - converts a timestamp into seconds since the POSIX epoch.
 * pps - uses Diminuto pintool to multiplex on a 1PPS GPIO pin. (DEPRECATED)
@@ -1070,13 +1074,19 @@ project leads to a virtuous cycle of organic growth in Diminuto.
 
 ## Feature Deprecations
 
+### Pin
+
 The Pin feature, which makes it easy to manipulate General Purpose
 Input/Output (GPIO) pins, uses the deprecated Linux sysfs ABI. You can
 expect this feature to build, and even pass unit testing (which does not
 use hardware or the actual Linux ABI),  but not work in later Linux-based
 platforms. The Line feature replaces Pin, uses the newer ioctl ABI,
 and necessarily has a different API. The Line feature will not build on
-older Linux platforms because the required header file will be missing.
+older Linux platforms because the required header file ```linux/gpio.h```
+will be missing. On the Raspberry Pi OS image I used on my Raspberry
+Pi 5, based on Debian "bookworm", the old sysfs ABI seems to exist,
+but it doesn't work for me using the same Pin code I've used for years
+on prior releases.
 
 ## Build Warnings
 
@@ -1421,6 +1431,10 @@ Wikipedia, "X-Macro", <https://en.wikipedia.org/wiki/X_Macro>
 <https://RVspace.org>
 
 <https://github.com/starfive-tech>
+
+<https://git.kernel.org/pub/scm/linux/kernel/git/torvalds/linux.git/tree/Documentation/driver-api/gpio>
+
+<https://git.kernel.org/pub/scm/linux/kernel/git/torvalds/linux.git/tree/tools/gpio>
 
 # Articles
 
