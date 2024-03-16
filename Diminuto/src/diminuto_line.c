@@ -60,12 +60,13 @@ const char * diminuto_line_consumer(const char * next)
  * e.g. "/dev/gpiochip4:-2" means device "/dev/gpiochip4, line 2, active low.
  */
 
-char * diminuto_line_parse(char * parameter, int * linep)
+char * diminuto_line_parse(char * parameter, diminuto_line_offset_t * linep, int * invertedp)
 {
     char * result = (char *)0;
     char * here = (char *)0;
     char * end = (char *)0;
     long line = 0;
+    int inverted = 0;
 
     do {
 
@@ -84,7 +85,13 @@ char * diminuto_line_parse(char * parameter, int * linep)
             diminuto_perror(parameter);
             break;
         }
-        if (!((minimumof(typeof(*linep)) <= line) && (line <= maximumof(typeof(*linep))))) {
+
+        if (line < 0) {
+            inverted = !0;
+            line = -line;
+        }
+
+        if (line > maximumof(typeof(*linep))) {
             errno = ERANGE;
             diminuto_perror(parameter);
             break;
@@ -92,6 +99,7 @@ char * diminuto_line_parse(char * parameter, int * linep)
 
         result = parameter;
         *linep = line;
+        *invertedp = inverted;
 
     } while (0);
 

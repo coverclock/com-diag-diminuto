@@ -71,7 +71,7 @@ extern const char * diminuto_line_consumer(const char * next);
  * e.g. "/dev/gpiochip4:-15" == /dev/gpiochip4 line 15 inverted.
  */
 
-extern char * diminuto_line_parse(char * parameter, int * linep);
+extern char * diminuto_line_parse(char * parameter, diminuto_line_offset_t * linep, int * invertedp);
 
 /*******************************************************************************
  * GENERICS
@@ -115,6 +115,20 @@ extern int diminuto_line_put(int fd, int bit);
  * HELPERS
  ******************************************************************************/
 
+static inline int diminuto_line_set(int fd)
+{
+    return diminuto_line_put(fd, !0);
+}
+
+static inline int diminuto_line_clear(int fd)
+{
+    return diminuto_line_put(fd, 0);
+}
+
+/*******************************************************************************
+ * EXAMPLES
+ ******************************************************************************/
+
 static inline int diminuto_line_open_input(const char * path, diminuto_line_offset_t line) {
     return diminuto_line_open(path, line, DIMINUTO_LINE_FLAG_INPUT);
 }
@@ -129,16 +143,6 @@ static inline int diminuto_line_open_output(const char * path, diminuto_line_off
 
 static inline int diminuto_line_open_output_inverted(const char * path, diminuto_line_offset_t line) {
     return diminuto_line_open(path, line, DIMINUTO_LINE_FLAG_OUTPUT | DIMINUTO_LINE_FLAG_ACTIVE_LOW);
-}
-
-static inline int diminuto_line_set(int fd)
-{
-    return diminuto_line_put(fd, !0);
-}
-
-static inline int diminuto_line_clear(int fd)
-{
-    return diminuto_line_put(fd, 0);
 }
 
 #endif

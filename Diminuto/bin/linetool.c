@@ -159,8 +159,8 @@ int main(int argc, char * argv[])
     int state = 0;
     int prior = 0;
     int edge = 0;
+    int inverted = 0;
     int effective = 0;
-    int sline = -1;
     int fd = -1;
     int ready = -1;
     int nfds = 0;
@@ -279,15 +279,12 @@ int main(int argc, char * argv[])
 
         case 'P':
             DEBUGSTRINGOPTION;
-            path = diminuto_line_parse(optarg, &sline);
+            path = diminuto_line_parse(optarg, &line, &inverted);
             if (path == (const char *)0) {
                 break;
             }
-            if (sline < 0) {
+            if (inverted) {
                 flags |= DIMINUTO_LINE_FLAG_ACTIVE_LOW;
-                line = -sline;
-            } else {
-                line = sline;
             }
             DEBUGCONTEXT;
             if ((fd = diminuto_line_close(fd)) >= 0) {
@@ -536,20 +533,26 @@ int main(int argc, char * argv[])
 
         case 'p':
             DEBUGNUMERICOPTION;
-            if (*diminuto_number_signed(optarg, &svalue) != '\0') {
+            /*
+             * -p -0 is a valid parameter.
+             */
+            if (*optarg == '-') {
+                inverted = !0;
+                optarg += 1;
+            } else {
+                inverted = 0;
+            }
+            if (*diminuto_number_unsigned(optarg, &uvalue) != '\0') {
                 diminuto_perror(optarg);
                 error = !0;
-            } else if (svalue > maximumof(typeof(sline))) {
+            } else if (uvalue > maximumof(typeof(line))) {
                 errno = ERANGE;
                 diminuto_perror(optarg);
                 error = !0;
             } else {
-                sline = svalue;
-                if (sline < 0) {
+                line = uvalue;
+                if (inverted) {
                     flags |= DIMINUTO_LINE_FLAG_ACTIVE_LOW;
-                    line = - sline;
-                } else {
-                    line = sline;
                 }
                 DEBUGCONTEXT;
                 if ((fd = diminuto_line_close(fd)) >= 0) {
