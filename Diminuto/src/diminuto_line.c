@@ -60,9 +60,9 @@ const char * diminuto_line_consumer(const char * next)
  * e.g. "/dev/gpiochip4:-2" means device "/dev/gpiochip4, line 2, active low.
  */
 
-char * diminuto_line_parse(char * parameter, diminuto_line_offset_t * linep, int * invertedp)
+const char * diminuto_line_parse(char * parameter, diminuto_line_offset_t * linep, int * invertedp)
 {
-    char * result = (char *)0;
+    const char * result = (char *)0;
     char * here = (char *)0;
     char * end = (char *)0;
     unsigned long value = 0;

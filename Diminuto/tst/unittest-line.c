@@ -7,7 +7,8 @@
  * @author Chip Overclock <mailto:coverclock@diag.com>
  * @see Diminuto <https://github.com/coverclock/com-diag-diminuto>
  * @details
- * This is a unit test of some of the Line feature.
+ * This is a unit test of some of the Line feature. Most of Line
+ * accesses the GPIO device driver so needs hardware to test.
  */
 
 #include "com/diag/diminuto/diminuto_unittest.h"
@@ -52,7 +53,7 @@ int main(int argc, char ** argv)
     }
 
     {
-        char * device;
+        const char * device;
         diminuto_line_offset_t line;
         int inverted;
 
@@ -119,6 +120,18 @@ int main(int argc, char ** argv)
         ASSERT(device != (char *)0);
         ASSERT(strcmp(device, "/dev/gpiochip11") == 0);
         ASSERT(line == 0);
+        ASSERT(!inverted);
+
+        device = diminuto_line_parse(parm("/dev/gpiochip12:0x14"), &line, &inverted);
+        ASSERT(device != (char *)0);
+        ASSERT(strcmp(device, "/dev/gpiochip12") == 0);
+        ASSERT(line == 20);
+        ASSERT(!inverted);
+
+        device = diminuto_line_parse(parm("/dev/gpiochip13:025"), &line, &inverted);
+        ASSERT(device != (char *)0);
+        ASSERT(strcmp(device, "/dev/gpiochip13") == 0);
+        ASSERT(line == 21);
         ASSERT(!inverted);
 
         STATUS();

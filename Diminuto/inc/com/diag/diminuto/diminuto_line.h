@@ -71,7 +71,7 @@ extern const char * diminuto_line_consumer(const char * next);
  * e.g. "/dev/gpiochip4:-15" == /dev/gpiochip4 line 15 inverted.
  */
 
-extern char * diminuto_line_parse(char * parameter, diminuto_line_offset_t * linep, int * invertedp);
+extern const char * diminuto_line_parse(char * parameter, diminuto_line_offset_t * linep, int * invertedp);
 
 /*******************************************************************************
  * GENERICS
