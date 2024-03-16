@@ -65,41 +65,61 @@ char * diminuto_line_parse(char * parameter, diminuto_line_offset_t * linep, int
     char * result = (char *)0;
     char * here = (char *)0;
     char * end = (char *)0;
-    long line = 0;
+    unsigned long value = 0;
     int inverted = 0;
 
     do {
 
+        if (parameter == (char *)0) {
+            errno = ENODEV;
+            diminuto_perror("diminuto_line_parse");
+            break;
+        }
+
         here = strrchr(parameter, ':');
         if (here == (char *)0) {
-            errno = EINVAL;
+            errno = ENODATA;
             diminuto_perror(parameter);
             break;
         }
 
         *(here++) = '\0';
 
-        line = strtol(here, &end, 10);
-        if (*end != '\0') {
+        /*
+         * Because "-0" is a valid line specification.
+         */
+
+        if (*here == '\0') {
+            errno = ENOENT;
+            diminuto_perror(parameter);
+            break;
+        }
+
+        if (*here == '-') {
+            inverted = !0;
+            here += 1;
+        } else if (*here == '+') {
+            here += 1;
+        } else {
+            /* Do nothing. */
+        }
+
+        value = strtoul(here, &end, 0);
+        if ((end == (char *)0) || (*end != '\0')) {
             errno = EINVAL;
             diminuto_perror(parameter);
             break;
         }
 
-        if (line < 0) {
-            inverted = !0;
-            line = -line;
-        }
-
-        if (line > maximumof(typeof(*linep))) {
+        if (value > maximumof(typeof(*linep))) {
             errno = ERANGE;
             diminuto_perror(parameter);
             break;
         }
 
         result = parameter;
-        *linep = line;
-        *invertedp = inverted;
+        if (linep != (diminuto_line_offset_t *)0) { *linep = value; }
+        if (invertedp != (int *)0) { *invertedp = inverted; }
 
     } while (0);
 
