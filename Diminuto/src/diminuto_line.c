@@ -12,19 +12,31 @@
  */
 
 #include "com/diag/diminuto/diminuto_line.h"
-#include "com/diag/diminuto/diminuto_log.h"
-#include "com/diag/diminuto/diminuto_criticalsection.h"
 #include "com/diag/diminuto/diminuto_countof.h"
+#include "com/diag/diminuto/diminuto_criticalsection.h"
 #include "com/diag/diminuto/diminuto_delay.h"
 #include "com/diag/diminuto/diminuto_error.h"
+#include "com/diag/diminuto/diminuto_fs.h"
 #include "com/diag/diminuto/diminuto_minmaxof.h"
 #include "com/diag/diminuto/diminuto_typeof.h"
+#include "com/diag/diminuto/diminuto_types.h"
 #include "com/diag/diminuto/diminuto_widthof.h"
+#include <alloca.h>
 #include <fcntl.h>
+#include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 #include <sys/ioctl.h>
 #include <unistd.h>
+
+/*******************************************************************************
+ * GLOBALS
+ ******************************************************************************/
+
+/**
+ * Debugging flag which is not part of the public API.
+ */
+int diminuto_line_debug = 0;
 
 /*******************************************************************************
  * STATICS
@@ -50,6 +62,72 @@ const char * diminuto_line_consumer(const char * next)
     }
 
     return prior;
+}
+
+/*******************************************************************************
+ * FINDING
+ ******************************************************************************/
+
+typedef struct State {
+    const char * name;
+    const char * prefix;
+    size_t length;
+    char * device;
+    size_t size;
+    diminuto_line_offset_t line;
+} state_t;
+
+static int walker(void * statep, const char * name, const char * path, size_t depth, const struct stat * statp)
+{
+    state_t * sp;
+
+    sp = (state_t *)statep;
+
+    if (diminuto_fs_mode2type(statp->st_mode) != DIMINUTO_FS_TYPE_CHARACTERDEV) {
+        /* Do nothing. */
+    } else if (strncmp(name, sp->prefix, sp->length) != 0) {
+        /* Do nothing. */
+    } else {
+        fprintf(stderr, "name \"%s\" path \"%s\" depth %zu\n", name, path, depth);
+    }
+    return 0;
+}
+
+const char * diminuto_line_find_generic(const char * name, const char * root, const char * prefix, char * buffer, size_t length, diminuto_line_offset_t * linep)
+{
+    const char * result = (const char *)0;
+    state_t state = { 0, };
+    char * path = (char *)0;
+    int rc = -1;
+
+    do {
+
+        path = (char *)alloca(sizeof(diminuto_path_t));
+        if (path == (char *)0) {
+            diminuto_perror("diminuto_line_find_generic");
+            break;
+        }
+        /* No free(3) necessary. */
+
+        state.name = name;
+        state.prefix = prefix;
+        state.length = strlen(prefix);
+        state.device = path;
+        state.size = sizeof(diminuto_path_t);
+        state.line = maximumof(diminuto_line_offset_t);
+
+        rc = diminuto_fs_walk(root, &walker, &state);
+        if (rc > 0) {
+            path[sizeof(diminuto_path_t) - 1] = '\0';
+            (void)strncpy(buffer, path, length);
+            buffer[length - 1] = '\0';
+            *linep = state.line;
+            result = buffer;
+        }
+
+    } while (0);
+
+    return result;
 }
 
 /*******************************************************************************

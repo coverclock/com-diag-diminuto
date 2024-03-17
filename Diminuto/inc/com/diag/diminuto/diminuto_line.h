@@ -58,10 +58,28 @@ typedef uint64_t diminuto_line_bits_t;
 typedef uint32_t diminuto_line_duration_t;
 
 /*******************************************************************************
+ * CONSTANTS
+ ******************************************************************************/
+
+static const char DIMINUTO_LINE_ROOT[] = "/dev";
+
+static const char DIMINUTO_LINE_PREFIX[] = "gpiochip";
+
+/*******************************************************************************
  * DEBUGGING
  ******************************************************************************/
 
 extern const char * diminuto_line_consumer(const char * next);
+
+/*******************************************************************************
+ * FINDING
+ ******************************************************************************/
+
+extern const char * diminuto_line_find_generic(const char * name, const char * root, const char * prefix, char * buffer, size_t length, diminuto_line_offset_t * linep);
+
+static inline const char * diminuto_line_find(const char * name, char * buffer, size_t length, diminuto_line_offset_t * linep) {
+    return diminuto_line_find_generic(name, DIMINUTO_LINE_ROOT, DIMINUTO_LINE_PREFIX, buffer, length, linep);
+}
 
 /*******************************************************************************
  * PARSING

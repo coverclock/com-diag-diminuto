@@ -13,7 +13,8 @@
 
 #include "com/diag/diminuto/diminuto_unittest.h"
 #include "com/diag/diminuto/diminuto_line.h"
-#include "com/diag/diminuto/diminuto_log.h"
+#include "com/diag/diminuto/diminuto_types.h"
+#include <alloca.h>
 #include <stdint.h>
 #include <stdlib.h>
 #include <stdio.h>
@@ -133,6 +134,29 @@ int main(int argc, char ** argv)
         ASSERT(strcmp(device, "/dev/gpiochip13") == 0);
         ASSERT(line == 21);
         ASSERT(!inverted);
+
+        STATUS();
+    }
+
+    {
+        const char * device;
+        diminuto_line_offset_t line;
+        char * buffer;
+        int ii;
+
+        TEST();
+
+        buffer = (char *)alloca(sizeof(diminuto_path_t));
+        ASSERT(buffer != (char *)0);
+
+        for (ii = 1; ii < argc; ++ii) {
+            device = diminuto_line_find(argv[ii], buffer, sizeof(diminuto_path_t), &line);
+            if (device != (const char *)0) {
+                NOTIFY("name \"%s\" device \"%s\" line %u\n", argv[ii], device, line);
+            } else {
+                NOTIFY("name \"%s\"\n", argv[ii]);
+            }
+        }
 
         STATUS();
     }

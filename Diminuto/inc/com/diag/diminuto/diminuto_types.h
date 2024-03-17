@@ -161,16 +161,14 @@ typedef diminuto_local_t diminuto_local_buffer_t;
  */
 typedef char (diminuto_path_t)[DIMINUTO_TYPES_PATH_BUFFER_SIZE];
 
-#if !defined(__GNUC__)
-#   warning Required byte alignment is implicitly assumed.
-#endif
-
 /**
  * This defines a type that is of zero length but two-byte aligned.
  */
 typedef uint16_t (diminuto_align2_t)[0] /* Likely pedantic warnings. */
 #if defined(__GNUC__)
     __attribute__ ((aligned(2)))
+#else
+#   warning Required byte alignment is implicitly assumed.
 #endif
     ;
 
