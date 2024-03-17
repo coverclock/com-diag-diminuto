@@ -138,6 +138,27 @@ int main(int argc, char ** argv)
         STATUS();
     }
 
+/*
+ * gpstool:
+ *
+ * gpstool ... -I "/dev/gpiochip4:18" -p "/dev/gpiochip4:16" ...
+ *
+ * gpioinfo:
+ *
+ *  :
+ *  line  16:      "PIN36" "src/diminuto_line.c" output active-high [used]
+ *  :
+ *  line  18:      "PIN12" "src/diminuto_line.c" input active-high [used]
+ *  :
+ *
+ * unittest-line PIN12 PIN36:
+ *
+ *  :
+ *  name "PIN12" device "/dev/gpiochip4" line 18
+ *  name "PIN36" device "/dev/gpiochip4" line 16
+ *  :
+ */
+
     {
         const char * device;
         diminuto_line_offset_t line;
