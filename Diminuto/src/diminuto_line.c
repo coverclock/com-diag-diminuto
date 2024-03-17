@@ -79,18 +79,74 @@ typedef struct State {
 
 static int walker(void * statep, const char * name, const char * path, size_t depth, const struct stat * statp)
 {
-    state_t * sp;
+    int result = 0;
+    state_t * sp = (state_t *)0;
+    int fd = -1;
+    int rc = -1;
+    struct gpiochip_info chip = { 0, };
+    int ii = 0;
 
-    sp = (state_t *)statep;
+    do {
 
-    if (diminuto_fs_mode2type(statp->st_mode) != DIMINUTO_FS_TYPE_CHARACTERDEV) {
+        sp = (state_t *)statep;
+
+        if (diminuto_fs_mode2type(statp->st_mode) != DIMINUTO_FS_TYPE_CHARACTERDEV) {
+            break;
+        }
+
+        if (strncmp(name, sp->prefix, sp->length) != 0) {
+            break;
+        }
+
+        fd = open(path, 0);
+        if (fd < 0) {
+            diminuto_perror(path);
+            break;
+        }
+
+        rc = ioctl(fd, GPIO_GET_CHIPINFO_IOCTL, &chip);
+        if (rc < 0) {
+            diminuto_perror(path);
+            break;
+        }
+
+        for (ii = 0; ii < chip.lines; ++ii) {
+            struct gpio_v2_line_info line = { 0, };
+
+            line.offset = ii;
+
+            rc = ioctl(fd, GPIO_V2_GET_LINEINFO_IOCTL, &line);
+            if (rc < 0) {
+                diminuto_perror(path);
+                break;
+            }
+
+            if (line.name[0] == '\0') {
+                continue;
+            }
+
+            if (strcmp(line.name, sp->name) != 0) {
+                continue;
+            }
+
+            strncpy(sp->device, path, sp->size);
+            sp->device[sp->size - 1] = '\0';
+            sp->line = ii;
+            result = 1;
+            break;
+        }
+
+    } while (0);
+
+    if (fd < 0) {
         /* Do nothing. */
-    } else if (strncmp(name, sp->prefix, sp->length) != 0) {
-        /* Do nothing. */
+    } else if (close(fd) < 0) {
+        diminuto_perror(path);
     } else {
-        fprintf(stderr, "name \"%s\" path \"%s\" depth %zu\n", name, path, depth);
+        /* Do nothing. */
     }
-    return 0;
+
+    return result;
 }
 
 const char * diminuto_line_find_generic(const char * name, const char * root, const char * prefix, char * buffer, size_t length, diminuto_line_offset_t * linep)
@@ -358,7 +414,7 @@ int diminuto_line_get(int fd)
 
 int diminuto_line_put_generic(int fd, uint64_t mask, uint64_t bits)
 {
-    int rc = 0;
+    int rc = -1;
     struct gpio_v2_line_values values = { 0, };
 
     do {
