@@ -83,6 +83,8 @@ extern int diminuto_line_get_generic(int fd, diminuto_line_bits_t mask, diminuto
 
 extern int diminuto_line_put_generic(int fd, diminuto_line_bits_t mask, diminuto_line_bits_t bits);
 
+extern int diminuto_line_close(int fd);
+
 /*******************************************************************************
  * MUTIPLEXING
  ******************************************************************************/
@@ -94,18 +96,12 @@ static inline int diminuto_line_open_read(const char * path, diminuto_line_offse
 extern int diminuto_line_read(int fd);
 
 /*******************************************************************************
- * DEFAULT
+ * POLLING
  ******************************************************************************/
 
 static inline int diminuto_line_open(const char * path, diminuto_line_offset_t line, diminuto_line_bits_t flags) {
     return diminuto_line_open_read(path, line, flags, 0);
 }
-
-extern int diminuto_line_close(int fd);
-
-/*******************************************************************************
- * GETTORS/SETTORS
- ******************************************************************************/
 
 extern int diminuto_line_get(int fd);
 
