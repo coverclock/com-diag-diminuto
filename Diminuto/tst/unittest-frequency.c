@@ -94,9 +94,11 @@ int main(int argc, char ** argv)
     {
         long long int result;
         TEST();
-        CHECKPOINT("f(USER_HZ)=%lldHz\n", result = diminuto_frequency_user());
+        result = diminuto_frequency_user();
+        CHECKPOINT("f(USER_HZ)=%lldHz\n", result);
         EXPECT(result > 0);
-        CHECKPOINT("f(HZ)=%lldHz\n", result = diminuto_frequency_system());
+        result = diminuto_frequency_system();
+        CHECKPOINT("f(HZ)=%lldHz\n", result);
         EXPECT(result > 0);
         STATUS();
     }
