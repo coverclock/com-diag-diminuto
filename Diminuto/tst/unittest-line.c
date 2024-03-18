@@ -140,46 +140,40 @@ int main(int argc, char ** argv)
 
 /*
  * Raspberry Pi 5, Debian "bookworm", Linux 6.1
- *
- * gpstool:
+ * ============================================
  *
  * gpstool ... -I "/dev/gpiochip4:18" -p "/dev/gpiochip4:16" ...
  *
- * gpioinfo:
+ *  Option -I "/dev/gpiochip4:18"
+ *  Option -p "/dev/gpiochip4:16"
+ *  Strobe Line (4) "/dev/gpiochip4:16" "/dev/gpiochip4" 16
+ *  1pps Line (5) "/dev/gpiochip4:18" "/dev/gpiochip4" 18
  *
- *  :
+ * gpioinfo
+ *
  *  gpiochip4 - 54 lines:
- *  :
- *  line  16:      "PIN36" "src/diminuto_line.c" output active-high [used]
- *  :
- *  line  18:      "PIN12" "src/diminuto_line.c" input active-high [used]
- *  :
+ *   line  16:      "PIN36"    "gpstool"  output  active-high [used]
+ *   line  18:      "PIN12"    "gpstool"   input  active-high [used]
  *
- * unittest-line PIN12 PIN36:
+ * unittest-line PIN12 PIN36 INVALID
  *
- *  :
  *  name "PIN12" device "/dev/gpiochip4" line 18
  *  name "PIN36" device "/dev/gpiochip4" line 16
- *  :
+ *  name "INVALID"
  *
  * Raspberry Pi 4, Debian "bullseye", Linux 6.1
+ * ============================================
  *
- * gpioinfo:
+ * gpioinfo
  *
- *  :
  *  gpiochip0 - 58 lines:
- *  :
- *  line  16:     "GPIO16"       unused  output  active-high
- *  :
- *  line  18:     "GPIO18"       unused   input  active-high
- *  :
+ *   line  16:     "GPIO16"       unused  output  active-high
+ *   line  18:     "GPIO18"       unused   input  active-high
  *
  * unittest-line GPIO16 GPIO18
  *
- *  :
  *  name "GPIO16" device "/dev/gpiochip0" line 16
  *  name "GPIO18" device "/dev/gpiochip0" line 18
- *  :
  */
 
     {
