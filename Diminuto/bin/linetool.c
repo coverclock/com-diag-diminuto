@@ -50,6 +50,7 @@
 #include "com/diag/diminuto/diminuto_number.h"
 #include "com/diag/diminuto/diminuto_pipe.h"
 #include "com/diag/diminuto/diminuto_string.h"
+#include "com/diag/diminuto/diminuto_types.h"
 #include <errno.h>
 #include <signal.h>
 #include <stdio.h>
@@ -173,7 +174,7 @@ int main(int argc, char * argv[])
     diminuto_sticks_t sticks = -2;
     diminuto_cue_state_t cue = { 0 };
     char sopt[2] = { '\0', '\0' };
-    char buffer[1024] = { '\0' };
+    diminuto_path_t pathname = { '\0', };
     int opt = '\0';
     extern char * optarg;
     /* CONTEXT BEGIN */
@@ -279,8 +280,9 @@ int main(int argc, char * argv[])
 
         case 'P':
             DEBUGSTRINGOPTION;
-            path = diminuto_line_parse(optarg, &line, &inverted);
+            path = diminuto_line_parse(optarg, pathname, sizeof(pathname), &line, &inverted);
             if (path == (const char *)0) {
+                fail = !0;
                 break;
             }
             if (inverted) {
@@ -493,6 +495,7 @@ int main(int argc, char * argv[])
                     if (!effective) {
                         /* Do nothing. */
                     } else if (command != (const char *)0) {
+                        char buffer[1024] = { '\0' };
                         snprintf(buffer, sizeof(buffer), "%s %s %u %d %d", command, path, line, state, prior);
                         buffer[sizeof(buffer) - 1] = '\0';
                         rc = diminuto_system(buffer);

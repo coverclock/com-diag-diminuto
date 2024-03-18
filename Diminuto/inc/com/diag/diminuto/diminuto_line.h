@@ -75,7 +75,7 @@ extern const char * diminuto_line_consumer(const char * next);
  * FINDING
  ******************************************************************************/
 
-extern const char * diminuto_line_find_generic(const char * name, const char * root, const char * prefix, char * buffer, size_t length, diminuto_line_offset_t * linep);
+extern const char * diminuto_line_find_generic(const char * name, const char * root, const char * prefix, char * buffer, size_t size, diminuto_line_offset_t * linep);
 
 static inline const char * diminuto_line_find(const char * name, char * buffer, size_t length, diminuto_line_offset_t * linep) {
     return diminuto_line_find_generic(name, DIMINUTO_LINE_ROOT, DIMINUTO_LINE_PREFIX, buffer, length, linep);
@@ -89,7 +89,7 @@ static inline const char * diminuto_line_find(const char * name, char * buffer, 
  * e.g. "/dev/gpiochip4:-15" == /dev/gpiochip4 line 15 inverted.
  */
 
-extern const char * diminuto_line_parse(char * parameter, diminuto_line_offset_t * linep, int * invertedp);
+extern const char * diminuto_line_parse(const char * parameter, char * buffer, size_t size, diminuto_line_offset_t * linep, int * invertedp);
 
 /*******************************************************************************
  * GENERICS

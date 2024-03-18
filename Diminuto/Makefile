@@ -1094,6 +1094,7 @@ sanity-test:	criticalsection-test
 	unittest-ipcl
 	unittest-isaconstant
 	unittest-kermit
+	test -c /dev/gpiochip0 && unittest-line
 	unittest-list
 	unittest-list2
 	unittest-lock

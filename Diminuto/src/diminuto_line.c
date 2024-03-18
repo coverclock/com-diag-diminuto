@@ -12,6 +12,7 @@
  */
 
 #include "com/diag/diminuto/diminuto_line.h"
+#include "com/diag/diminuto/diminuto_assert.h"
 #include "com/diag/diminuto/diminuto_countof.h"
 #include "com/diag/diminuto/diminuto_criticalsection.h"
 #include "com/diag/diminuto/diminuto_delay.h"
@@ -63,7 +64,7 @@ typedef struct State {
     const char * name;
     const char * prefix;
     size_t length;
-    char * device;
+    char * buffer;
     size_t size;
     diminuto_line_offset_t line;
 } state_t;
@@ -120,8 +121,8 @@ static int walker(void * statep, const char * name, const char * path, size_t de
                 continue;
             }
 
-            strncpy(sp->device, path, sp->size);
-            sp->device[sp->size - 1] = '\0';
+            strncpy(sp->buffer, path, sp->size);
+            sp->buffer[sp->size - 1] = '\0';
             sp->line = ii;
             result = 1;
             break;
@@ -140,39 +141,39 @@ static int walker(void * statep, const char * name, const char * path, size_t de
     return result;
 }
 
-const char * diminuto_line_find_generic(const char * name, const char * root, const char * prefix, char * buffer, size_t length, diminuto_line_offset_t * linep)
+const char * diminuto_line_find_generic(const char * name, const char * root, const char * prefix, char * buffer, size_t size, diminuto_line_offset_t * linep)
 {
     const char * result = (const char *)0;
     state_t state = { 0, };
     char * path = (char *)0;
     int rc = -1;
 
-    do {
+    path = (char *)alloca(sizeof(diminuto_path_t));
+    diminuto_contract(path != (char *)0);
+    /* No free(3) necessary. */
 
-        path = (char *)alloca(sizeof(diminuto_path_t));
-        if (path == (char *)0) {
-            diminuto_perror("diminuto_line_find_generic");
-            break;
+    state.name = name;
+    state.prefix = prefix;
+    state.length = strlen(prefix);
+    state.buffer = path;
+    state.size = sizeof(diminuto_path_t);
+    state.line = maximumof(diminuto_line_offset_t);
+
+    rc = diminuto_fs_walk(root, &walker, &state);
+    if (rc > 0) {
+        path[sizeof(diminuto_path_t) - 1] = '\0';
+        if (size > 0) {
+            (void)strncpy(buffer, path, size);
+            buffer[size - 1] = '\0';
         }
-        /* No free(3) necessary. */
+        *linep = state.line;
+        result = buffer;
+    }
 
-        state.name = name;
-        state.prefix = prefix;
-        state.length = strlen(prefix);
-        state.device = path;
-        state.size = sizeof(diminuto_path_t);
-        state.line = maximumof(diminuto_line_offset_t);
-
-        rc = diminuto_fs_walk(root, &walker, &state);
-        if (rc > 0) {
-            path[sizeof(diminuto_path_t) - 1] = '\0';
-            (void)strncpy(buffer, path, length);
-            buffer[length - 1] = '\0';
-            *linep = state.line;
-            result = buffer;
-        }
-
-    } while (0);
+    /*
+     * Failure is otherwise silent since it is not an error to
+     * look for a name that doesn't exist.
+     */
 
     return result;
 }
@@ -185,68 +186,113 @@ const char * diminuto_line_find_generic(const char * name, const char * root, co
  * e.g. "/dev/gpiochip4:-2" means device "/dev/gpiochip4, line 2, active low.
  */
 
-const char * diminuto_line_parse(char * parameter, diminuto_line_offset_t * linep, int * invertedp)
+const char * diminuto_line_parse(const char * parameter, char * buffer, size_t size, diminuto_line_offset_t * linep, int * invertedp)
 {
     const char * result = (char *)0;
-    char * here = (char *)0;
+    char * string = (char *)0;
+    char * offset = (char *)0;
     char * end = (char *)0;
     unsigned long value = 0;
     int inverted = 0;
+    const char * found = (const char *)0;
+    diminuto_line_offset_t line = maximumof(diminuto_line_offset_t);
 
-    do {
+    string = strdupa(parameter);
+    diminuto_contract(string != (char *)0);
+    /* No free(3) necessary. */
 
-        if (parameter == (char *)0) {
-            errno = ENODEV;
-            diminuto_perror("diminuto_line_parse");
-            break;
-        }
-
-        here = strrchr(parameter, ':');
-        if (here == (char *)0) {
-            errno = ENODATA;
-            diminuto_perror(parameter);
-            break;
-        }
-
-        *(here++) = '\0';
+    if (
+         ((string[0] == '/') ||
+          (strncmp(string, "./", sizeof("./") - 1) == 0) ||
+          (strncmp(string, "../", sizeof("../") - 1) == 0))
+        && 
+         ((offset = strrchr(string, ':')) != (char *)0)
+    ) {
 
         /*
-         * Because "-0" is a valid line specification.
+         * It looks like PATH:OFFSET, so separate the PATH
+         * from the OFFSET.
          */
 
-        if (*here == '\0') {
-            errno = ENOENT;
-            diminuto_perror(parameter);
-            break;
-        }
+        *offset = '\0';
+        offset += 1;
 
-        if (*here == '-') {
+        /*
+         * Convert the offset string into a value, and canonicalize
+         * the device path and check that it exists.
+         */
+
+        /*
+         * Because "-0" or "+0" is a valid line specification.
+         */
+        if (*offset == '-') {
             inverted = !0;
-            here += 1;
-        } else if (*here == '+') {
-            here += 1;
+            offset += 1;
+        } else if (*offset == '+') {
+            offset += 1;
         } else {
             /* Do nothing. */
         }
 
-        value = strtoul(here, &end, 0);
-        if ((end == (char *)0) || (*end != '\0')) {
+        if (*offset == '\0') {
             errno = EINVAL;
             diminuto_perror(parameter);
-            break;
+        } else {
+            value = strtoul(offset, &end, 0);
+            if ((end == (char *)0) || (*end != '\0')) {
+                errno = EINVAL;
+                diminuto_perror(parameter);
+            } else if (value > maximumof(typeof(*linep))) {
+                errno = ERANGE;
+                diminuto_perror(parameter);
+            } else if (diminuto_fs_canonicalize(string, buffer, size) < 0) {
+                /* Do nothing. */
+            } else if (diminuto_fs_type(buffer) == DIMINUTO_FS_TYPE_NONE) {
+                /* diminuto_fs_type() deliberately fails silently. */
+                diminuto_perror(parameter);
+            } else {
+                *linep = value;
+                *invertedp = inverted;
+                result = buffer;
+            }
         }
 
-        if (value > maximumof(typeof(*linep))) {
-            errno = ERANGE;
+    } else {
+
+        /*
+         * It looks like NAME, so try to resolve it by looking
+         * for it in the GPIO system.
+         */
+
+         /*
+          * -NAME or +NAME is a valid name specification.
+         */
+
+        if (*string == '-') {
+            inverted = !0;
+            string += 1;
+        } else if (*string == '+') {
+            string += 1;
+        } else {
+            /* Do nothing. */
+        }
+
+        /*
+         * Walk the /dev file system looking for the gpiochip
+         * and the offset with the specifie name.
+         */
+
+        found = diminuto_line_find(string, buffer, size, &line);
+        if (found == (const char *)0) {
+            errno = ENODATA;
             diminuto_perror(parameter);
-            break;
+        } else {
+            *linep = line;
+            *invertedp = inverted;
+            result = found;
         }
 
-        result = parameter;
-        if (linep != (diminuto_line_offset_t *)0) { *linep = value; }
-        if (invertedp != (int *)0) { *invertedp = inverted; }
-
-    } while (0);
+    }
 
     return result;
 }
@@ -264,12 +310,6 @@ int diminuto_line_open_generic(const char * path, const unsigned int line[], siz
     struct gpio_v2_line_request request = { 0, };
 
     do {
-
-        if (path == (const char *)0) {
-            errno = ENODEV;
-            diminuto_perror(path);
-            break;
-        }
 
         if (!((0 < lines) && (lines < countof(request.offsets)))) {
             errno = E2BIG;
