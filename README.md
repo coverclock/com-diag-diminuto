@@ -1079,14 +1079,14 @@ project leads to a virtuous cycle of organic growth in Diminuto.
 The Pin feature, which makes it easy to manipulate General Purpose
 Input/Output (GPIO) pins, uses the deprecated Linux sysfs ABI. You can
 expect this feature to build, and even pass unit testing (which does not
-use hardware or the actual Linux ABI),  but not work in later Linux-based
+use hardware or the actual Linux ABI), but not work in later Linux-based
 platforms. The Line feature replaces Pin, uses the newer ioctl ABI,
-and necessarily has a different API. The Line feature will not build on
-older Linux platforms because the required header file ```linux/gpio.h```
-will be missing. On the Raspberry Pi OS image I used on my Raspberry
-Pi 5, based on Debian "bookworm", the old sysfs ABI seems to exist,
-but it doesn't work for me using the same Pin code I've used for years
-on prior releases.
+and necessarily has a different API. The Line feature may not build on
+older Linux platforms if the required header file ```linux/gpio.h```
+is missing. On the Raspberry Pi OS image I used on my Raspberry Pi 5,
+based on Debian "bookworm" and Linux 6.1, the old sysfs ABI seems to
+exist, but it doesn't work for me using the same Pin code I've used for
+years on prior releases.
 
 ## Build Warnings
 
