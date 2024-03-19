@@ -15,6 +15,8 @@
  * linetool -D /dev/gpiochip4 -p 21 -i -B -U -M 1000000 -x -m 10000
  *
  * linetool -D /dev/gpiochip4 -p 16 -o -H -x -r -s -r -u 5000000 -r -c -r -e -p 18 -x -r -w 0 -r -u 5000000 -r -w 1 -r -n
+ * 
+ * linetool -P /dev/./../dev/gpiochip0:-0x0 -O -e -O -n -O
  *
  * ABSTRACT
  *
@@ -66,7 +68,7 @@
 
 #define DEBUGNUMERICOPTION (debug ? fprintf(stderr, "%s [%d] -%c %s\n", program, (int)pid, opt, optarg) : 0)
 
-#define DEBUGCONTEXT (debug ? fprintf(stderr, "%s [%d] { \"%s\" %u 0x%llx %u }\n", program, (int)pid, (path == (const char *)0) ? "" : path, line, (unsigned long long)flags, useconds) : 0)
+#define DEBUGCONTEXT (debug ? fprintf(stderr, "%s [%d] { \"%s\" %u 0x%llx %u (%d) }\n", program, (int)pid, (path == (const char *)0) ? "" : path, line, (unsigned long long)flags, useconds, fd) : 0)
 
 #define CLEARCONTEXT do { path = (const char *)0; line = maximumof(typeof(line)); flags = 0x0; useconds = 0; } while (0)
 
@@ -84,7 +86,7 @@
  * STATICS
  ******************************************************************************/
 
-static const char OPTIONS[] = "1BD:FHLM:NP:RSUX:b:cdefhilm:nop:rstu:vw:x?";
+static const char OPTIONS[] = "1BD:FHLM:NOP:RSUX:b:cdefhilm:nop:rstu:vw:x?";
 
 static const char USAGE[] = "[ -d ] "
                             "[ -S ] "
@@ -99,6 +101,7 @@ static const char USAGE[] = "[ -d ] "
                             "[ -t | -f ] "
                             "[ -u USECONDS ] "
                             "[ -n | -e ] "
+                            "[ -O ] "
                             "[ ... ] ";
 
 /*******************************************************************************
@@ -116,6 +119,7 @@ static void usage(const char * program)
     fprintf(stderr, "       -L              Configure context active to low.\n");
     fprintf(stderr, "       -M USECONDS     Configure context debounce period to USECONDS for -m (try 10000).\n");
     fprintf(stderr, "       -N              Configure context edge to none.\n");
+    fprintf(stderr, "       -O              Print context to standard output.\n");
     fprintf(stderr, "       -P DEVICE:LINE  Close and configure context to DEVICE:LINE.\n");
     fprintf(stderr, "       -R              Configure context edge to rising.\n");
     fprintf(stderr, "       -S              Daemonize.\n");
@@ -233,9 +237,6 @@ int main(int argc, char * argv[])
             DEBUGSTRINGOPTION;
             path = optarg;
             DEBUGCONTEXT;
-            if ((fd = diminuto_line_close(fd)) >= 0) {
-                fail = !0;
-            }
             break;
 
         case 'F':
@@ -278,6 +279,13 @@ int main(int argc, char * argv[])
             DEBUGCONTEXT;
             break;
 
+        case 'O':
+            DEBUGOPTION;
+            printf("%s %u 0x%llx %u %d\n", (path == (const char *)0) ? "/dev/null" : path, line, (unsigned long long)flags, useconds, fd);
+            fflush(stdout);
+            DEBUGCONTEXT;
+            break;
+
         case 'P':
             DEBUGSTRINGOPTION;
             path = diminuto_line_parse(optarg, pathname, sizeof(pathname), &line, &inverted);
@@ -289,9 +297,6 @@ int main(int argc, char * argv[])
                 flags |= DIMINUTO_LINE_FLAG_ACTIVE_LOW;
             }
             DEBUGCONTEXT;
-            if ((fd = diminuto_line_close(fd)) >= 0) {
-                fail = !0;
-            }
             break;
 
         case 'R':
@@ -388,9 +393,17 @@ int main(int argc, char * argv[])
 
         case 'e':
             DEBUGOPTION;
-            if ((fd = diminuto_line_close(fd)) >= 0) {
+            /*
+             * It is not an error to close a closed line.
+             */
+            if (fd < 0) {
+                /* Do nothing. */
+            } else if ((fd = diminuto_line_close(fd)) >= 0) {
                 fail = !0;
+            } else {
+                /* Do nothing. */
             }
+            DEBUGCONTEXT;
             break;
 
         case 'f':
@@ -519,13 +532,17 @@ int main(int argc, char * argv[])
         case 'n':
             DEBUGOPTION;
             CLEARCONTEXT;
-            DEBUGCONTEXT;
             /*
              * It is not an error to close a closed line.
              */
-            if ((fd = diminuto_line_close(fd)) >= 0) {
+            if (fd < 0) {
+                /* Do nothing. */
+            } else if ((fd = diminuto_line_close(fd)) >= 0) {
                 fail = !0;
+            } else {
+                /* Do nothing. */
             }
+            DEBUGCONTEXT;
             break;
 
         case 'o':
@@ -558,9 +575,6 @@ int main(int argc, char * argv[])
                     flags |= DIMINUTO_LINE_FLAG_ACTIVE_LOW;
                 }
                 DEBUGCONTEXT;
-                if ((fd = diminuto_line_close(fd)) >= 0) {
-                    fail = !0;
-                }
             }
             break;
 
