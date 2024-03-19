@@ -158,7 +158,7 @@ int main(int argc, char ** argv) {
 
     delay = diminuto_frequency() / 2; /* 500ms > 400ms integration time. */
 
-    path = hardware_test_fixture_device();
+    path = hardware_test_fixture_gpio_device();
     assert(path != (const char *)0);
 
     /*
@@ -409,6 +409,8 @@ int main(int argc, char ** argv) {
     fdisr = diminuto_line_close(fdisr);
     assert(fdisr < 0);
 
+    rc = diminuto_line_clear(fdled);
+    assert(rc >= 0);
     fdled = diminuto_line_close(fdled);
     assert(fdled < 0);
 

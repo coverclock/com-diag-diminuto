@@ -57,7 +57,7 @@ int main(int argc, char * argv[])
     program = argv[0]; 
     assert(program != (const char *)0);
 
-    path = hardware_test_fixture_device();
+    path = hardware_test_fixture_gpio_device();
     assert(path != (const char *)0);
 
     if (argc != 3) {
@@ -169,6 +169,8 @@ int main(int argc, char * argv[])
      * Exit.
      */
 
+    rc = diminuto_line_clear(fd);
+    assert(rc >= 0);
     fd = diminuto_line_close(fd);
     assert(fd < 0);
 

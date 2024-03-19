@@ -163,7 +163,7 @@ int main(int argc, char ** argv) {
 
     delay = diminuto_frequency() / 2; /* 500ms > 400ms integration time. */
 
-    path = hardware_test_fixture_device();
+    path = hardware_test_fixture_gpio_device();
     assert(path != (const char *)0);
 
     /*
@@ -341,14 +341,14 @@ int main(int argc, char ** argv) {
         } else if (diminuto_interrupter_check()) {
             fprintf(stderr, "%s: interrupted\n", program);
             break;
-        } else if (rc > 0) {
-            /* Do nothing. */
+        } else if (rc < 0) {
+            fprintf(stderr, "%s: failed\n", program);
+            break;
         } else if (rc == 0) {
             fprintf(stderr, "%s: timeout\n", program);
             continue;
         } else {
-            fprintf(stderr, "%s: failed\n", program);
-            break;
+            /* Do nothing. */
         }
 
         while ((rc = diminuto_mux_ready_read(&mux)) >= 0) {
@@ -420,6 +420,8 @@ int main(int argc, char ** argv) {
     fdisr = diminuto_line_close(fdisr);
     assert(fdisr < 0);
 
+    rc = diminuto_line_clear(fdled);
+    assert(rc >= 0);
     fdled = diminuto_line_close(fdled);
     assert(fdled < 0);
 

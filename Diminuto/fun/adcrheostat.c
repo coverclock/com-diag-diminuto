@@ -82,7 +82,7 @@ int main(int argc, char ** argv) {
 
     program = ((program = strrchr(argv[0], '/')) == (char *)0) ? argv[0] : program + 1;
 
-    path = hardware_test_fixture_device();
+    path = hardware_test_fixture_gpio_device();
     assert(path != (const char *)0);
 
     delay = diminuto_frequency() / 4; /* 250ms > 125ms conversion time. */
@@ -275,6 +275,8 @@ int main(int argc, char ** argv) {
     fdisr = diminuto_line_close(fdisr);
     assert(fdisr < 0);
 
+    rc = diminuto_line_clear(fdpwm);
+    assert(rc >= 0);
     fdpwm = diminuto_line_close(fdpwm);
     assert(fdpwm < 0);
 

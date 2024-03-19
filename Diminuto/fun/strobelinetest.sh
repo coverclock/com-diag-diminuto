@@ -23,7 +23,7 @@
 
 . $(readlink -e $(dirname ${0})/../bin)/setup
 
-DEVICE=${1:-${HARDWARE_TEST_FIXTURE_DEVICE}}
+DEVICE=${1:-${HARDWARE_TEST_FIXTURE_GPIO_DEVICE}}
 LINE=${2:-${HARDWARE_TEST_FIXTURE_PIN_LED_1}}
 
 while true; do

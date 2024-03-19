@@ -68,7 +68,7 @@ int main(int argc, char * argv[])
     program = argv[0];
     assert(program != (const char *)0);
 
-    path = hardware_test_fixture_device();
+    path = hardware_test_fixture_gpio_device();
     assert(path != (const char *)0);
 
     if ((argc >= 2) && (strcmp(argv[1], "-?") == 0)) {
@@ -242,6 +242,8 @@ int main(int argc, char * argv[])
     for (ii = 0; ii < countof(fd); ++ii) {
         if (pin[ii] >= 0) {
             fprintf(stderr, "%s: closing %d %d\n", program, pin[ii], fd[ii]);
+            rc = diminuto_line_clear(fd[ii]);
+            assert(rc >= 0);
             fd[ii] = diminuto_line_close(fd[ii]);
             assert(fd[ii] < 0);
         }

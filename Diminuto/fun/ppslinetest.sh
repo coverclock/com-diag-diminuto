@@ -25,7 +25,7 @@
 
 . $(readlink -e $(dirname ${0})/../bin)/setup
 
-DEVICE=${1:-${HARDWARE_TEST_FIXTURE_DEVICE}}
+DEVICE=${1:-${HARDWARE_TEST_FIXTURE_GPIO_DEVICE}}
 LINE=${2:-${HARDWARE_TEST_FIXTURE_PIN_PPS}}
 
 linetool -d -D ${DEVICE} -p ${LINE} -i -H -R -M 0 -x -m -1
