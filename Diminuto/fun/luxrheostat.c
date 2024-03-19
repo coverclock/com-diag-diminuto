@@ -27,13 +27,12 @@
 #include "com/diag/diminuto/diminuto_frequency.h"
 #include "com/diag/diminuto/diminuto_interrupter.h"
 #include "com/diag/diminuto/diminuto_i2c.h"
+#include "com/diag/diminuto/diminuto_line.h"
 #include "com/diag/diminuto/diminuto_log.h"
 #include "com/diag/diminuto/diminuto_modulator.h"
 #include "com/diag/diminuto/diminuto_mux.h"
-#include "com/diag/diminuto/diminuto_pin.h"
 #include "com/diag/diminuto/diminuto_terminator.h"
 #include "com/diag/diminuto/diminuto_time.h"
-#include "hardware_test_fixture.h"
 #include "avago/apds9301.h"
 #include <assert.h>
 #include <errno.h>
@@ -45,6 +44,7 @@
 #include <sys/stat.h>
 #include <sys/types.h>
 #include <unistd.h>
+#include "../fun/hardware_test_fixture.h"
 
 static const int LED = HARDWARE_TEST_FIXTURE_PIN_PWM_LED;
 static const int BUS = HARDWARE_TEST_FIXTURE_BUS_I2C;
@@ -56,14 +56,15 @@ static const int SUSTAIN = 3;
 int main(int argc, char ** argv) {
     int xc = 0;
     const char * program = (const char *)0;
-    int fd = -1;
+    int fdi2c = -1;
+    int fdisr = -1;
+    int fdled = -1;
     int rc = -1;
     int led = LED;
     int duty = DUTY;
     int bus = BUS;
     int device = DEVICE;
     int interrupt = INTERRUPT;
-    FILE * fp = (FILE *)0;
     double lux = 0.0;
     diminuto_mux_t mux;
     diminuto_ticks_t delay = 0;
@@ -75,41 +76,41 @@ int main(int argc, char ** argv) {
     diminuto_modulator_t * mp = (diminuto_modulator_t *)0;
     int increment = 1;
     int sustain = SUSTAIN;
+    const char * path = (const char *)0;
 
     program = ((program = strrchr(argv[0], '/')) == (char *)0) ? argv[0] : program + 1;
 
     delay = diminuto_frequency() / 2; /* 500ms > 400ms integration time. */
 
+    path = hardware_test_fixture_device();
+    assert(path != (const char *)0);
+
     /*
      * I2C light sensor.
      */
 
-    fd = diminuto_i2c_open(bus);
-    assert(fd >= 0);
+    fdi2c = diminuto_i2c_open(bus);
+    assert(fdi2c >= 0);
 
-    rc = avago_apds9301_reset(fd, device); 
+    rc = avago_apds9301_reset(fdi2c, device); 
     assert(rc >= 0);
 
-    rc = avago_apds9301_print(fd, device, stdout);
+    rc = avago_apds9301_print(fdi2c, device, stdout);
     assert(rc >= 0);
 
-    rc = avago_apds9301_configure_default(fd, device);
+    rc = avago_apds9301_configure_default(fdi2c, device);
     assert(rc >= 0);
 
     /*
      * GPIO interrupt pin.
+     * GPIO LED pin.
      */
 
-    (void)diminuto_pin_unexport_ignore(interrupt); 
+    fdisr = diminuto_line_open_read(path, interrupt, DIMINUTO_LINE_FLAG_INPUT | DIMINUTO_LINE_FLAG_EDGE_RISING, 0);
+    assert(fdisr >= 0);
 
-    fp = diminuto_pin_input(interrupt);
-    assert(fp != (FILE *)0);
-
-    rc = diminuto_pin_active(interrupt, 0);
-    assert(rc == 0);
-
-    rc = diminuto_pin_edge(interrupt, DIMINUTO_PIN_EDGE_RISING);
-    assert(rc == 0);
+    fdled = diminuto_line_open_output(path, led);
+    assert(fdled >= 0);
 
     /*
      * Multiplexer.
@@ -117,14 +118,14 @@ int main(int argc, char ** argv) {
 
     diminuto_mux_init(&mux);
 
-    rc = diminuto_mux_register_interrupt(&mux, fileno(fp));
+    rc = diminuto_mux_register_read(&mux, fdisr);
     assert(rc >= 0);
 
     /*
      * Pulse width moddulator.
      */
 
-    mp = diminuto_modulator_init(&modulator, led, duty);
+    mp = diminuto_modulator_init(&modulator, &diminuto_modulator_function, &fdled, duty);
     assert(mp == &modulator);
 
     /*
@@ -147,7 +148,7 @@ int main(int argc, char ** argv) {
     was = diminuto_time_elapsed();
     assert(was >= 0);
 
-    rc = avago_apds9301_sense(fd, device, &lux);
+    rc = avago_apds9301_sense(fdi2c, device, &lux);
     assert(rc >= 0);
 
     assert((AVAGO_APDS9301_LUX_MINIMUM <= lux) && (lux <= AVAGO_APDS9301_LUX_MAXIMUM));
@@ -170,18 +171,18 @@ int main(int argc, char ** argv) {
             /* Do nothing. */
         }
 
-        while ((rc = diminuto_mux_ready_interrupt(&mux)) >= 0) {
+        while ((rc = diminuto_mux_ready_read(&mux)) >= 0) {
 
-            if (rc != fileno(fp)) {
+            if (rc != fdisr) {
                 continue;
             }
 
-            value = diminuto_pin_get(fp);
+            value = diminuto_line_read(fdisr);
             if (value == 0) {
                 continue;
             }
 
-            rc = avago_apds9301_sense(fd, device, &lux);
+            rc = avago_apds9301_sense(fdi2c, device, &lux);
             assert(rc >= 0);
 
             assert((AVAGO_APDS9301_LUX_MINIMUM <= lux) && (lux <= AVAGO_APDS9301_LUX_MAXIMUM));
@@ -250,16 +251,19 @@ int main(int argc, char ** argv) {
     mp = diminuto_modulator_fini(&modulator);
     assert(mp == (diminuto_modulator_t *)0);
 
-    rc = diminuto_mux_unregister_interrupt(&mux, fileno(fp));
+    rc = diminuto_mux_unregister_read(&mux, fdisr);
     assert(rc >= 0);
 
     diminuto_mux_fini(&mux);
 
-    fp = diminuto_pin_unused(fp, interrupt);
-    assert(fp == (FILE *)0);
+    fdisr = diminuto_line_close(fdisr);
+    assert(fdisr < 0);
 
-    fd = diminuto_i2c_close(fd);
-    assert(fd < 0);
+    fdled = diminuto_line_close(fdled);
+    assert(fdled < 0);
+
+    fdi2c = diminuto_i2c_close(fdi2c);
+    assert(fdi2c < 0);
 
     printf("%s: exiting\n", program);
 

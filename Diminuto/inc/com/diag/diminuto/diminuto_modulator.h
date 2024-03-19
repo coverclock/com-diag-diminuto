@@ -12,8 +12,7 @@
  * @details
  *
  * The Modulator feature implements a pulse width modulation (PWM) generator
- * in software. By default controls a GPIO pin using the Diminuto pin feature,
- * but can be programmed to call a user-supplied function instead. The duty
+ * in software that calls a user-provided callback function. The duty
  * cycle must be a value between 0 (fully off) and 255 (fully on). The duty
  * cycle can be modified as the PWM generator runs. Multiple PWM generators can
  * be active concurrently up to the limit of the CPU. Each generator runs a
@@ -33,7 +32,6 @@
 
 #include "com/diag/diminuto/diminuto_types.h"
 #include "com/diag/diminuto/diminuto_timer.h"
-#include "com/diag/diminuto/diminuto_pin.h"
 #include "com/diag/diminuto/diminuto_condition.h"
 #include <stdio.h>
 #include <signal.h>
@@ -67,6 +65,26 @@ static inline diminuto_sticks_t diminuto_modulator_frequency(void)
 typedef uint8_t diminuto_modulator_cycle_t;
 
 /**
+ * This is type of the callback function invoked with the modulator state
+ * changes. The user-provided callback is expected to change the appropriate
+ * GPIO line or other resource undr its control.
+ * @param vp points to the user-defined context e.g. file descriptor.
+ * @param value points to the modulator state.
+ * @return <0 if an error occurred, 0 to stop, !0 otherwise.
+ */
+typedef int (diminuto_modulator_function_t)(void * vp, bool value);
+
+/**
+ * THis is an example callback function that assumes the context pointer
+ * references a file descriptor to a GPIO Line, and sets the value of
+ * the Line approprite.y.
+ * @param vp points to a GPIO Line file descriptor.
+ * @param value is the current modulator condition, true or false.
+ * @return <0 if an error occurred, !0 otherwise.
+ */
+extern int diminuto_modulator_function(void * vp, bool value);
+
+/**
  * This the type of the modulator state (ARM, DISARM, IDLE), which
  * is the same as the underlying timer state.
  */
@@ -91,19 +109,19 @@ static const diminuto_modulator_cycle_t DIMINUTO_MODULATOR_DUTY_MAX = 255;
  * Defines the structure containing the state of a PWM generator.
  */
 typedef struct DiminutoModulator {
-    FILE *                      fp;         /**< GPIO /sys file pointer. */
-    diminuto_timer_t            timer;      /**< Diminuto timer. */
-    diminuto_condition_t        condition;  /**< Diminuto condition variable. */
-    int32_t                     pin;        /**< GPIO /sys pin number. */
-    int32_t                     error;      /**< Most recent error number. */
-    diminuto_modulator_cycle_t  duty;       /**< Duty cycle [0..255]. */
-    diminuto_modulator_cycle_t  on;         /**< Current on period [0..255]. */
-    diminuto_modulator_cycle_t  off;        /**< Current off period [0..255]. */
-    diminuto_modulator_cycle_t  cycle;      /**< Cycle countdown [0..255]. */
-    diminuto_modulator_cycle_t  ton;        /**< On period [0..255]. */
-    diminuto_modulator_cycle_t  toff;       /**< Off period [0..255]. */
-    bool                        state;      /**< Output state: on or off. */
-    bool                        set;        /**< Condition ready? (SHARED) */
+    diminuto_modulator_function_t * functionp;  /**< Function pointer. */
+    void *                          contextp;   /**< Context pointer e.g. &linefd. */
+    diminuto_timer_t                timer;      /**< Diminuto timer. */
+    diminuto_condition_t            condition;  /**< Diminuto condition variable. */
+    int32_t                         error;      /**< Most recent error number. */
+    diminuto_modulator_cycle_t      duty;       /**< Duty cycle [0..255]. */
+    diminuto_modulator_cycle_t      on;         /**< Current on period [0..255]. */
+    diminuto_modulator_cycle_t      off;        /**< Current off period [0..255]. */
+    diminuto_modulator_cycle_t      cycle;      /**< Cycle countdown [0..255]. */
+    diminuto_modulator_cycle_t      ton;        /**< On period [0..255]. */
+    diminuto_modulator_cycle_t      toff;       /**< Off period [0..255]. */
+    bool                            state;      /**< Output state: on or off. */
+    bool                            set;        /**< Condition ready? (SHARED) */
 } diminuto_modulator_t;
 
 /**
@@ -123,14 +141,16 @@ extern diminuto_modulator_state_t diminuto_modulator_state(diminuto_modulator_t 
 extern int diminuto_modulator_factor(diminuto_modulator_cycle_t * onp, diminuto_modulator_cycle_t * offp);
 
 /**
- * Initializes a modulator structure with the default function, a pin number,
- * and a duty cycle. A duty cycle of 0 is fully off, and 255 is fully on.
+ * Initializes a modulator structure with the callback function, a pointer to
+ * user-defined conext, and a duty cycle. A duty cycle of 0 is fully off,
+ * and 255 is fully on.
  * @param mp points to the modulator structure.
- * @param pin is the GPIO pin number.
+ * @param ep points to the callback function.
+ * @param vp points to the user-defined context.
  * @param duty is the initial duty cycle in the range [0..255].
  * @return a pointer to the object for success, NULL if an error occurred.
  */
-extern diminuto_modulator_t * diminuto_modulator_init(diminuto_modulator_t * mp, int pin, diminuto_modulator_cycle_t duty);
+extern diminuto_modulator_t * diminuto_modulator_init(diminuto_modulator_t * mp, diminuto_modulator_function_t * ep, void * vp, diminuto_modulator_cycle_t duty);
 
 /**
  * Changes the duty cycle of a modulator. Can be called any time after

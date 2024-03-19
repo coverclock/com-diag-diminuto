@@ -3,7 +3,7 @@
  * @file
  * @copyright Copyright 2014-2022 Digital Aggregates Corporation, Colorado, USA.
  * @note Licensed under the terms in LICENSE.txt.
- * @brief Manipulate GPIO pins using the /sys file system.
+ * @brief Manipulate GPIO pins using the /sys file system. (DEPRECATED)
  * @author Chip Overclock <mailto:coverclock@diag.com>
  * @see Diminuto <https://github.com/coverclock/com-diag-diminuto>
  * @details

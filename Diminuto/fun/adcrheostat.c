@@ -29,10 +29,9 @@
 #include "com/diag/diminuto/diminuto_log.h"
 #include "com/diag/diminuto/diminuto_modulator.h"
 #include "com/diag/diminuto/diminuto_mux.h"
-#include "com/diag/diminuto/diminuto_pin.h"
+#include "com/diag/diminuto/diminuto_line.h"
 #include "com/diag/diminuto/diminuto_terminator.h"
 #include "com/diag/diminuto/diminuto_time.h"
-#include "hardware_test_fixture.h"
 #include "ti/ads1115.h"
 #include <assert.h>
 #include <errno.h>
@@ -44,6 +43,7 @@
 #include <sys/stat.h>
 #include <sys/types.h>
 #include <unistd.h>
+#include "../fun/hardware_test_fixture.h"
 
 static const int PWM = HARDWARE_TEST_FIXTURE_PIN_PWM_ADC;
 static const int BUS = HARDWARE_TEST_FIXTURE_BUS_I2C;
@@ -56,14 +56,15 @@ static const int MEASURE = 5;
 int main(int argc, char ** argv) {
     int xc = 0;
     const char * program = (const char *)0;
-    int fd = -1;
+    int fdi2c = -1;
+    int fdisr = -1;
+    int fdpwm = -1;
     int rc = -1;
     int pwm = PWM;
     int duty = DUTY;
     int bus = BUS;
     int device = DEVICE;
     int interrupt = INTERRUPT;
-    FILE * fp = (FILE *)0;
     double volts = 0.0;
     diminuto_mux_t mux;
     diminuto_sticks_t ticks = 0;
@@ -77,8 +78,12 @@ int main(int argc, char ** argv) {
     int increment = 1;
     int sustain = SUSTAIN;
     int measure = MEASURE;
+    const char * path = (const char *)0;
 
     program = ((program = strrchr(argv[0], '/')) == (char *)0) ? argv[0] : program + 1;
+
+    path = hardware_test_fixture_device();
+    assert(path != (const char *)0);
 
     delay = diminuto_frequency() / 4; /* 250ms > 125ms conversion time. */
 
@@ -86,35 +91,31 @@ int main(int argc, char ** argv) {
      * I2C light sensor.
      */
 
-    fd = diminuto_i2c_open(bus);
-    assert(fd >= 0);
+    fdi2c = diminuto_i2c_open(bus);
+    assert(fdi2c >= 0);
 
-    rc = ti_ads1115_configure_default(fd, device);
+    rc = ti_ads1115_configure_default(fdi2c, device);
     assert(rc >= 0);
 
-    rc = ti_ads1115_print(fd, device, stdout);
+    rc = ti_ads1115_print(fdi2c, device, stdout);
     assert(rc >= 0);
 
-    rc = ti_ads1115_sense(fd, device, &volts);
+    rc = ti_ads1115_sense(fdi2c, device, &volts);
     assert(rc >= 0);
 
     /*
      * GPIO interrupt pin.
+     * GPIO PWM pin.
      */
 
-    (void)diminuto_pin_unexport_ignore(interrupt); 
+    fdisr = diminuto_line_open_read(path, interrupt, DIMINUTO_LINE_FLAG_INPUT | DIMINUTO_LINE_FLAG_EDGE_RISING, 0);
+    assert(fdisr >= 0);
 
-    fp = diminuto_pin_input(interrupt);
-    assert(fp != (FILE *)0);
-
-    rc = diminuto_pin_active(interrupt, 0);
-    assert(rc == 0);
-
-    rc = diminuto_pin_edge(interrupt, DIMINUTO_PIN_EDGE_RISING);
-    assert(rc == 0);
-
-    value = diminuto_pin_get(fp);
+    value = diminuto_line_get(fdisr);
     assert(value >= 0);
+
+    fdpwm = diminuto_line_open_output(path, pwm);
+    assert(fdpwm >= 0);
 
     /*
      * Multiplexer.
@@ -122,14 +123,14 @@ int main(int argc, char ** argv) {
 
     diminuto_mux_init(&mux);
 
-    rc = diminuto_mux_register_interrupt(&mux, fileno(fp));
+    rc = diminuto_mux_register_read(&mux, fdisr);
     assert(rc >= 0);
 
     /*
      * Pulse width moddulator.
      */
 
-    mp = diminuto_modulator_init(&modulator, pwm, duty);
+    mp = diminuto_modulator_init(&modulator, &diminuto_modulator_function, &fdpwm, duty);
     assert(mp == &modulator);
 
     /*
@@ -174,17 +175,17 @@ int main(int argc, char ** argv) {
 
         while ((rc = diminuto_mux_ready_interrupt(&mux)) >= 0) {
 
-            if (rc != fileno(fp)) {
+            if (rc != fdisr) {
                 continue;
             }
 
-            value = diminuto_pin_get(fp);
+            value = diminuto_line_read(fdisr);
             assert(value >= 0);
             if (value == 0) {
                 continue;
             }
 
-            rc = ti_ads1115_sense(fd, device, &volts);
+            rc = ti_ads1115_sense(fdi2c, device, &volts);
             assert(rc >= 0);
 
             now = diminuto_time_elapsed();
@@ -266,16 +267,19 @@ int main(int argc, char ** argv) {
     mp = diminuto_modulator_fini(&modulator);
     assert(mp == (diminuto_modulator_t *)0);
 
-    rc = diminuto_mux_unregister_interrupt(&mux, fileno(fp));
+    rc = diminuto_mux_unregister_read(&mux, fdisr);
     assert(rc >= 0);
 
     diminuto_mux_fini(&mux);
 
-    fp = diminuto_pin_unused(fp, interrupt);
-    assert(fp == (FILE *)0);
+    fdisr = diminuto_line_close(fdisr);
+    assert(fdisr < 0);
 
-    fd = diminuto_i2c_close(fd);
-    assert(fd < 0);
+    fdpwm = diminuto_line_close(fdpwm);
+    assert(fdpwm < 0);
+
+    fdi2c = diminuto_i2c_close(fdi2c);
+    assert(fdi2c < 0);
 
     printf("%s: exiting\n", program);
 

@@ -23,11 +23,19 @@
 
 #include "avago/apds9301.h"
 #include "ti/ads1115.h"
+#include "com/diag/diminuto/diminuto_fs.h"
 
 #define COM_DIAG_DIMINUTO_HARDWARE_TEST_FIXTURE_DEVICE_PI4 "/dev/gpiochip0"
+
 #define COM_DIAG_DIMINUTO_HARDWARE_TEST_FIXTURE_DEVICE_PI5 "/dev/gpiochip4"
 
-static const char HARDWARE_TEST_FIXTURE_DEVICE[] = COM_DIAG_DIMINUTO_HARDWARE_TEST_FIXTURE_DEVICE_PI4;
+static const char HARDWARE_TEST_FIXTURE_DEVICE_PI4[] = COM_DIAG_DIMINUTO_HARDWARE_TEST_FIXTURE_DEVICE_PI4;
+
+static const char HARDWARE_TEST_FIXTURE_DEVICE_PI5[] = COM_DIAG_DIMINUTO_HARDWARE_TEST_FIXTURE_DEVICE_PI5;
+
+static inline const char * hardware_test_fixture_device(void) {
+    return (diminuto_fs_type(HARDWARE_TEST_FIXTURE_DEVICE_PI4) == DIMINUTO_FS_TYPE_CHARACTERDEV) ? HARDWARE_TEST_FIXTURE_DEVICE_PI4 : (diminuto_fs_type(HARDWARE_TEST_FIXTURE_DEVICE_PI5) == DIMINUTO_FS_TYPE_CHARACTERDEV) ? HARDWARE_TEST_FIXTURE_DEVICE_PI5 : (const char *)0;
+}
 
 enum HardwareTestFixture {
     HARDWARE_TEST_FIXTURE_BUS_I2C           = 1, /* Specific to Raspberry Pi. */

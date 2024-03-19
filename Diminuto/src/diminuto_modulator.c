@@ -16,6 +16,7 @@
 #include "com/diag/diminuto/diminuto_coherentsection.h"
 #include "com/diag/diminuto/diminuto_countof.h"
 #include "com/diag/diminuto/diminuto_log.h"
+#include "com/diag/diminuto/diminuto_line.h"
 #include <errno.h>
 #include <string.h>
 #include <stdint.h>
@@ -152,7 +153,7 @@ int diminuto_modulator_set(diminuto_modulator_t * mp, diminuto_modulator_cycle_t
             }
         }
 
-        DIMINUTO_LOG_DEBUG("diminuto_modulator@%p: set pin=%d error=%d duty=%d on0=%d off0=%d on=%d off=%d cycle=%d ton=%d toff=%d state=%d set=%d flicker=%u\n", mp, mp->pin, mp->error, mp->duty, on0, off0, mp->on, mp->off, mp->cycle, mp->ton, mp->toff, mp->state, mp->set, diminuto_modulator_flicker(mp->ton, mp->toff));
+        DIMINUTO_LOG_DEBUG("diminuto_modulator@%p: set error=%d duty=%d on0=%d off0=%d on=%d off=%d cycle=%d ton=%d toff=%d state=%d set=%d flicker=%u\n", mp, mp->error, mp->duty, on0, off0, mp->on, mp->off, mp->cycle, mp->ton, mp->toff, mp->state, mp->set, diminuto_modulator_flicker(mp->ton, mp->toff));
 
     DIMINUTO_CONDITION_END;
 
@@ -201,7 +202,7 @@ static void * callback(void * vp)
         DIMINUTO_CONDITION_END;
 
         /*
-         * We change the pin state only at the end
+         * We change the output state only at the end
          * of a complete cycle. We check for the edge
          * cases of 100% (always on) and 0% (always
          * off).
@@ -209,23 +210,33 @@ static void * callback(void * vp)
 
         if (mp->state) {
             if (mp->off > 0) {
-                rc = diminuto_pin_clear(mp->fp);
+                rc = (*(mp->functionp))(mp->contextp, 0);
                 if (rc < 0) {
                     mp->error = errno;
+                    (void)diminuto_modulator_stop(mp);
+                } else if (rc == 0) {
+                    mp->error = 0;
+                    (void)diminuto_modulator_stop(mp);
+                } else {
+                    mp->cycle = mp->off;
+                    mp->state = 0;
                 }
-                mp->cycle = mp->off;
-                mp->state = 0;
             } else {
                 mp->cycle = mp->on; /* 100% */
             }
         } else {
             if (mp->on > 0) {
-                rc = diminuto_pin_set(mp->fp);
+                rc = (*(mp->functionp))(mp->contextp, !0);
                 if (rc < 0) {
                     mp->error = errno;
+                    (void)diminuto_modulator_stop(mp);
+                } else if (rc == 0) {
+                    mp->error = 0;
+                    (void)diminuto_modulator_stop(mp);
+                } else {
+                    mp->cycle = mp->on;
+                    mp->state = !0;
                 }
-                mp->cycle = mp->on;
-                mp->state = !0;
             } else {
                 mp->cycle = mp->off; /* 0% */
             }
@@ -236,7 +247,16 @@ static void * callback(void * vp)
     return (void *)(uintptr_t)(mp->cycle);
 }
 
-diminuto_modulator_t * diminuto_modulator_init(diminuto_modulator_t * mp, int pin, diminuto_modulator_cycle_t duty)
+int diminuto_modulator_function(void * vp, bool value)
+{
+    int rc = -1;
+
+    rc = diminuto_line_put(*(int *)vp, value);
+
+    return (rc < 0) ? rc : !0;
+}
+
+diminuto_modulator_t * diminuto_modulator_init(diminuto_modulator_t * mp, diminuto_modulator_function_t * ep, void * vp, diminuto_modulator_cycle_t duty)
 {
     diminuto_modulator_t * result = (diminuto_modulator_t *)0;
     diminuto_timer_t * tp = (diminuto_timer_t *)0;
@@ -251,7 +271,8 @@ diminuto_modulator_t * diminuto_modulator_init(diminuto_modulator_t * mp, int pi
          * an off state.
          */
 
-        mp->pin = pin;
+        mp->functionp = ep;
+        mp->contextp = vp;
         mp->error = 0;
         mp->state = 0;
         mp->duty = duty;
@@ -262,11 +283,6 @@ diminuto_modulator_t * diminuto_modulator_init(diminuto_modulator_t * mp, int pi
         mp->ton = DIMINUTO_MODULATOR_DUTY_MIN;
         mp->toff = DIMINUTO_MODULATOR_DUTY_MAX;
 
-        rc = diminuto_pin_unexport_ignore(pin);
-        if (rc < 0) {
-            break;
-        }
-
         tp = diminuto_timer_init_periodic(&(mp->timer), callback);
         if (tp == (diminuto_timer_t *)0) {
             break;
@@ -274,11 +290,6 @@ diminuto_modulator_t * diminuto_modulator_init(diminuto_modulator_t * mp, int pi
 
         cp = diminuto_condition_init(&(mp->condition));
         if (cp == (diminuto_condition_t *)0) {
-            break;
-        }
-
-        mp->fp = diminuto_pin_output(pin);
-        if (mp->fp == (FILE *)0) {
             break;
         }
 
@@ -324,10 +335,6 @@ diminuto_modulator_t * diminuto_modulator_fini(diminuto_modulator_t * mp)
     }
 
     if (diminuto_timer_fini(&(mp->timer)) != (diminuto_timer_t *)0) {
-        result = mp;
-    }
-
-    if ((mp->fp = diminuto_pin_unused(mp->fp, mp->pin)) != (FILE *)0) {
         result = mp;
     }
 

@@ -20,13 +20,12 @@
 #include "com/diag/diminuto/diminuto_delay.h"
 #include "com/diag/diminuto/diminuto_frequency.h"
 #include "com/diag/diminuto/diminuto_interrupter.h"
+#include "com/diag/diminuto/diminuto_line.h"
 #include "com/diag/diminuto/diminuto_log.h"
 #include "com/diag/diminuto/diminuto_modulator.h"
-#include "com/diag/diminuto/diminuto_pin.h"
 #include "com/diag/diminuto/diminuto_terminator.h"
 #include "com/diag/diminuto/diminuto_timer.h"
 #include "com/diag/diminuto/diminuto_types.h"
-
 #include <assert.h>
 #include <errno.h>
 #include <pthread.h>
@@ -36,6 +35,7 @@
 #include <sys/resource.h>
 #include <sys/time.h>
 #include <unistd.h>
+#include "../fun/hardware_test_fixture.h"
 
 static const char * program = (const char *)0;
 
@@ -45,8 +45,10 @@ int main(int argc, char * argv[])
     int pin = -1;
     int duty = 0;
     int rc = 0;
+    int fd = -1;
     diminuto_modulator_t modulator = { 0 };
     diminuto_modulator_t * mp = (diminuto_modulator_t *)0;
+    const char * path = (const char *)0;
 
     /*
      * Process arguments from the command line.
@@ -54,6 +56,9 @@ int main(int argc, char * argv[])
 
     program = argv[0]; 
     assert(program != (const char *)0);
+
+    path = hardware_test_fixture_device();
+    assert(path != (const char *)0);
 
     if (argc != 3) {
         fprintf(stderr, "usage: %s PIN DUTY\n", program);
@@ -82,10 +87,13 @@ int main(int argc, char * argv[])
 
     fprintf(stderr, "%s: initializing\n", program);
 
-    mp = diminuto_modulator_init(&modulator, pin, duty);
-    assert(mp == &modulator);;
-    assert(modulator.pin == pin);
-    assert(modulator.fp != (FILE *)0);
+    fd = diminuto_line_open_output(path, pin);
+    assert(fd >= 0);
+
+    mp = diminuto_modulator_init(&modulator, &diminuto_modulator_function, &fd, duty);
+    assert(mp == &modulator);
+    assert(modulator.functionp == &diminuto_modulator_function);
+    assert(modulator.contextp == &fd);
     assert(modulator.duty == duty);
     assert((255 % (modulator.ton + modulator.toff)) == 0);
 
@@ -160,6 +168,9 @@ int main(int argc, char * argv[])
     /*
      * Exit.
      */
+
+    fd = diminuto_line_close(fd);
+    assert(fd < 0);
 
     fprintf(stderr, "%s: exiting\n", program);
 

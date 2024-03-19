@@ -123,7 +123,7 @@ static inline int diminuto_line_open(const char * path, diminuto_line_offset_t l
 
 extern int diminuto_line_get(int fd);
 
-extern int diminuto_line_put(int fd, int bit);
+extern int diminuto_line_put(int fd, int state);
 
 /*******************************************************************************
  * HELPERS

@@ -18,13 +18,12 @@
 #include "com/diag/diminuto/diminuto_delay.h"
 #include "com/diag/diminuto/diminuto_frequency.h"
 #include "com/diag/diminuto/diminuto_interrupter.h"
+#include "com/diag/diminuto/diminuto_line.h"
 #include "com/diag/diminuto/diminuto_log.h"
 #include "com/diag/diminuto/diminuto_modulator.h"
-#include "com/diag/diminuto/diminuto_pin.h"
 #include "com/diag/diminuto/diminuto_terminator.h"
 #include "com/diag/diminuto/diminuto_timer.h"
 #include "com/diag/diminuto/diminuto_types.h"
-#include "../fun/hardware_test_fixture.h"
 #include <assert.h>
 #include <errno.h>
 #include <pthread.h>
@@ -35,6 +34,7 @@
 #include <sys/resource.h>
 #include <sys/time.h>
 #include <unistd.h>
+#include "../fun/hardware_test_fixture.h"
 
 static const char * program = (const char *)0;
 
@@ -51,6 +51,7 @@ int main(int argc, char * argv[])
         HARDWARE_TEST_FIXTURE_PIN_LED_2,
         HARDWARE_TEST_FIXTURE_PIN_LED_1,
     };
+    int fd[4] = { -1, -1, -1, -1 };
     int duty[4] = { 0 };
     int rc = 0;
     diminuto_modulator_t modulator[4] = { { 0 } };
@@ -58,6 +59,7 @@ int main(int argc, char * argv[])
     unsigned int seconds = 1;
     int reverse = 0;
     int ii = 0;
+    const char * path = (const char *)0;
 
     /*
      * Process arguments from the command line.
@@ -65,6 +67,9 @@ int main(int argc, char * argv[])
 
     program = argv[0];
     assert(program != (const char *)0);
+
+    path = hardware_test_fixture_device();
+    assert(path != (const char *)0);
 
     if ((argc >= 2) && (strcmp(argv[1], "-?") == 0)) {
         fprintf(stderr, "usage: %s [ SECONDS [ PIN1 [ PIN2 [ PIN3 [ PIN4 ] ] ] ] ]\n", program);
@@ -96,7 +101,7 @@ int main(int argc, char * argv[])
         assert(pin[3] >= 0);
     }
 
-    fprintf(stderr, "%s: using %d %d %d %d %d\n", program, seconds, pin[0], pin[1], pin[2], pin[3] );
+    fprintf(stderr, "%s: using \"%s\" %d %d %d %d %d\n", program, path, seconds, pin[0], pin[1], pin[2], pin[3] );
 
     /*
      * Install signal handlers.
@@ -119,11 +124,13 @@ int main(int argc, char * argv[])
 
     for (ii = 0; ii < countof(pin); ++ii) {
         if (pin[ii] >= 0) {
-            fprintf(stderr, "%s: initializing %d %d\n", program, pin[ii], duty[ii]);
-            mp = diminuto_modulator_init(&(modulator[ii]), pin[ii], duty[ii]);
+            fd[ii] = diminuto_line_open_output(path, pin[ii]);
+            assert(fd[ii] >= 0);
+            fprintf(stderr, "%s: initializing %d %d %d\n", program, pin[ii], duty[ii], fd[ii]);
+            mp = diminuto_modulator_init(&(modulator[ii]), &diminuto_modulator_function, &(fd[ii]), duty[ii]);
             assert(mp == &(modulator[ii]));
-            assert(modulator[ii].pin == pin[ii]);
-            assert(modulator[ii].fp != (FILE *)0);
+            assert(modulator[ii].functionp == &diminuto_modulator_function);
+            assert(modulator[ii].contextp == &(fd[ii]));
             assert(modulator[ii].duty == duty[ii]);
         }
     }
@@ -231,6 +238,14 @@ int main(int argc, char * argv[])
     /*
      * Exit.
      */
+
+    for (ii = 0; ii < countof(fd); ++ii) {
+        if (pin[ii] >= 0) {
+            fprintf(stderr, "%s: closing %d %d\n", program, pin[ii], fd[ii]);
+            fd[ii] = diminuto_line_close(fd[ii]);
+            assert(fd[ii] < 0);
+        }
+    }
 
     fprintf(stderr, "%s: exiting\n", program);
 

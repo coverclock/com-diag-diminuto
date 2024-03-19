@@ -12,7 +12,6 @@
 
 #include "com/diag/diminuto/diminuto_unittest.h"
 #include "com/diag/diminuto/diminuto_types.h"
-#include "com/diag/diminuto/diminuto_pin.h"
 #include "com/diag/diminuto/diminuto_frequency.h"
 #include "com/diag/diminuto/diminuto_modulator.h"
 #include "com/diag/diminuto/diminuto_delay.h"
@@ -25,32 +24,17 @@
 #include <sys/stat.h>
 #include <sys/types.h>
 
-static const char TMP[] = "/tmp";
+static bool state = false;
 
-
-static int systemf(const char * format, ...)
+static int callback(void * vp, bool value)
 {
-    int rc;
-    va_list ap;
-    diminuto_path_t buffer;
-
-    COMMENT("format=\"%s\"", format);
-
-    va_start(ap, format);
-    vsnprintf(buffer, sizeof(buffer), format, ap);
-    va_end(ap);
-
-    COMMENT("command=\"%s\"", buffer);
-
-    ASSERT((rc = system(buffer)) >= 0);
-
-    return rc;
+    *((bool *)vp) = value;
+    return 1;
 }
 
 int main(int argc, char ** argv)
 {
     diminuto_modulator_t modulator;
-    const char * root;
 
     SETLOGMASK();
 
@@ -137,45 +121,6 @@ int main(int argc, char ** argv)
     }
 
     {
-        const char * prior;
-        diminuto_path_t buffer;
-
-        TEST();
-
-        COMMENT("sizeof=%zu", sizeof(buffer));
-        ASSERT(argv[0] != (char *)0);
-        root = strrchr(argv[0], '/');
-        root = (root == (char *)0) ? argv[0] : root + 1;
-        ASSERT(root != (const char *)0);
-        COMMENT("root=\"%s\"", root);
-        memset(&buffer, 0, sizeof(buffer));
-        snprintf(buffer, sizeof(buffer), "%s/%s-XXXXXX", TMP, root);
-        ASSERT(buffer[sizeof(buffer) - 1] == '\0');
-        COMMENT("buffer=\"%s\"", buffer);
-        root = mkdtemp(buffer);
-        ASSERT(root != (const char *)0);
-        ASSERT(*root != '\0');
-        COMMENT("mkdtemp=\"%s\"", root);
-        prior = diminuto_pin_debug(root);
-        ASSERT(prior != (const char *)0);
-        ASSERT(*prior != '\0');
-        COMMENT("prior=\"%s\"", prior);
-
-        ASSERT(systemf("mkdir -p %s/class/gpio/gpio%u", root, 99) == 0);
-
-        ASSERT(systemf("touch %s/class/gpio/export", root) == 0);
-        ASSERT(systemf("touch %s/class/gpio/unexport", root) == 0);
-
-        ASSERT(systemf("touch %s/class/gpio/gpio%u/direction", root, 99) == 0);
-        ASSERT(systemf("touch %s/class/gpio/gpio%u/value", root, 99) == 0);
-        ASSERT(systemf("touch %s/class/gpio/gpio%u/edge", root, 99) == 0);
-        ASSERT(systemf("touch %s/class/gpio/gpio%u/active_low", root, 99) == 0);
-
-        STATUS();
-
-    }
-
-    {
         int duty;
 
         TEST();
@@ -183,7 +128,7 @@ int main(int argc, char ** argv)
         COMMENT("INIT");
 
         for (duty = 255; duty >= 0; --duty) {
-            ASSERT(diminuto_modulator_init(&modulator, 99, duty) == &modulator);
+            ASSERT(diminuto_modulator_init(&modulator, &callback, &state, duty) == &modulator);
             ASSERT(modulator.duty == duty);
             ASSERT(0 <= modulator.ton);
             ASSERT(modulator.ton <= 255);
@@ -253,19 +198,11 @@ int main(int argc, char ** argv)
     }
 
     {
-        const char * prior;
-
         TEST();
 
         COMMENT("FINI");
 
         ASSERT(diminuto_modulator_fini(&modulator) == (diminuto_modulator_t *)0);
-
-        EXPECT(systemf("rm -rf %s", root) == 0);
-
-        prior = diminuto_pin_debug((const char *)0);
-        ASSERT(prior != (const char *)0);
-        EXPECT(prior == root);
 
         STATUS();
     }

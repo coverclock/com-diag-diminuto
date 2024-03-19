@@ -301,7 +301,7 @@ const char * diminuto_line_parse(const char * parameter, char * buffer, size_t s
  * OPENING, CLOSING
  ******************************************************************************/
 
-int diminuto_line_open_generic(const char * path, const unsigned int line[], size_t lines, uint64_t flags, uint32_t useconds)
+int diminuto_line_open_generic(const char * path, const diminuto_line_offset_t line[], size_t lines, diminuto_line_bits_t flags, diminuto_line_duration_t useconds)
 {
     int result = -1;
     int rc = -1;
@@ -318,7 +318,7 @@ int diminuto_line_open_generic(const char * path, const unsigned int line[], siz
         }
 
         for (ii = 0; ii < lines; ++ii) {
-            if (line[ii] >= widthof(uint64_t)) {
+            if (line[ii] >= widthof(diminuto_line_bits_t)) {
                 break;
             }
             request.offsets[ii] = line[ii];
@@ -391,7 +391,7 @@ int diminuto_line_close(int fd)
  * ACCESSING
  ******************************************************************************/
 
-int diminuto_line_get_generic(int fd, uint64_t mask, uint64_t * bitsp)
+int diminuto_line_get_generic(int fd, diminuto_line_bits_t mask, diminuto_line_bits_t * bitsp)
 {
     int rc = -1;
     struct gpio_v2_line_values values = { 0, };
@@ -423,7 +423,7 @@ int diminuto_line_get(int fd)
 {
     int result = -1;
     int rc = -1;
-    uint64_t bits = 0;
+    diminuto_line_bits_t bits = 0;
 
     do {
 
@@ -432,7 +432,7 @@ int diminuto_line_get(int fd)
             break;
         }
 
-        result = !!bits;
+        result = !!(bits & 0x1);
 
     } while (0);
 
@@ -443,7 +443,7 @@ int diminuto_line_get(int fd)
  * MODIFYING
  ******************************************************************************/
 
-int diminuto_line_put_generic(int fd, uint64_t mask, uint64_t bits)
+int diminuto_line_put_generic(int fd, diminuto_line_bits_t mask, diminuto_line_bits_t bits)
 {
     int rc = -1;
     struct gpio_v2_line_values values = { 0, };
@@ -470,22 +470,22 @@ int diminuto_line_put_generic(int fd, uint64_t mask, uint64_t bits)
     return rc;
 }
 
-int diminuto_line_put(int fd, int bit)
+int diminuto_line_put(int fd, int state)
 {
     int result = -1;
     int rc = -1;
-    uint64_t bits = 0;
+    diminuto_line_bits_t bits = 0;
 
     do {
 
-        bits = !!bit;
+        bits = state ? 0x1 : 0x0;
 
         rc = diminuto_line_put_generic(fd, 0x1, bits);
         if (rc < 0) {
             break;
         }
 
-        result = bit;
+        result = state;
 
     } while (0);
 

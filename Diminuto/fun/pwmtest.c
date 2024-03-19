@@ -18,12 +18,11 @@
 #include "com/diag/diminuto/diminuto_criticalsection.h"
 #include "com/diag/diminuto/diminuto_frequency.h"
 #include "com/diag/diminuto/diminuto_interrupter.h"
+#include "com/diag/diminuto/diminuto_line.h"
 #include "com/diag/diminuto/diminuto_log.h"
-#include "com/diag/diminuto/diminuto_pin.h"
 #include "com/diag/diminuto/diminuto_terminator.h"
 #include "com/diag/diminuto/diminuto_timer.h"
 #include "com/diag/diminuto/diminuto_types.h"
-
 #include <assert.h>
 #include <errno.h>
 #include <pthread.h>
@@ -32,6 +31,7 @@
 #include <sys/resource.h>
 #include <sys/time.h>
 #include <unistd.h>
+#include "../fun/hardware_test_fixture.h"
 
 static const diminuto_ticks_t HERTZ = 10000; /* 100us */
 
@@ -51,13 +51,14 @@ int main(int argc, char * argv[])
     int on = 0;
     int off = 0;
     int rc = 0;
-    FILE * fp = (FILE *)0;
+    int fd = -1;
     diminuto_sticks_t frequency = 0;
     diminuto_sticks_t ticks = 0;
     int cycle = 0;
     int state = 0;
     float percentage = 0.0;
     float ratio = 0.0;
+    const char * path = (const char *)0;
 
     /*
      * Process arguments from the command line.
@@ -65,6 +66,9 @@ int main(int argc, char * argv[])
   
     program = argv[0]; 
     assert(program != (const char *)0);
+
+    path = hardware_test_fixture_device();
+    assert(path != (const char *)0);
 
     if (argc != 3) {
         fprintf(stderr, "usage: %s PIN DUTY\n", program);
@@ -136,17 +140,17 @@ int main(int argc, char * argv[])
      * Initialize the output pin.
      */
 
-    fp = diminuto_pin_output(pin);
-    assert(fp != (FILE *)0);
+    fd = diminuto_line_open_output(path, pin);
+    assert(fd >= 0);
 
     if (on == 0) {
-        rc = diminuto_pin_clear(fp);
+        rc = diminuto_line_clear(fd);
         state = 0;
     } else if (off == 0) {
-        rc = diminuto_pin_set(fp);
+        rc = diminuto_line_set(fd);
         state = !0;
     } else {
-        rc = diminuto_pin_clear(fp);
+        rc = diminuto_line_clear(fd);
         state = 0;
     }
     assert(rc >= 0);
@@ -205,12 +209,12 @@ int main(int argc, char * argv[])
             cycle -= 1;
         } else if (state && (off > 0)) {
             state = 0;
-            rc = diminuto_pin_clear(fp);
+            rc = diminuto_line_clear(fd);
             assert(rc >= 0);
             cycle = off - 1;
         } else if (!state && (on > 0)) {
             state = !0;
-            rc = diminuto_pin_set(fp);
+            rc = diminuto_line_set(fd);
             assert(rc >= 0);
             cycle = on - 1;
         } else {
@@ -226,8 +230,8 @@ int main(int argc, char * argv[])
     ticks = diminuto_timer_periodic(0);
     assert(ticks >= 0);
 
-    fp = diminuto_pin_unused(fp, pin);
-    assert(fp == (FILE *)0);
+    fd = diminuto_line_close(fd);
+    assert(fd < 0);
 
     /*
      * Exit.

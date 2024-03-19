@@ -50,13 +50,12 @@
 #include "com/diag/diminuto/diminuto_frequency.h"
 #include "com/diag/diminuto/diminuto_interrupter.h"
 #include "com/diag/diminuto/diminuto_i2c.h"
+#include "com/diag/diminuto/diminuto_line.h"
 #include "com/diag/diminuto/diminuto_log.h"
 #include "com/diag/diminuto/diminuto_modulator.h"
 #include "com/diag/diminuto/diminuto_mux.h"
-#include "com/diag/diminuto/diminuto_pin.h"
 #include "com/diag/diminuto/diminuto_terminator.h"
 #include "com/diag/diminuto/diminuto_time.h"
-#include "hardware_test_fixture.h"
 #include "ti/ads1115.h"
 #include <assert.h>
 #include <errno.h>
@@ -68,6 +67,7 @@
 #include <sys/stat.h>
 #include <sys/types.h>
 #include <unistd.h>
+#include "../fun/hardware_test_fixture.h"
 
 /*
  * These parameters control the setttling time of the software PWM control
@@ -127,13 +127,14 @@ static const diminuto_controller_input_t MAXIMUM_MILLIVOLTS = 6144;
 int main(int argc, char ** argv) {
     int xc = 0;
     const char * program = (const char *)0;
-    int fd = -1;
+    int fdi2c = -1;
+    int fdled = -1;
+    int fdisr = -1;
     int rc = -1;
     int led = OUTPUT_GPIO_PIN;
     int bus = INPUT_I2C_BUS;
     int device = INPUT_I2C_DEVICE;
     int interrupt = INPUT_GPIO_PIN;
-    FILE * fp = (FILE *)0;
     double adc = 0.0;
     diminuto_mux_t mux;
     diminuto_ticks_t delay = 0;
@@ -153,8 +154,12 @@ int main(int argc, char ** argv) {
     int inputs = 0;
     int outputs = 0;
     bool debug = 0;
+    const char * path = (const char *)0;
 
     delay = diminuto_frequency() / 2; /* 500ms > 400ms integration time. */
+
+    path = hardware_test_fixture_device();
+    assert(path != (const char *)0);
 
     /*
      * Command line arguments.
@@ -215,31 +220,27 @@ int main(int argc, char ** argv) {
      * I2C light sensor.
      */
 
-    fd = diminuto_i2c_open(bus);
-    assert(fd >= 0);
+    fdi2c = diminuto_i2c_open(bus);
+    assert(fdi2c >= 0);
 
-    rc = ti_ads1115_configure_default(fd, device);
+    rc = ti_ads1115_configure_default(fdi2c, device);
     assert(rc >= 0);
 
     if (debug) {
-        rc = ti_ads1115_print(fd, device, stderr);
+        rc = ti_ads1115_print(fdi2c, device, stderr);
         assert(rc >= 0);
     }
 
     /*
      * GPIO interrupt pin.
+     * LED output pin.
      */
 
-    (void)diminuto_pin_unexport_ignore(interrupt); 
+    fdisr = diminuto_line_open_read(path, interrupt, DIMINUTO_LINE_FLAG_INPUT | DIMINUTO_LINE_FLAG_EDGE_RISING, 0);
+    assert(fdisr >= 0);
 
-    fp = diminuto_pin_input(interrupt);
-    assert(fp != (FILE *)0);
-
-    rc = diminuto_pin_active(interrupt, 0);
-    assert(rc == 0);
-
-    rc = diminuto_pin_edge(interrupt, DIMINUTO_PIN_EDGE_RISING);
-    assert(rc == 0);
+    fdled = diminuto_line_open_output(path, led);
+    assert(fdled >= 0);
 
     /*
      * Multiplexer.
@@ -247,7 +248,7 @@ int main(int argc, char ** argv) {
 
     diminuto_mux_init(&mux);
 
-    rc = diminuto_mux_register_interrupt(&mux, fileno(fp));
+    rc = diminuto_mux_register_read(&mux, fdisr);
     assert(rc >= 0);
 
     /*
@@ -283,7 +284,7 @@ int main(int argc, char ** argv) {
      * Pulse width modulator.
      */
 
-    mp = diminuto_modulator_init(&modulator, led, output);
+    mp = diminuto_modulator_init(&modulator, diminuto_modulator_function, &fdled, output);
     assert(mp == &modulator);
 
     /*
@@ -307,10 +308,10 @@ int main(int argc, char ** argv) {
      * Retire pending.
      */
 
-    bit = diminuto_pin_get(fp);
+    bit = diminuto_line_get(fdisr);
     assert(bit >= 0);
 
-    rc = ti_ads1115_sense(fd, device, &adc);
+    rc = ti_ads1115_sense(fdi2c, device, &adc);
     assert(rc >= 0);
 
     /*
@@ -340,20 +341,20 @@ int main(int argc, char ** argv) {
             break;
         }
 
-        while ((rc = diminuto_mux_ready_interrupt(&mux)) >= 0) {
+        while ((rc = diminuto_mux_ready_read(&mux)) >= 0) {
 
-            if (rc != fileno(fp)) {
+            if (rc != fdisr) {
                 continue;
             }
 
-            bit = diminuto_pin_get(fp);
+            bit = diminuto_line_read(fdisr);
             assert(bit >= 0);
 
             if (bit == 0) {
                 continue;
             }
 
-            rc = ti_ads1115_sense(fd, device, &adc);
+            rc = ti_ads1115_sense(fdi2c, device, &adc);
             assert(rc >= 0);
 
             input = (adc + 0.5) * 1000.0;
@@ -400,16 +401,19 @@ int main(int argc, char ** argv) {
 
     diminuto_controller_fini(&parameters, &state);
 
-    rc = diminuto_mux_unregister_interrupt(&mux, fileno(fp));
+    rc = diminuto_mux_unregister_read(&mux, fdisr);
     assert(rc >= 0);
 
     diminuto_mux_fini(&mux);
 
-    fp = diminuto_pin_unused(fp, interrupt);
-    assert(fp == (FILE *)0);
+    fdisr = diminuto_line_close(fdisr);
+    assert(fdisr < 0);
 
-    fd = diminuto_i2c_close(fd);
-    assert(fd < 0);
+    fdled = diminuto_line_close(fdled);
+    assert(fdled < 0);
+
+    fdi2c = diminuto_i2c_close(fdi2c);
+    assert(fdi2c < 0);
 
     if (debug) {
         fprintf(stderr, "%s: exiting\n", program);
