@@ -47,6 +47,8 @@
 #include "com/diag/diminuto/diminuto_delay.h"
 #include "com/diag/diminuto/diminuto_error.h"
 #include "com/diag/diminuto/diminuto_frequency.h"
+#include "com/diag/diminuto/diminuto_log.h"
+#include "com/diag/diminuto/diminuto_main.h"
 #include "com/diag/diminuto/diminuto_minmaxof.h"
 #include "com/diag/diminuto/diminuto_mux.h"
 #include "com/diag/diminuto/diminuto_number.h"
@@ -62,34 +64,31 @@
  * CODE GENERATORS
  ******************************************************************************/
 
-#define DEBUGOPTION (debug ? fprintf(stderr, "%s [%d] -%c\n", program, (int)pid, opt) : 0)
+#define DEBUGOPTION DIMINUTO_LOG_DEBUG("%s -%c\n", program, opt)
 
-#define DEBUGSTRINGOPTION (debug ? fprintf(stderr, "%s [%d] -%c \"%s\"\n", program, (int)pid, opt, optarg) : 0)
+#define DEBUGSTRINGOPTION DIMINUTO_LOG_DEBUG("%s -%c \"%s\"\n", program, opt, optarg)
 
-#define DEBUGNUMERICOPTION (debug ? fprintf(stderr, "%s [%d] -%c %s\n", program, (int)pid, opt, optarg) : 0)
+#define DEBUGNUMERICOPTION DIMINUTO_LOG_DEBUG("%s -%c %s\n", program, opt, optarg)
 
-#define DEBUGCONTEXT (debug ? fprintf(stderr, "%s [%d] { \"%s\" %u 0x%llx %u (%d) }\n", program, (int)pid, (path == (const char *)0) ? "" : path, line, (unsigned long long)flags, useconds, fd) : 0)
+#define DEBUGCONTEXT DIMINUTO_LOG_DEBUG("%s { \"%s\" %u 0x%llx %u (%d) }\n", program, (path == (const char *)0) ? "" : path, line, (unsigned long long)flags, useconds, fd)
 
-#define CLEARCONTEXT do { path = (const char *)0; line = maximumof(typeof(line)); flags = 0x0; useconds = 0; } while (0)
+#define DEBUGEDGE DIMINUTO_LOG_DEBUG("%s <%d>\n", program, edge)
 
-#define DEBUGEDGE (debug ? fprintf(stderr, "%s [%d] <%d>\n", program, (int)pid, edge) : 0)
+#define DEBUGSTATE DIMINUTO_LOG_DEBUG("%s (%d)\n", program, state)
 
-#define DEBUGSTATE (debug ? fprintf(stderr, "%s [%d] (%d)\n", program, (int)pid, state) : 0)
+#define DEBUGWAIT DIMINUTO_LOG_DEBUG("%s ?\n", program)
 
-#define DEBUGWAIT (debug ? fprintf(stderr, "%s [%d] ?\n", program, (int)pid) : 0)
+#define DEBUGPIPE DIMINUTO_LOG_DEBUG("%s %d!\n", program, SIGPIPE)
 
-#define DEBUGPIPE (debug ? fprintf(stderr, "%s [%d] %d!\n", program, (int)pid, SIGPIPE) : 0)
-
-#define DEBUGEXIT (debug ? fprintf(stderr, "%s [%d] %d %d %d %d\n", program, (int)pid, error, fail, done, xc) : 0)
+#define DEBUGEXIT DIMINUTO_LOG_DEBUG("%s %d %d %d %d\n", program, error, fail, done, xc)
 
 /*******************************************************************************
- * STATICS
+ * USAGE
  ******************************************************************************/
 
-static const char OPTIONS[] = "1BD:FHLM:NOP:RSUX:b:cdefhilm:nop:rstu:vw:x?";
+static const char OPTIONS[] = "1BD:FHLM:NOP:RSUX:b:cefhilm:nop:rstu:vw:x?";
 
-static const char USAGE[] = "[ -d ] "
-                            "[ -S ] "
+static const char USAGE[] = "[ -S ] "
                             "[ [ -D DEVICE -p LINE ] | [ -P DEVICE:LINE ] ] "
                             "[ -i ] [ -o ] "
                             "[ -H | -L ]"
@@ -103,10 +102,6 @@ static const char USAGE[] = "[ -d ] "
                             "[ -n | -e ] "
                             "[ -O ] "
                             "[ ... ] ";
-
-/*******************************************************************************
- * HELPERS
- ******************************************************************************/
 
 static void usage(const char * program)
 {
@@ -127,7 +122,6 @@ static void usage(const char * program)
     fprintf(stderr, "       -X COMMAND      Execute COMMAND DEVICE LINE STATE PRIOR in shell for -m.\n");
     fprintf(stderr, "       -b USECONDS     Poll with software debounce period of USECONDS (try 10000).\n");
     fprintf(stderr, "       -c              Clear LINE by writing 0.\n");
-    fprintf(stderr, "       -d              Enable debug mode.\n");
     fprintf(stderr, "       -e              Close LINE but keep context.\n");
     fprintf(stderr, "       -f              Proceed if the last LINE state was 0.\n");
     fprintf(stderr, "       -h              Configure context direction to output and active to high.\n");
@@ -141,7 +135,7 @@ static void usage(const char * program)
     fprintf(stderr, "       -s              Set LINE by writing !0.\n");
     fprintf(stderr, "       -t              Proceed if the last LINE state was !0.\n");
     fprintf(stderr, "       -u USECONDS     Delay for USECONDS microseconds.\n");
-    fprintf(stderr, "       -w [ 0 | 1 ]    Write STATE to LINE.\n");
+    fprintf(stderr, "       -w STATE        Write STATE [ 0 | 1 ] to LINE.\n");
     fprintf(stderr, "       -x              Configure LINE with context and open.\n");
     fprintf(stderr, "       -?              Print menu.\n");
 }
@@ -154,11 +148,9 @@ int main(int argc, char * argv[])
 {
     int xc = 0;
     const char * program = "linetool";
-    pid_t pid = -1;
     int done = 0;
     int fail = 0;
     int error = 0;
-    int debug = 0;
     int first = 0;
     int unique = 0;
     int state = 0;
@@ -188,12 +180,14 @@ int main(int argc, char * argv[])
     diminuto_line_duration_t useconds = 0;
     /* CONTEXT END */
 
+    program = diminuto_main_program();
+    diminuto_contract(program != (const char *)0);
+
+    diminuto_log_open(program);
+    (void)diminuto_log_setmask();
+
     rc = diminuto_core_enable();
     diminuto_contract(rc >= 0);
-
-    program = ((program = strrchr(argv[0], '/')) == (char *)0) ? argv[0] : program + 1;
-
-    pid = getpid();
 
     /*
      * The SIGPIPE is not received until the application tries to
@@ -381,16 +375,6 @@ int main(int argc, char * argv[])
             }
             break;
 
-        case 'd':
-            debug = !0;
-            DEBUGOPTION;
-            DEBUGCONTEXT;
-            {
-                extern int diminuto_pipe_debug;
-                diminuto_pipe_debug = !0;
-            }
-            break;
-
         case 'e':
             DEBUGOPTION;
             /*
@@ -485,8 +469,14 @@ int main(int argc, char * argv[])
                     diminuto_yield();
                     continue;
                 } else if ((ready = diminuto_mux_ready_read(&mux)) < 0) {
-                    fail = !0;
-                    break;
+                    if (errno == EINTR) {
+                        /* SIGPIPE presumably. */
+                        diminuto_yield();
+                        continue;
+                    } else {
+                        fail = !0;
+                        break;
+                    }
                 } else if (ready != fd) {
                     errno = ENOENT;
                     diminuto_perror("diminuto_mux_ready_read");
@@ -531,7 +521,10 @@ int main(int argc, char * argv[])
 
         case 'n':
             DEBUGOPTION;
-            CLEARCONTEXT;
+            path = (const char *)0;
+            line = maximumof(typeof(line));
+            flags = 0x0;
+            useconds = 0;
             /*
              * It is not an error to close a closed line.
              */

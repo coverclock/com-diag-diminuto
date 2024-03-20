@@ -27,8 +27,8 @@ DEVICE=${1:-${HARDWARE_TEST_FIXTURE_GPIO_DEVICE}}
 LINE=${2:-${HARDWARE_TEST_FIXTURE_PIN_LED_1}}
 
 while true; do
-	linetool -d -D ${DEVICE} -p ${LINE} -o -H -x -c
+	linetool -D ${DEVICE} -p ${LINE} -o -H -x -c
 	sleep 1
-	linetool -d -D ${DEVICE} -p ${LINE} -o -H -x -s
+	linetool -D ${DEVICE} -p ${LINE} -o -H -x -s
 	sleep 1
 done

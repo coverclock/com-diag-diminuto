@@ -19,6 +19,8 @@
  * the Raspberry Pi.
  *
  * SEE ALSO: hardware_test_fixture.sh
+ *
+ * NOTE: Remember to enable i2c-1 using raspi-config.
  */
 
 #include "avago/apds9301.h"
@@ -32,10 +34,6 @@
 static const char HARDWARE_TEST_FIXTURE_GPIO_DEVICE_PI4[] = COM_DIAG_DIMINUTO_HARDWARE_TEST_FIXTURE_GPIO_DEVICE_PI4;
 
 static const char HARDWARE_TEST_FIXTURE_GPIO_DEVICE_PI5[] = COM_DIAG_DIMINUTO_HARDWARE_TEST_FIXTURE_GPIO_DEVICE_PI5;
-
-static inline const char * hardware_test_fixture_gpio_device(void) {
-    return (diminuto_fs_type(HARDWARE_TEST_FIXTURE_GPIO_DEVICE_PI4) == DIMINUTO_FS_TYPE_CHARACTERDEV) ? HARDWARE_TEST_FIXTURE_GPIO_DEVICE_PI4 : (diminuto_fs_type(HARDWARE_TEST_FIXTURE_GPIO_DEVICE_PI5) == DIMINUTO_FS_TYPE_CHARACTERDEV) ? HARDWARE_TEST_FIXTURE_GPIO_DEVICE_PI5 : (const char *)0;
-}
 
 enum HardwareTestFixture {
     HARDWARE_TEST_FIXTURE_BUS_I2C           = 1, /* Specific to Raspberry Pi. */
@@ -52,5 +50,13 @@ enum HardwareTestFixture {
     HARDWARE_TEST_FIXTURE_PIN_INT_LUX       = 26, 
     HARDWARE_TEST_FIXTURE_PIN_INT_ADC       = 19, 
 };
+
+static inline const char * hardware_test_fixture_gpio_device(void) {
+    return (diminuto_fs_type(HARDWARE_TEST_FIXTURE_GPIO_DEVICE_PI5) == DIMINUTO_FS_TYPE_CHARACTERDEV)
+        ? HARDWARE_TEST_FIXTURE_GPIO_DEVICE_PI5
+        : (diminuto_fs_type(HARDWARE_TEST_FIXTURE_GPIO_DEVICE_PI4) == DIMINUTO_FS_TYPE_CHARACTERDEV)
+            ? HARDWARE_TEST_FIXTURE_GPIO_DEVICE_PI4
+            : (const char *)0;
+}
 
 #endif

@@ -28,6 +28,7 @@
 #include <pthread.h>
 #include <stdio.h>
 #include <stdlib.h>
+#include <string.h>
 #include <sys/resource.h>
 #include <sys/time.h>
 #include <unistd.h>
@@ -64,8 +65,9 @@ int main(int argc, char * argv[])
      * Process arguments from the command line.
      */
   
-    program = argv[0]; 
+    program = ((program = strrchr(argv[0], '/')) == (char *)0) ? argv[0] : program + 1;
     assert(program != (const char *)0);
+    (void)diminuto_line_consumer(program);
 
     path = hardware_test_fixture_gpio_device();
     assert(path != (const char *)0);
@@ -168,8 +170,10 @@ int main(int argc, char * argv[])
     rc = diminuto_interrupter_install(!0);
     assert(rc >= 0);
 
+#if 0
     rc = setpriority(PRIO_PROCESS, 0, -20);
     assert(rc >= 0);
+#endif
 
     ticks = diminuto_timer_periodic(ticks);
     assert(ticks >= 0);

@@ -1100,6 +1100,7 @@ sanity-test:	criticalsection-test
 	unittest-lock
 	unittest-log
 	unittest-macros
+	unittest-main
 	unittest-memory
 	unittest-memberof
 	unittest-meter

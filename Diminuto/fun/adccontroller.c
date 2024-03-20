@@ -172,6 +172,8 @@ int main(int argc, char ** argv) {
         argv += 1;
         argc -= 1;
     }
+    assert(program != (const char *)0);
+    (void)diminuto_line_consumer(program);
 
     if (argc < 1) {
         /* Do nothing. */

@@ -28,4 +28,4 @@
 DEVICE=${1:-${HARDWARE_TEST_FIXTURE_GPIO_DEVICE}}
 LINE=${2:-${HARDWARE_TEST_FIXTURE_PIN_PPS}}
 
-linetool -d -D ${DEVICE} -p ${LINE} -i -H -R -M 0 -x -m -1
+linetool -D ${DEVICE} -p ${LINE} -i -H -R -M 0 -x -m -1

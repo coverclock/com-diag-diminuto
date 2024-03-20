@@ -230,6 +230,15 @@ void diminuto_log_open_syslog(const char * name, int option, int facility)
         }
 #endif
 
+        /*
+         * I wuold have liked to have sached the Process IDentifier,
+         * but if the calling application does a fork, the PID of the
+         * new process will no longer be cached value. But once the
+         * the calling process becomes a daemon (which is whqt is being
+         * determined below), there is no going back; we assume any
+         * child process of the daemon will be a deamon.
+         */
+
         if (diminuto_log_cached) {
             /* Do nothing. */
         } else if (getpid() == getsid(0)) {

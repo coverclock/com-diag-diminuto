@@ -81,6 +81,8 @@ int main(int argc, char ** argv) {
     const char * path = (const char *)0;
 
     program = ((program = strrchr(argv[0], '/')) == (char *)0) ? argv[0] : program + 1;
+    assert(program != (const char *)0);
+    (void)diminuto_line_consumer(program);
 
     path = hardware_test_fixture_gpio_device();
     assert(path != (const char *)0);

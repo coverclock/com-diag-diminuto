@@ -18,6 +18,10 @@
 #
 # hardware_test_fixture.h
 #
+# NOTE
+#
+# Remember to enable i2c-1 using raspi-config.
+#
 
 PI4_HARDWARE_TEST_FIXTURE_GPIO_DEVICE="/dev/gpiochip0"
 PI5_HARDWARE_TEST_FIXTURE_GPIO_DEVICE="/dev/gpiochip4"
