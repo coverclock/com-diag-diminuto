@@ -110,7 +110,7 @@ int main(int argc, char ** argv) {
      * GPIO PWM pin.
      */
 
-    fdisr = diminuto_line_open_read(path, interrupt, DIMINUTO_LINE_FLAG_INPUT | DIMINUTO_LINE_FLAG_EDGE_RISING, 0);
+    fdisr = diminuto_line_open_read(path, interrupt, DIMINUTO_LINE_FLAG_INPUT | DIMINUTO_LINE_FLAG_ACTIVE_LOW | DIMINUTO_LINE_FLAG_EDGE_RISING, 0);
     assert(fdisr >= 0);
 
     value = diminuto_line_get(fdisr);
