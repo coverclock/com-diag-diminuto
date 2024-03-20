@@ -175,7 +175,7 @@ int main(int argc, char ** argv) {
             /* Do nothing. */
         }
 
-        while ((rc = diminuto_mux_ready_interrupt(&mux)) >= 0) {
+        while ((rc = diminuto_mux_ready_read(&mux)) >= 0) {
 
             if (rc != fdisr) {
                 continue;
