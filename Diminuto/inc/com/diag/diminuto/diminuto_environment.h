@@ -53,7 +53,7 @@ extern diminuto_readerwriter_t diminuto_environment_readerwriter;
 
 /**
  * Get the value of an environmental variable.
- * @param nae points to the name of the environmental variahle.
+ * @param name points to the name of the environmental variahle.
  * @return the value of the environmental variable or NULL if none.
  */
 extern char * diminuto_environment_get(const char * name);
@@ -87,7 +87,7 @@ extern int diminuto_environment_unset(const char * name);
 
 /**
  * Get the value of an environmental variable.
- * @param nae points to the name of the environmental variahle.
+ * @param name points to the name of the environmental variahle.
  * @return the value of the environmental variable or NULL if none.
  */
 static inline char * diminuto_getenv(const char * name) {

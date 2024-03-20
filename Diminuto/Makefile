@@ -858,7 +858,7 @@ compilationstages:
 # sudo apt-get install tabu
 # sudo apt-get install texlive-latex-extra
 
-.PHONY:	documentation manuals readme
+.PHONY:	documentation manuals
 
 DOCCOOKED := $(shell echo $(OUT)/$(DOC_DIR) | sed 's/\//\\\//g')
 
@@ -875,12 +875,6 @@ manuals:	$(OUT)/$(DOC_DIR)/latex $(OUT)/$(DOC_DIR)/man $(OUT)/$(DOC_DIR)/pdf
 	cp $(OUT)/$(DOC_DIR)/latex/refman.pdf $(OUT)/$(DOC_DIR)/pdf
 	cat $(OUT)/$(DOC_DIR)/man/man3/*.3 | groff -man -Tps - > $(OUT)/$(DOC_DIR)/pdf/manpages.ps
 	ps2pdf $(OUT)/$(DOC_DIR)/pdf/manpages.ps $(OUT)/$(DOC_DIR)/pdf/manpages.pdf
-
-$(OUT)/$(DOC_DIR)/html/README.html:	../README.md
-	mkdir -p $(OUT)/$(DOC_DIR)/html
-	grip ../README.md --export $(OUT)/$(DOC_DIR)/html/README.html
-
-readme:	$(OUT)/$(DOC_DIR)/html/README.html
 
 ########## Diffs and Patches
 

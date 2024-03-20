@@ -130,7 +130,7 @@ int diminuto_ipc6_identify(struct sockaddr * sap, diminuto_ipv6_t * addressp, di
  * @param node points to the nod name.
  * @param service points to the service name.
  * @param hints points to the addrinfo structure.
- * @pram res points to the arrayinfo value-result pointer.
+ * @param res points to the arrayinfo value-result pointer.
  ( @return the getaddrinfo(3) result.
  */
 static int diminuto_ipc6_getaddrinfo(const char * node, const char * service, const struct addrinfo * hints, struct addrinfo ** res)

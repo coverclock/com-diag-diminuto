@@ -6,7 +6,6 @@
  * Licensed under the terms in LICENSE.txt<BR>
  * Chip Overclock (mailto:coverclock@diag.com)<BR>
  * https://github.com/coverclock/com-diag-diminuto<BR>
- * THIS IS A WORK IN PROGRESS.
  * Conestoga is a project to pass packets containing arbitary binary data
  * in a UDP-like manner over an asynchronous serial connection. It will be
  * used in conjunction with the Fothergill project, which uses USB-powered

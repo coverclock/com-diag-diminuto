@@ -13,7 +13,7 @@
  */
 
 /**
- * @def DIMINUTO_ANSI_LOCATE_CURSOR
+ * @def DIMINUTO_ANSI_POSITION_CURSOR
  * Position cursor.
  */
 #define DIMINUTO_ANSI_POSITION_CURSOR(_ROW_, _COLUMN_) "\033[" #_ROW_ ";" #_COLUMN_ "H"

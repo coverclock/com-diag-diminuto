@@ -678,7 +678,6 @@ need to be installed.
     sudo apt-get install texlive-fonts-recommended
     sudo apt-get install texlive-fonts-extra
     sudo apt-get install texlive-science
-    sudo apt-get install grip
 
 ## Workflow
 

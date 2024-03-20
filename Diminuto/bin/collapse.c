@@ -17,10 +17,6 @@
  * 
  * collapse [ STRING [ ... ] ]
  *
- * EXAMPLE
- *
- * collapse '\aAB\103\0\x44\r\n' | phex
- *
  * SEE ALSO
  *
  * diminuto_escape
