@@ -45,6 +45,8 @@ typedef enum DiminutoLineFlag {
 	DIMINUTO_LINE_FLAG_OUTPUT =             GPIO_V2_LINE_FLAG_OUTPUT,
 	DIMINUTO_LINE_FLAG_EDGE_RISING =        GPIO_V2_LINE_FLAG_EDGE_RISING,
 	DIMINUTO_LINE_FLAG_EDGE_FALLING =       GPIO_V2_LINE_FLAG_EDGE_FALLING,
+	DIMINUTO_LINE_FLAG_EDGE_BOTH =          GPIO_V2_LINE_FLAG_EDGE_RISING | GPIO_V2_LINE_FLAG_EDGE_FALLING,
+	DIMINUTO_LINE_FLAG_READ =               GPIO_V2_LINE_FLAG_INPUT | GPIO_V2_LINE_FLAG_EDGE_RISING | GPIO_V2_LINE_FLAG_EDGE_FALLING,
 	DIMINUTO_LINE_FLAG_OPEN_DRAIN =         GPIO_V2_LINE_FLAG_OPEN_DRAIN,
 	DIMINUTO_LINE_FLAG_OPEN_SOURCE =        GPIO_V2_LINE_FLAG_OPEN_SOURCE,
 	DIMINUTO_LINE_FLAG_BIAS_PULL_UP =       GPIO_V2_LINE_FLAG_BIAS_PULL_UP,
@@ -108,7 +110,7 @@ extern int diminuto_line_close(int fd);
  ******************************************************************************/
 
 static inline int diminuto_line_open_read(const char * path, diminuto_line_offset_t line, diminuto_line_bits_t flags, diminuto_line_duration_t useconds) {
-    return diminuto_line_open_generic(path, &line, 1, flags, useconds);
+    return diminuto_line_open_generic(path, &line, 1, (flags == 0) ? DIMINUTO_LINE_FLAG_READ : flags, useconds);
 }
 
 extern int diminuto_line_read(int fd);
@@ -118,7 +120,7 @@ extern int diminuto_line_read(int fd);
  ******************************************************************************/
 
 static inline int diminuto_line_open(const char * path, diminuto_line_offset_t line, diminuto_line_bits_t flags) {
-    return diminuto_line_open_read(path, line, flags, 0);
+    return diminuto_line_open_generic(path, &line, 1, flags, 0);
 }
 
 extern int diminuto_line_get(int fd);
