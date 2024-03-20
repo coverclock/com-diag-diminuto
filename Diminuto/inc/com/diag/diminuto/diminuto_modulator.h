@@ -77,10 +77,10 @@ typedef int (diminuto_modulator_function_t)(void * vp, bool value);
 /**
  * THis is an example callback function that assumes the context pointer
  * references a file descriptor to a GPIO Line, and sets the value of
- * the Line approprite.y.
+ * the Line appropriately.
  * @param vp points to a GPIO Line file descriptor.
  * @param value is the current modulator condition, true or false.
- * @return <0 if an error occurred, !0 otherwise.
+ * @return <0 if an error occurred, !0 otherwise (never 0).
  */
 extern int diminuto_modulator_function(void * vp, bool value);
 

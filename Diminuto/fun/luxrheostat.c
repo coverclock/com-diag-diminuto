@@ -108,7 +108,7 @@ int main(int argc, char ** argv) {
      * GPIO LED pin.
      */
 
-    fdisr = diminuto_line_open_read(path, interrupt, DIMINUTO_LINE_FLAG_INPUT | DIMINUTO_LINE_FLAG_EDGE_RISING, 0);
+    fdisr = diminuto_line_open_read(path, interrupt, DIMINUTO_LINE_FLAG_INPUT | DIMINUTO_LINE_FLAG_EDGE_RISING | DIMINUTO_LINE_FLAG_ACTIVE_LOW, 0);
     assert(fdisr >= 0);
 
     fdled = diminuto_line_open_output(path, led);
@@ -152,7 +152,6 @@ int main(int argc, char ** argv) {
 
     rc = avago_apds9301_sense(fdi2c, device, &lux);
     assert(rc >= 0);
-
     assert((AVAGO_APDS9301_LUX_MINIMUM <= lux) && (lux <= AVAGO_APDS9301_LUX_MAXIMUM));
 
     while (!0) {
@@ -186,7 +185,6 @@ int main(int argc, char ** argv) {
 
             rc = avago_apds9301_sense(fdi2c, device, &lux);
             assert(rc >= 0);
-
             assert((AVAGO_APDS9301_LUX_MINIMUM <= lux) && (lux <= AVAGO_APDS9301_LUX_MAXIMUM));
 
             now = diminuto_time_elapsed();

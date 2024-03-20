@@ -11,7 +11,7 @@
  * ABSTRACT
  *
  * This is a functional test of the PID controller, using the PWM
- * modulator to control the voltage on a pin, and an analog-to-digital
+ * modulator to control the voltage on a line, and an analog-to-digital
  * converter to implement a feedback loop. The parameters work for the
  * hardware text fixture I use to exercise a number of Diminuto functional
  * tests.
