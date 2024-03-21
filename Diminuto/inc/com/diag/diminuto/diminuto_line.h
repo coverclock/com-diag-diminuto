@@ -10,11 +10,15 @@
  * @author Chip Overclock <mailto:coverclock@diag.com>
  * @see Diminuto <https://github.com/coverclock/com-diag-diminuto>
  * @details
+ * This feature controls General Purpose I/O lines. GPIO is a term for
+ * reading and manipulating digital lines, typically on a System On a Chip.
+ * I use this feature to, for example, read the One Pulse Per Second (1PPS)
+ * signal from a GNSS receiver, to receive an interupt from a sensor, or
+ * to control status LEDs (the brightness of the LED can even be controlled
+ * using Pulse Width Modulation (PWM), for example using the Modulator feature.
  * This implementation is based on the Linux kernel's GPIO character device
- * drivers and their ioctl-based ABI.
- *
- * The use of the Line feature replaces the Pin feature which is based on
- * the deprecated sysfs-based ABI.
+ * drivers and their ioctl-based ABI. The Line feature replaces the deprecated
+ * Pin feature which is based on the older sysfs-based ABI.
  *
  * REFERENCES
  *
