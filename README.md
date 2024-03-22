@@ -1508,6 +1508,10 @@ Chip Overclock, "Revisiting the First-Come First-Served Reader-Writer Solution",
 Chip Overclock, "Layers II", 2022-11,
 <https://coverclock.blogspot.com/2022/02/layers-ii.html>
 
+Chip Overclock, "Converting GPIO from the legacy sysfs ABI to the ioctl ABI
+in Diminuto and Hazer", 2024-03,
+<https://coverclock.blogspot.com/2024/03/converting-from-legacy-sysfs-gpio-abi.html>
+
 # Soundtrack
 
 <https://www.youtube.com/playlist?list=PLd7Yo1333iA--8T8OyYiDnLAMWGIirosP>
