@@ -277,7 +277,7 @@ little-endian
 
 # Features
 
-Given a feature I call Foo (or foo),
+Given a feature I call Foo (or sometimes foo),
 * its public API will be defined in
 ```inc/com/diag/diminuto/diminuto_foo.h```;
 * its private (internal) API, if one exists, will be defined in
@@ -444,9 +444,9 @@ Similarly, environmental variables have qualified names like
 * cue - logic level debouncer and edge detector.
 * framer - HDLC-like framing of binary serial streams using byte stuffing.
 * i2c - simplified thread-safe API around Linux I2C API.
-* line - get and set GPIO lines using the ioctl interface.
+* line - get and set GPIO lines using the ioctl ABI.
 * modulator - software pulse width modulation (PWM) generator.
-* pin - get and set GPIO pins using the sysfs interface (DEPRECATED).
+* pin - get and set GPIO pins using the sysfs ABI. (DEPRECATED)
 * serial - get and set parameters for a serial port.
 
 ## System
@@ -521,15 +521,18 @@ Similarly, environmental variables have qualified names like
 
 # Functional Tests
 
-* adccontroller - PWM and ADC PID loop (Pin, Modulator, I2C, Controller).    
-* adcrheostat - PWM and ADC rheostat (Pin, Modulator, I2C).
+* adccontroller - PWM and ADC PID loop (Line, Modulator, I2C, Controller).    
+* adcrheostat - PWM and ADC rheostat (Line, Modulator, I2C).
 * dcdtest - DCD support on serial port (Serial).
 * internettooltests - use internettool in many configurations (IPC4, IPC6).
 * lbktest - loopback on serial port (Serial).
-* luxcontroller - LED and lux sensor PID loop (Pin, Modulator, I2C, Controller).
-* luxrheostat - LED and lux sensor rheostat (Pin, Modulator, I2C).
+* linetest - setting and getting GPIO pins (Line).
+* linemultiplex - test the GPIO driver debouncer (Line).
+* linedebounce - test the GPIO software debouncer (Line).
+* luxcontroller - LED and lux sensor PID loop (Line, Modulator, I2C, Controller).
+* luxrheostat - LED and lux sensor rheostat (Line, Modulator, I2C).
 * pinchange - multiplexing of GPIO pins (Pin). (DEPRECATED)
-* pincleanup - clean up pins exported to hardware test fixture (Pin).
+* pincleanup - clean up pins exported to hardware test fixture (Pin). (DEPRECATED)
 * pintest - setting and getting GPIO pins (Pin). (DEPRECATED)
 * timestuff - tries out the underlying glibc time functions.
 * walker - walk the file system tree starting at a specified root (FS).
@@ -1077,15 +1080,17 @@ project leads to a virtuous cycle of organic growth in Diminuto.
 
 The Pin feature, which makes it easy to manipulate General Purpose
 Input/Output (GPIO) pins, uses the deprecated Linux sysfs ABI. You can
-expect this feature to build, and even pass unit testing (which does not
-use hardware or the actual Linux ABI), but not work in later Linux-based
-platforms. The Line feature replaces Pin, uses the newer ioctl ABI,
-and necessarily has a different API. The Line feature may not build on
-older Linux platforms if the required header file ```linux/gpio.h```
-is missing. On the Raspberry Pi OS image I used on my Raspberry Pi 5,
-based on Debian "bookworm" and Linux 6.1, the old sysfs ABI seems to
-exist, but it doesn't work for me using the same Pin code I've used for
-years on prior releases.
+expect this feature to build, and even pass unit testing (which does
+not use GPIO hardware or the actual Linux ABI), but not work in later
+Linux-based platforms. The Line feature replaces Pin, uses the newer ioctl
+ABI, and necessarily has a different API (and similarly its unit test
+does not use any actual GPIO hardware). The Line feature may not build
+on older Linux platforms if the required header file ```linux/gpio.h```
+is missing. (The header file is present even on my Intel platforms that
+do not have any GPIO pins, it just doesn't work.) On the Raspberry Pi OS
+image I used on my Raspberry Pi 5, based on Debian "bookworm" and Linux
+6.1, the old sysfs ABI seems to exist, but it doesn't work for me using
+the same Pin code I've used for years on prior releases.
 
 ## Build Warnings
 
