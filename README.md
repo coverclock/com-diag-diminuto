@@ -1074,7 +1074,7 @@ project leads to a virtuous cycle of organic growth in Diminuto.
 
 # Issues
 
-## Feature Deprecations
+## Deprecated Features
 
 ### Pin
 
@@ -1084,7 +1084,8 @@ expect this feature to build, and even pass unit testing (which does
 not use GPIO hardware or the actual Linux ABI), but not work in later
 Linux-based platforms. The Line feature replaces Pin, uses the newer ioctl
 ABI, and necessarily has a different API (and similarly its unit test
-does not use any actual GPIO hardware). The Line feature may not build
+does not use any actual GPIO hardware, although it does require that
+the ```/dev/gpiochip0``` device exist). The Line feature may not build
 on older Linux platforms if the required header file ```linux/gpio.h```
 is missing. (The header file is present even on my Intel platforms that
 do not have any GPIO pins, it just doesn't work.) On the Raspberry Pi OS
