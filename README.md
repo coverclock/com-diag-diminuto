@@ -115,14 +115,17 @@ information) to EMERGENCY (log mask 0x80, in which case your system is
 probably in deep trouble). You can control which level of messages are
 emitted, either to standard error (if your application has a controlling
 terminal), or to the system log (if your application, like a daemon,
-does not). One way to control this is to set the log mask in your environment.
+does not). One way to control this is to set the log mask in your environment
 
     export COM_DIAG_DIMINUTO_LOG_MASK=0xfe
 
-The log mask value is an eight-bit number in decimal, hexadecimal, or
-even octal. In addition, the string ```~0``` can be used to enable all
-log levels, equivalent to ```255```, ```0xff```, or ```0377```. (Generally
-I find ```0xfe``` to be a good starting point.)
+and have your applications call ```diminuto_log_setmask(void)``` to import
+this value into the logging system. A log mask can also be imported from
+a file using ```diminuto_log_importmask(path)```.  The log mask value is
+an eight-bit number in decimal, hexadecimal, or even octal. In addition,
+the string ```~0``` can be used to enable all log levels, equivalent
+to ```255```, ```0xff```, or ```0377```. (Generally I find ```0xfe```
+to be a good starting point.)
 
 # Disclaimer
 
