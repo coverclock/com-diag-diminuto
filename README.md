@@ -60,8 +60,8 @@ Diminuto provides, in no particular order:
 * display stack traces to the console (```diminuto_stacktrace```);
 * daemonizing applications (```diminuto_daemon```);
 * helper functions for the dynamic run-time linker for user-space loadable modules (```diminuto_modules```);
-* using General Purpose Input/Output (GPIO) pins via the standard /sysfs interface (```diminuto_pins```) (DEPRECATED);
-* using General Purpose Input/Output (GPIO) lines via the standard ioctl interface (```diminuto_lines```);
+* using General Purpose Input/Output (GPIO) pins via the standard /sysfs interface (```diminuto_pin```) (DEPRECATED);
+* using General Purpose Input/Output (GPIO) lines via the standard ioctl interface (```diminuto_line```);
 * debouncing digital inputs and detecting edges in software (```diminuto_cue```);
 * time keeping (```diminuto_time```) and delays (```diminuto_delay```) with a consistent unit of tick;
 * a fair first-come-first-served readers-writers synchronization solution (```diminuto_readerwriter```);
