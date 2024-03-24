@@ -772,11 +772,11 @@ $(OUT)/$(SYM_DIR)/$(PROJECT):	$(OUT)/$(SYM_DIR)/vintage $(OUT)/$(SYM_DIR)/setup
 
 LDWHOLEARCHIVES := # These archives will be linked into the shared object in their entirety.
 
-$(OUT)/$(MOD_DIR)/%.$(SO):	$(MOD_DIR)/%.c
+$(OUT)/$(MOD_DIR)/%.$(SO):	$(MOD_DIR)/%.c $(TARGETLIBRARIES)
 	D=`dirname $@`; mkdir -p $$D
 	$(CC) $(CPPFLAGS) $(CFLAGS) -shared -o $@ $< $(MOFLAGS) -Wl,--whole-archive $(LDWHOLEARCHIVES) -Wl,--no-whole-archive
 
-$(OUT)/$(MOD_DIR)/%.$(SO):	$(MOD_DIR)/%.cpp
+$(OUT)/$(MOD_DIR)/%.$(SO):	$(MOD_DIR)/%.cpp $(TARGETLIBRARIESXX) $(TARGETLIBRARIES)
 	D=`dirname $@`; mkdir -p $$D
 	$(CXX) $(CPPFLAGS) $(CXXFLAGS) -shared -o $@ $< $(MOXXFLAGS) -Wl,--whole-archive $(LDWHOLEARCHIVES) -Wl,--no-whole-archive
 
