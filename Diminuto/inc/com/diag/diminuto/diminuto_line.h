@@ -54,7 +54,7 @@ typedef enum DiminutoLineFlag {
 	DIMINUTO_LINE_FLAG_OPEN_SOURCE =        GPIO_V2_LINE_FLAG_OPEN_SOURCE,      /**< Configure line for open source. */
 	DIMINUTO_LINE_FLAG_BIAS_PULL_UP =       GPIO_V2_LINE_FLAG_BIAS_PULL_UP,     /**< Configure line with a pull up resistor. */
 	DIMINUTO_LINE_FLAG_BIAS_PULL_DOWN =     GPIO_V2_LINE_FLAG_BIAS_PULL_DOWN,   /**< Configure line with a pull down resister. */
-	DIMINUTO_LINE_FLAG_BIAS_DISABLED =      GPIO_V2_LINE_FLAG_BIAS_DISABLED,    /**< Configure line with a bias disabled.. */
+	DIMINUTO_LINE_FLAG_BIAS_DISABLED =      GPIO_V2_LINE_FLAG_BIAS_DISABLED,    /**< Configure line with a bias disabled. */
 } diminuto_line_flag_t;
 
 /**
