@@ -974,9 +974,9 @@ These PDFs of the
 and associated
 [reference manual](https://www.dropbox.com/s/ss8s2fz7ki52ht7/refman.pdf?dl=0)
 were built from Diminuto's embedded Doxygen comments on
-2023-05-24
-using tag
-```100.1.0```
+2024-03-25
+using version
+```102.0.2```
 . They will not reflect changes made since then.
 
 The unit tests (```Diminuto/tst```),  functional tests
