@@ -121,7 +121,7 @@ does not). One way to control this is to set the log mask in your environment
 
 and have your applications call ```diminuto_log_setmask(void)``` to import
 this value into the logging system. A log mask can also be imported from
-a file using ```diminuto_log_importmask(path)```.  The log mask value is
+a file using ```diminuto_log_importmask(const char * path)```.  The log mask value is
 an eight-bit number in decimal, hexadecimal, or even octal. In addition,
 the string ```~0``` can be used to enable all log levels, equivalent
 to ```255```, ```0xff```, or ```0377```. (Generally I find ```0xfe```
