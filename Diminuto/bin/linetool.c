@@ -166,6 +166,8 @@ int main(int argc, char * argv[])
     diminuto_unsigned_t uvalue = 0;
     diminuto_signed_t svalue = -1;
     diminuto_mux_t mux = { 0 };
+    sigset_t blocked = { 0, };
+    sigset_t original = { 0, };
     diminuto_ticks_t uticks = 0;
     diminuto_sticks_t sticks = -2;
     diminuto_cue_state_t cue = { 0 };
@@ -203,6 +205,7 @@ int main(int argc, char * argv[])
     while ((opt = getopt(argc, argv, OPTIONS)) >= 0) {
 
         if (diminuto_pipe_check()) {
+fprintf(stderr, "SIGPIPE %s %d\n", __FILE__, __LINE__);
             DEBUGPIPE;
             done = !0;
             break;
@@ -432,10 +435,33 @@ int main(int argc, char * argv[])
                 fail = !0;
                 break;
             }
-            diminuto_mux_init(&mux);
-            if (diminuto_mux_register_read(&mux, fd) < 0) {
+            if ((rc = pthread_sigmask(SIG_BLOCK, (sigset_t *)0, &blocked)) != 0) {
+                errno = rc;
+                diminuto_perror("sigprocmask");
                 fail = !0;
                 break;
+            } else if (sigaddset(&blocked, SIGPIPE) < 0) {
+                diminuto_perror("sigaddset");
+                fail = !0;
+                break;
+            } else if ((rc = pthread_sigmask(SIG_BLOCK, &blocked, &original)) != 0) {
+                errno = rc;
+                diminuto_perror("sigprocmask");
+                fail = !0;
+                break;
+            } else if (diminuto_mux_init(&mux) != &mux) {
+                fail = !0;
+                break;
+            } else if (diminuto_mux_register_read(&mux, fd) < 0) {
+                fail = !0;
+                break;
+            } else if (diminuto_mux_unregister_signal(&mux, SIGPIPE) < 0) {
+                fail = !0;
+                break;
+            } else {
+#if 0
+                diminuto_mux_dump(&mux);
+#endif
             }
             if (!first) {
                 prior = -1;
@@ -469,14 +495,8 @@ int main(int argc, char * argv[])
                     diminuto_yield();
                     continue;
                 } else if ((ready = diminuto_mux_ready_read(&mux)) < 0) {
-                    if (errno == EINTR) {
-                        /* SIGPIPE presumably. */
-                        diminuto_yield();
-                        continue;
-                    } else {
-                        fail = !0;
-                        break;
-                    }
+                    fail = !0;
+                    break;
                 } else if (ready != fd) {
                     errno = ENOENT;
                     diminuto_perror("diminuto_mux_ready_read");
@@ -514,7 +534,9 @@ int main(int argc, char * argv[])
                     prior = state;
                 }
             }
-            if (diminuto_mux_unregister_read(&mux, fd) < 0) {
+            if ((rc = pthread_sigmask(SIG_BLOCK, &original, (sigset_t *)0)) != 0) {
+                errno = rc;
+                diminuto_perror("sigprocmask");
                 fail = !0;
             }
             break;
