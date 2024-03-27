@@ -205,7 +205,6 @@ int main(int argc, char * argv[])
     while ((opt = getopt(argc, argv, OPTIONS)) >= 0) {
 
         if (diminuto_pipe_check()) {
-fprintf(stderr, "SIGPIPE %s %d\n", __FILE__, __LINE__);
             DEBUGPIPE;
             done = !0;
             break;
@@ -459,6 +458,10 @@ fprintf(stderr, "SIGPIPE %s %d\n", __FILE__, __LINE__);
                 fail = !0;
                 break;
             } else {
+#if 0
+                extern int diminuto_pipe_debug;
+                diminuto_pipe_debug = !0;
+#endif
 #if 0
                 diminuto_mux_dump(&mux);
 #endif
