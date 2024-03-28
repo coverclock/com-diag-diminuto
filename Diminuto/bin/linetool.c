@@ -345,7 +345,7 @@ int main(int argc, char * argv[])
             while (!0) {
                 if (diminuto_pipe_check()) {
                     DEBUGPIPE;
-                    done = !0;
+                    //done = !0;
                     break;
                 }
                 diminuto_delay(uticks, 0);
@@ -379,6 +379,7 @@ int main(int argc, char * argv[])
 
         case 'e':
             DEBUGOPTION;
+            DEBUGCONTEXT;
             /*
              * It is not an error to close a closed line.
              */
@@ -482,7 +483,7 @@ int main(int argc, char * argv[])
                 DEBUGWAIT;
                 if (diminuto_pipe_check()) {
                     DEBUGPIPE;
-                    done = !0;
+                    //done = !0;
                     break;
                 } else if ((nfds = diminuto_mux_wait(&mux, sticks)) < 0) {
                     if (errno == EINTR) {
@@ -506,14 +507,17 @@ int main(int argc, char * argv[])
                     fail = !0;
                     break;
                 } else if ((edge = diminuto_line_read(fd)) < 0) {
-                    if (errno == EINTR) {
-                        /* SIGPIPE presumably. */
+                    switch (errno) {
+                    case EINTR:
+                    case EAGAIN:
+                        /* SIGPIPE or something retryable. */
                         diminuto_yield();
                         continue;
-                    } else {
+                    default:
                         fail = !0;
                         break;
                     }
+                    break;
                 } else {
                     DEBUGEDGE;
                     state = !!edge;
@@ -546,6 +550,7 @@ int main(int argc, char * argv[])
 
         case 'n':
             DEBUGOPTION;
+            DEBUGCONTEXT;
             path = (const char *)0;
             line = maximumof(typeof(line));
             flags = 0x0;
@@ -659,6 +664,7 @@ int main(int argc, char * argv[])
 
         case 'x':
             DEBUGOPTION;
+            DEBUGCONTEXT;
             if (fd >= 0) {
                 errno = EBADF;
                 diminuto_perror(sopt);

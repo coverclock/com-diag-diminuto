@@ -82,6 +82,7 @@ echo "${PROGRAM}: DEBOUNCING TEST" 1>&2
 
 echo "${PROGRAM}: Press button ${HARDWARE_TEST_FIXTURE_PIN_BUT_HIGH} to advance." 1>&2
 echo "${PROGRAM}: Press button ${HARDWARE_TEST_FIXTURE_PIN_BUT_LOW} SIMULTANEOUSLY to exit." 1>&2
+echo "${PROGRAM}: You might have to press button ${HARDWARE_TEST_FIXTURE_PIN_BUT_LOW} once more to exit." 1>&2
 
 VALUE=0
 linetool -D ${HARDWARE_TEST_FIXTURE_GPIO_DEVICE} -p ${HARDWARE_TEST_FIXTURE_PIN_BUT_HIGH} -i -H -x -1 -b ${HARDWARE_TEST_FIXTURE_DEBOUNCE_LIB_USEC} | while read PIN27; do
