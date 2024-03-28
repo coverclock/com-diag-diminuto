@@ -345,7 +345,6 @@ int main(int argc, char * argv[])
             while (!0) {
                 if (diminuto_pipe_check()) {
                     DEBUGPIPE;
-                    //done = !0;
                     break;
                 }
                 diminuto_delay(uticks, 0);
@@ -483,7 +482,6 @@ int main(int argc, char * argv[])
                 DEBUGWAIT;
                 if (diminuto_pipe_check()) {
                     DEBUGPIPE;
-                    //done = !0;
                     break;
                 } else if ((nfds = diminuto_mux_wait(&mux, sticks)) < 0) {
                     if (errno == EINTR) {
