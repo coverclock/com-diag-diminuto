@@ -4,7 +4,7 @@
 
 /**
  * @file
- * @copyright Copyright 2013-2022 Digital Aggregates Corporation, Colorado, USA.
+ * @copyright Copyright 2013-2024 Digital Aggregates Corporation, Colorado, USA.
  * @note Licensed under the terms in LICENSE.txt.
  * @brief Implements critical section begin and end operators.
  * @author Chip Overclock <mailto:coverclock@diag.com>
