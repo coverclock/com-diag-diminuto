@@ -70,7 +70,7 @@ int main(int argc, char * argv[])
         for (ii = 0x0; ii <= 0xf; ++ii) {
             mode = ii << 12;
             type = diminuto_fs_mode2type(mode);
-            COMMENT("mode=0%06o type='%c'\n", ii << 12, type);
+            CHECKPOINT("mode=0%06o type='%c'\n", ii << 12, type);
             EXPECT(type != DIMINUTO_FS_TYPE_NONE);
             EXPECT(type != DIMINUTO_FS_TYPE_UNKNOWN);
         }
@@ -420,7 +420,7 @@ int main(int argc, char * argv[])
     /*
      * In the tests below I deliberately use _POSIX_PATH_MAX instead of
      * PATH_MAX. See also the unit test suite for the IPC Endpoint function,xi
-     *  which uses the` FS Canonicalize function and has its own long list of
+     * which uses the` FS Canonicalize function and has its own long list of
      * unit tests.
      */
 
@@ -449,7 +449,7 @@ int main(int argc, char * argv[])
 
         path = "/tmp/file";
         buffer[0] = '!';
-        COMMENT("relative=\"%s\"", path);
+        CHECKPOINT("relative=\"%s\"", path);
         rc = diminuto_fs_canonicalize(path, buffer, 0);
         ASSERT(rc < 0);
         ASSERT(buffer[0] == '!');
@@ -466,7 +466,7 @@ int main(int argc, char * argv[])
 
         path = "/tmp/file";
         buffer[0] = '!';
-        COMMENT("relative=\"%s\"", path);
+        CHECKPOINT("relative=\"%s\"", path);
         rc = diminuto_fs_canonicalize(path, buffer, 2);
         ASSERT(rc < 0);
         ASSERT(buffer[0] == '!');
@@ -483,10 +483,10 @@ int main(int argc, char * argv[])
 
         path = "/tmp/file";
         buffer[0] = '!';
-        COMMENT("relative=\"%s\"", path);
+        CHECKPOINT("relative=\"%s\"", path);
         rc = diminuto_fs_canonicalize(path, buffer, sizeof(buffer));
         ASSERT(rc == 0);
-        COMMENT("absolute=\"%s\"", buffer);
+        CHECKPOINT("absolute=\"%s\"", buffer);
         ASSERT(strcmp(buffer, path) == 0);
 
         STATUS();
@@ -501,10 +501,10 @@ int main(int argc, char * argv[])
 
         path = "/file";
         buffer[0] = '!';
-        COMMENT("relative=\"%s\"", path);
+        CHECKPOINT("relative=\"%s\"", path);
         rc = diminuto_fs_canonicalize(path, buffer, sizeof(buffer));
         ASSERT(rc == 0);
-        COMMENT("absolute=\"%s\"", buffer);
+        CHECKPOINT("absolute=\"%s\"", buffer);
         ASSERT(strcmp(buffer, path) == 0);
 
         STATUS();
@@ -519,10 +519,10 @@ int main(int argc, char * argv[])
 
         path = "/tmp/";
         buffer[0] = '!';
-        COMMENT("relative=\"%s\"", path);
+        CHECKPOINT("relative=\"%s\"", path);
         rc = diminuto_fs_canonicalize(path, buffer, sizeof(buffer));
         ASSERT(rc == 0);
-        COMMENT("absolute=\"%s\"", buffer);
+        CHECKPOINT("absolute=\"%s\"", buffer);
         ASSERT(strcmp(buffer, path) == 0);
 
         STATUS();
@@ -537,10 +537,10 @@ int main(int argc, char * argv[])
 
         path = ".//file";
         buffer[0] = '!';
-        COMMENT("relative=\"%s\"", path);
+        CHECKPOINT("relative=\"%s\"", path);
         rc = diminuto_fs_canonicalize(path, buffer, sizeof(buffer));
         ASSERT(rc == 0);
-        COMMENT("absolute=\"%s\"", buffer);
+        CHECKPOINT("absolute=\"%s\"", buffer);
         ASSERT(buffer[0] == '/');
 
         STATUS();
@@ -555,10 +555,10 @@ int main(int argc, char * argv[])
 
         path = "..//file";
         buffer[0] = '!';
-        COMMENT("relative=\"%s\"", path);
+        CHECKPOINT("relative=\"%s\"", path);
         rc = diminuto_fs_canonicalize(path, buffer, sizeof(buffer));
         ASSERT(rc == 0);
-        COMMENT("absolute=\"%s\"", buffer);
+        CHECKPOINT("absolute=\"%s\"", buffer);
         ASSERT(buffer[0] == '/');
 
         STATUS();
@@ -573,10 +573,10 @@ int main(int argc, char * argv[])
 
         path = "/var/tmp/../run/./file";
         buffer[0] = '!';
-        COMMENT("relative=\"%s\"", path);
+        CHECKPOINT("relative=\"%s\"", path);
         rc = diminuto_fs_canonicalize(path, buffer, sizeof(buffer));
         ASSERT(rc == 0);
-        COMMENT("absolute=\"%s\"", buffer);
+        CHECKPOINT("absolute=\"%s\"", buffer);
         ASSERT(buffer[0] == '/');
 
         STATUS();
@@ -591,10 +591,10 @@ int main(int argc, char * argv[])
 
         path = "..///./file";
         buffer[0] = '!';
-        COMMENT("relative=\"%s\"", path);
+        CHECKPOINT("relative=\"%s\"", path);
         rc = diminuto_fs_canonicalize(path, buffer, sizeof(buffer));
         ASSERT(rc == 0);
-        COMMENT("absolute=\"%s\"", buffer);
+        CHECKPOINT("absolute=\"%s\"", buffer);
         ASSERT(buffer[0] == '/');
 
         STATUS();
@@ -609,10 +609,10 @@ int main(int argc, char * argv[])
 
         path = "/";
         buffer[0] = '!';
-        COMMENT("relative=\"%s\"", path);
+        CHECKPOINT("relative=\"%s\"", path);
         rc = diminuto_fs_canonicalize(path, buffer, sizeof(buffer));
         ASSERT(rc == 0);
-        COMMENT("absolute=\"%s\"", buffer);
+        CHECKPOINT("absolute=\"%s\"", buffer);
         ASSERT(strcmp(buffer, path) == 0);
 
         STATUS();
@@ -627,10 +627,10 @@ int main(int argc, char * argv[])
 
         path = "/.";
         buffer[0] = '!';
-        COMMENT("relative=\"%s\"", path);
+        CHECKPOINT("relative=\"%s\"", path);
         rc = diminuto_fs_canonicalize(path, buffer, sizeof(buffer));
         ASSERT(rc == 0);
-        COMMENT("absolute=\"%s\"", buffer);
+        CHECKPOINT("absolute=\"%s\"", buffer);
         ASSERT(strcmp(buffer, "/") == 0);
 
         STATUS();
@@ -645,10 +645,10 @@ int main(int argc, char * argv[])
 
         path = "/..";
         buffer[0] = '!';
-        COMMENT("relative=\"%s\"", path);
+        CHECKPOINT("relative=\"%s\"", path);
         rc = diminuto_fs_canonicalize(path, buffer, sizeof(buffer));
         ASSERT(rc == 0);
-        COMMENT("absolute=\"%s\"", buffer);
+        CHECKPOINT("absolute=\"%s\"", buffer);
         ASSERT(strcmp(buffer, "/") == 0);
 
         STATUS();
@@ -663,10 +663,10 @@ int main(int argc, char * argv[])
 
         path = "/../file";
         buffer[0] = '!';
-        COMMENT("relative=\"%s\"", path);
+        CHECKPOINT("relative=\"%s\"", path);
         rc = diminuto_fs_canonicalize(path, buffer, sizeof(buffer));
         ASSERT(rc == 0);
-        COMMENT("absolute=\"%s\"", buffer);
+        CHECKPOINT("absolute=\"%s\"", buffer);
         ASSERT(strcmp(buffer, "/file") == 0);
 
         STATUS();
@@ -681,11 +681,93 @@ int main(int argc, char * argv[])
 
         path = "/./.file";
         buffer[0] = '!';
-        COMMENT("relative=\"%s\"", path);
+        CHECKPOINT("relative=\"%s\"", path);
         rc = diminuto_fs_canonicalize(path, buffer, sizeof(buffer));
         ASSERT(rc == 0);
-        COMMENT("absolute=\"%s\"", buffer);
+        CHECKPOINT("absolute=\"%s\"", buffer);
         ASSERT(strcmp(buffer, "/.file") == 0);
+
+        STATUS();
+    }
+
+    {
+        int rc;
+        char * path;
+        char buffer[_POSIX_PATH_MAX];
+
+        TEST();
+
+        path = "/dev/stdin";
+        buffer[0] = '!';
+        CHECKPOINT("relative=\"%s\"", path);
+        rc = diminuto_fs_expand(path, buffer, sizeof(buffer));
+        ASSERT(rc == 0);
+        CHECKPOINT("absolute=\"%s\"", buffer);
+        /* What's returned depends on how the user runs this unit test. */
+        ASSERT(buffer[0] != '!');
+
+        STATUS();
+    }
+
+    {
+        int rc;
+        char * path;
+        char buffer[_POSIX_PATH_MAX];
+
+        TEST();
+
+        path = "/dev/stdout";
+        buffer[0] = '!';
+        CHECKPOINT("relative=\"%s\"", path);
+        rc = diminuto_fs_expand(path, buffer, sizeof(buffer));
+        ASSERT(rc == 0);
+        CHECKPOINT("absolute=\"%s\"", buffer);
+        /* What's returned depends on how the user runs this unit test. */
+        ASSERT(buffer[0] != '!');
+
+        STATUS();
+    }
+
+    {
+        int rc;
+        char * path;
+        char buffer[_POSIX_PATH_MAX];
+
+        TEST();
+
+        path = "/dev/stderr";
+        buffer[0] = '!';
+        CHECKPOINT("relative=\"%s\"", path);
+        rc = diminuto_fs_expand(path, buffer, sizeof(buffer));
+        ASSERT(rc == 0);
+        CHECKPOINT("absolute=\"%s\"", buffer);
+        /* What's returned depends on how the user runs this unit test. */
+        ASSERT(buffer[0] != '!');
+
+        STATUS();
+    }
+
+    {
+        int rc;
+        char * path;
+        char buffer[_POSIX_PATH_MAX];
+        char expected[_POSIX_PATH_MAX];
+        pid_t pid;
+
+        TEST();
+
+        path = "/dev/fd";
+        buffer[0] = '!';
+        CHECKPOINT("relative=\"%s\"", path);
+        rc = diminuto_fs_expand(path, buffer, sizeof(buffer));
+        ASSERT(rc == 0);
+        CHECKPOINT("absolute=\"%s\"", buffer);
+        pid = getpid();
+        ASSERT(pid > 0);
+        (void)snprintf(expected, sizeof(expected), "/proc/%d/fd", pid);
+        expected[sizeof(expected) - 1] = '\0';
+        CHECKPOINT("expected=\"%s\"", expected);
+        ASSERT(strcmp(buffer, expected) == 0);
 
         STATUS();
     }

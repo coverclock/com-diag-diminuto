@@ -139,8 +139,19 @@ extern int diminuto_fs_mkdir_p(const char * path, mode_t mode, int all);
 /**
  * Expand a path into an absolute path, resolving all soft links and directory
  * operators (like "./" or "../") and removing duplicate separators (like "//").
+ * All path components including the final component is expanded.
+ * @param path is the original directory path.
+ * @param buffer is where the absolute path will be stored.
+ * @param size is the size of the absolute path buffer in bytes.
+ * @return 0 for success, <0 if an error occurred.
+ */
+extern int diminuto_fs_expand(const char * path, char * buffer, size_t size);
+
+/**
+ * Expand a path into an absolute path, resolving all soft links and directory
+ * operators (like "./" or "../") and removing duplicate separators (like "//").
  * All but the final path component must already exist. The final path component
- * is not expanded or otherwise checked.
+ * is not expanded or otherwise checked (useful for creating new files).
  * @param path is the original directory path.
  * @param buffer is where the absolute path will be stored.
  * @param size is the size of the absolute path buffer in bytes.

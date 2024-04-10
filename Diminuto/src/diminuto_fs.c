@@ -292,7 +292,7 @@ int diminuto_fs_mkdir_p(const char * path, mode_t mode, int all)
         if (Debug) { diminuto_log_emit("diminuto_fs_mkdir_p: path=\"%s\"\n", path); }
 
         source = (char *)alloca(length); /* No failure return. */
-        strncpy(source, path, length);
+        (void)strncpy(source, path, length);
 
         if (all) {
             /* Do nothing. */
@@ -330,6 +330,27 @@ int diminuto_fs_mkdir_p(const char * path, mode_t mode, int all)
         }
 
     } while (0);
+
+    return rc;
+}
+
+int diminuto_fs_expand(const char * path, char * buffer, size_t size)
+{
+    int rc = -1;
+    char * result = (char *)0;
+    diminuto_path_t expanded = { '\0', };
+
+    result = realpath(path, expanded);
+    if (result == (char *)0) {
+        diminuto_perror(path);
+    } else if (size == 0) {
+        errno = ENAMETOOLONG;
+        diminuto_perror(path);
+    } else {
+        (void)strncpy(buffer, expanded, size);
+        buffer[size - 1] = '\0';
+        rc = 0;
+    }
 
     return rc;
 }
@@ -410,7 +431,7 @@ int diminuto_fs_canonicalize(const char * path, char * buffer, size_t size)
             plength = 0;
         } else {
             /* Nominal case: "path/file". */
-            strncpy(relativepath, path, file - path);
+            (void)strncpy(relativepath, path, file - path);
             path = relativepath;
         }
         length += flength;
