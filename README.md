@@ -527,6 +527,7 @@ Similarly, environmental variables have qualified names like
 * adccontroller - PWM and ADC PID loop (Line, Modulator, I2C, Controller).    
 * adcrheostat - PWM and ADC rheostat (Line, Modulator, I2C).
 * dcdtest - DCD support on serial port (Serial).
+* filestuff - tries out the Fs and Fd features (FD, FS).
 * internettooltests - use internettool in many configurations (IPC4, IPC6).
 * lbktest - loopback on serial port (Serial).
 * linetest - setting and getting GPIO pins (Line).
