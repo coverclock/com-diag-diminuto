@@ -71,6 +71,9 @@ int main(void)
         int fd;
         int valid;
         ssize_t readable;
+
+        TEST("readable");
+
         CHECKPOINT("STDIN_FILENO=%d fileno(stdin)=%d\n", STDIN_FILENO, fileno(stdin));
         CHECKPOINT("STDOUT_FILENO=%d fileno(stdout)=%d\n", STDOUT_FILENO, fileno(stdout));
         CHECKPOINT("STDERR_FILENO=%d fileno(stderr)=%d\n", STDERR_FILENO, fileno(stderr));
@@ -83,12 +86,17 @@ int main(void)
                 ASSERT(readable >= 0);
             }
         }
+
+        STATUS();
     }
 
     {
         ssize_t count;
         ssize_t limit;
         ssize_t maximum;
+
+        TEST("count, limit, maximum");
+
         /*
          * On my Ubunu 9.3.0 Linux 5.4.0 GNU 2.31 x86_64 development
          * system, count, limit, and maximum are all 1024. This was
@@ -101,12 +109,17 @@ int main(void)
         ASSERT(count > 0);
         ASSERT(limit > 0);
         ASSERT(maximum > 0);
+
+        STATUS();
     }
 
     {
         size_t count;
         diminuto_fd_map_t * map;
         int ii;
+
+        TEST("map");
+
         count = diminuto_fd_count();
         ASSERT(count > 0);
         CHECKPOINT("count=%zdfds map=%zubytes\n", count, sizeof(*map) + (count * sizeof(void *)));
@@ -116,71 +129,105 @@ int main(void)
             ASSERT(map->data[ii] == (void *)0);
         }
         free(map);
+
+        STATUS();
     }
 
     {
-#if 0
-        {
-            DIMINUTO_FD_TYPE(STDIN_FILENO, -1);
-            DIMINUTO_FD_TYPE(STDOUT_FILENO, -1);
-            DIMINUTO_FD_TYPE(STDERR_FILENO, -1);
+        TEST("STDIO");
+
+        DIMINUTO_FD_TYPE(STDIN_FILENO, -1);
+        DIMINUTO_FD_TYPE(STDOUT_FILENO, -1);
+        DIMINUTO_FD_TYPE(STDERR_FILENO, -1);
+
+        STATUS();
+    }
+
+    {
+        TEST("stdio");
+
+        DIMINUTO_FD_TYPE(fileno(stdin), -1);
+        DIMINUTO_FD_TYPE(fileno(stdout), -1);
+        DIMINUTO_FD_TYPE(fileno(stderr), -1);
+
+        STATUS();
+    }
+
+    {
+        int tty;
+
+        TEST("tty");
+
+        tty = open("/dev/tty", O_RDONLY);
+        ADVISE(tty >= 0);
+        if (tty >= 0) {
+            DIMINUTO_FD_TYPE(tty, DIMINUTO_FS_TYPE_TTY);
+            ASSERT(close(tty) == 0);
         }
-#endif
-#if 0
-        {
-            DIMINUTO_FD_TYPE(fileno(stdin), -1);
-            DIMINUTO_FD_TYPE(fileno(stdout), -1);
-            DIMINUTO_FD_TYPE(fileno(stderr), -1);
+
+        STATUS();
+    }
+
+    {
+        int sock;
+
+        TEST("socket");
+
+        ASSERT((sock = socket(AF_INET, SOCK_STREAM, 0)) >= 0);
+        DIMINUTO_FD_TYPE(sock, DIMINUTO_FS_TYPE_SOCKET);
+        ASSERT(close(sock) == 0);
+
+        STATUS();
+    }
+
+    {
+        struct stat status;
+        diminuto_fs_type_t type;
+
+        TEST("fd");
+
+        ASSERT(lstat("/dev/fd", &status) == 0);
+        type = diminuto_fs_mode2type(status.st_mode);
+        CHECKPOINT("mode=0%o bits=0%o type=%d=%s expected=%d=%s\n", status.st_mode, status.st_mode & S_IFMT, type, type2name(type), DIMINUTO_FS_TYPE_SYMLINK, type2name(DIMINUTO_FS_TYPE_SYMLINK));
+        EXPECT(type == DIMINUTO_FS_TYPE_SYMLINK);
+
+        STATUS();
+    }
+
+    {
+        int file;
+
+        TEST("file");
+
+        if ((file = open("/bin/busybox", O_RDONLY)) >= 0) {
+            /* Do nothing. */
+        } else if ((file = open("/usr/bin/busybox", O_RDONLY)) >= 0) {
+            /* Do nothing. */
+        } else if ((file = open("/system/bin/busybox", O_RDONLY)) >= 0) {
+            /* Do nothing. */
+        } else if ((file = open("/system/xbin/busybox", O_RDONLY)) >= 0) {
+            /* Do nothing. */
+        } else if ((file = open("/bin/bash", O_RDONLY)) >= 0) {
+            /* Do nothing. */
+        } else if ((file = open("/usr/bin/bash", O_RDONLY)) >= 0) {
+            /* Do nothing. */
+        } else if ((file = open("/system/bin/bash", O_RDONLY)) >= 0) {
+            /* Do nothing. */
+        } else if ((file = open("/system/xbin/bash", O_RDONLY)) >= 0) {
+            /* Do nothing. */
+        } else {
+            file = -1;
         }
-#endif
-        {
-            int tty;
-            tty = open("/dev/tty", O_RDONLY);
-            ADVISE(tty >= 0);
-            if (tty >= 0) {
-                DIMINUTO_FD_TYPE(tty, DIMINUTO_FS_TYPE_TTY);
-                ASSERT(close(tty) == 0);
-            }
-        }
-        {
-            int sock;
-            ASSERT((sock = socket(AF_INET, SOCK_STREAM, 0)) >= 0);
-            DIMINUTO_FD_TYPE(sock, DIMINUTO_FS_TYPE_SOCKET);
-            ASSERT(close(sock) == 0);
-        }
-        {
-            struct stat status;
-            diminuto_fs_type_t type;
-            ASSERT(lstat("/dev/fd", &status) == 0);
-            type = diminuto_fs_mode2type(status.st_mode);
-            CHECKPOINT("mode=0%o bits=0%o type=%d=%s expected=%d=%s\n", status.st_mode, status.st_mode & S_IFMT, type, type2name(type), DIMINUTO_FS_TYPE_SYMLINK, type2name(DIMINUTO_FS_TYPE_SYMLINK));
-            EXPECT(type == DIMINUTO_FS_TYPE_SYMLINK);
-        }
-        {
-            int file;
-            if ((file = open("/bin/busybox", O_RDONLY)) >= 0) {
-                /* Do nothing. */
-            } else if ((file = open("/usr/bin/busybox", O_RDONLY)) >= 0) {
-                /* Do nothing. */
-            } else if ((file = open("/system/bin/busybox", O_RDONLY)) >= 0) {
-                /* Do nothing. */
-            } else if ((file = open("/system/xbin/busybox", O_RDONLY)) >= 0) {
-                /* Do nothing. */
-            } else if ((file = open("/bin/bash", O_RDONLY)) >= 0) {
-                /* Do nothing. */
-            } else if ((file = open("/usr/bin/bash", O_RDONLY)) >= 0) {
-                /* Do nothing. */
-            } else if ((file = open("/system/bin/bash", O_RDONLY)) >= 0) {
-                /* Do nothing. */
-            } else if ((file = open("/system/xbin/bash", O_RDONLY)) >= 0) {
-                /* Do nothing. */
-            } else {
-                file = -1;
-            }
-            ASSERT(file >= 0);
-            DIMINUTO_FD_TYPE(file, DIMINUTO_FS_TYPE_FILE);
-            ASSERT(close(file) == 0);
-        }
+        ASSERT(file >= 0);
+        DIMINUTO_FD_TYPE(file, DIMINUTO_FS_TYPE_FILE);
+        ASSERT(close(file) == 0);
+
+        STATUS();
+    }
+
+    {
+        TEST("blockdev");
+
         if ((getuid() == 0) || (geteuid() == 0)) {
             int blockdev;
             if ((blockdev = open("/dev/sda", O_RDONLY)) >= 0) {
@@ -198,37 +245,57 @@ int main(void)
             DIMINUTO_FD_TYPE(blockdev, DIMINUTO_FS_TYPE_BLOCKDEV);
             ASSERT(close(blockdev) == 0);
         }
-        {
-            int dir;
-            if ((dir = open("/bin", O_RDONLY)) >= 0) {
-                /* Do nothing. */
-            } else if ((dir = open("/usr/bin", O_RDONLY)) >= 0) {
-                /* Do nothing. */
-            } else if ((dir = open("/system/bin", O_RDONLY)) >= 0) {
-                /* Do nothing. */
-            } else if ((dir = open("/system/xbin", O_RDONLY)) >= 0) {
-                /* Do nothing. */
-            } else {
-                dir = -1;
-            }
-            ASSERT(dir >= 0);
-            DIMINUTO_FD_TYPE(dir, DIMINUTO_FS_TYPE_DIRECTORY);
-            ASSERT(close(dir) == 0);
+
+        STATUS();
+    }
+
+    {
+        int dir;
+
+        TEST("directory");
+
+        if ((dir = open("/bin", O_RDONLY)) >= 0) {
+            /* Do nothing. */
+        } else if ((dir = open("/usr/bin", O_RDONLY)) >= 0) {
+            /* Do nothing. */
+        } else if ((dir = open("/system/bin", O_RDONLY)) >= 0) {
+            /* Do nothing. */
+        } else if ((dir = open("/system/xbin", O_RDONLY)) >= 0) {
+            /* Do nothing. */
+        } else {
+            dir = -1;
         }
-        {
-            int chardev;
-            ASSERT((chardev = open("/dev/null", O_RDONLY)) >= 0);
-            DIMINUTO_FD_TYPE(chardev, DIMINUTO_FS_TYPE_CHARACTERDEV);
-            ASSERT(close(chardev) == 0);
-        }
-        {
-            int pipeline[2];
-            ASSERT(pipe(pipeline) == 0);
-            DIMINUTO_FD_TYPE(pipeline[0], DIMINUTO_FS_TYPE_FIFO);
-            DIMINUTO_FD_TYPE(pipeline[1], DIMINUTO_FS_TYPE_FIFO);
-            ASSERT(close(pipeline[0]) == 0);
-            ASSERT(close(pipeline[1]) == 0);
-        }
+        ASSERT(dir >= 0);
+        DIMINUTO_FD_TYPE(dir, DIMINUTO_FS_TYPE_DIRECTORY);
+        ASSERT(close(dir) == 0);
+
+        STATUS();
+    }
+
+    {
+        int chardev;
+
+        TEST("chardev null");
+
+        ASSERT((chardev = open("/dev/null", O_RDONLY)) >= 0);
+        DIMINUTO_FD_TYPE(chardev, DIMINUTO_FS_TYPE_CHARACTERDEV);
+        ASSERT(close(chardev) == 0);
+
+        STATUS();
+    }
+
+    {
+        int pipeline[2];
+
+        TEST("fifo");
+
+        ASSERT(pipe(pipeline) == 0);
+        DIMINUTO_FD_TYPE(pipeline[0], DIMINUTO_FS_TYPE_FIFO);
+        DIMINUTO_FD_TYPE(pipeline[1], DIMINUTO_FS_TYPE_FIFO);
+        ASSERT(close(pipeline[0]) == 0);
+        ASSERT(close(pipeline[1]) == 0);
+
+        STATUS();
     }
 
     EXIT();
