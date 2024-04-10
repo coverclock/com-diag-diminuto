@@ -12,8 +12,8 @@
 
 #include "com/diag/diminuto/diminuto_log.h"
 #include "com/diag/diminuto/diminuto_environment.h"
+#include "com/diag/diminuto/diminuto_fd.h"
 #include "com/diag/diminuto/diminuto_fs.h"
-#include "com/diag/diminuto/diminuto_serial.h"
 #include "com/diag/diminuto/diminuto_time.h"
 #include "com/diag/diminuto/diminuto_types.h"
 #include <stdio.h>
@@ -489,6 +489,7 @@ void diminuto_log_vwrite(int fd, int priority, const char * format, va_list ap)
 void diminuto_log_vlog(int priority, const char * format, va_list ap)
 {
     int tolog = 0; /* <0==SUPPRESS, 0==STDERR, >0==SYSLOG */
+    diminuto_fd_type_t type = DIMINUTO_FS_TYPE_UNKNOWN;
 
     DIMINUTO_LOG_SECTION_BEGIN;
 
@@ -515,14 +516,27 @@ void diminuto_log_vlog(int priority, const char * format, va_list ap)
             tolog = 1;
         } else if (diminuto_log_cached) {
             tolog = 1;
+        } else if ((type = diminuto_fd_type(diminuto_log_descriptor)) == DIMINUTO_FS_TYPE_FILE) {
+            /*
+             * If the caller has redirected the log file descriptor
+             * (nominally fd 2 for stderr) to a file, then they probably
+             * want the log going to the file, even if the application
+             * is a daemon or has no controlling terminal. Note that
+             * redirecting the log to /dev/null, a common pattern when
+             * deamonizing, fails this check. We don't cache this state
+             * since the application can redirect the log descriptor
+             * dynamically at run time.
+             */
+            tolog = 0;
 #if 0
-        } else if (!diminuto_serial_valid(diminuto_log_descriptor)) {
+        } else if (type != DIMINUTO_FS_TYPE_TTY) {
             /*
              * The purpose of this check is to allow stderr of scripts
              * to be directed to a file even if they are detached from
-             * their controlling terminal. A side effect of this is that
-             * directing stderr to /dev/null also passes this test. But
-             * maybe that's okay. (But probably not.)
+             * their controlling terminal. A side effect is that redirecting
+             * /dev/null also passes this test, and redirecting the standard
+             * I/O descriptors to /dev/null is a common approach to
+             * daemonization, in which case we *do* want to log to syslog.
              */
             tolog = 0;
 #endif
