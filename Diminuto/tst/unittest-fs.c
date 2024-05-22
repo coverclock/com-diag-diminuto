@@ -1,7 +1,7 @@
 /* vi: set ts=4 expandtab shiftwidth=4: */
 /**
  * @file
- * @copyright Copyright 2015-2022 Digital Aggregates Corporation, Colorado, USA.
+ * @copyright Copyright 2015-2024 Digital Aggregates Corporation, Colorado, USA.
  * @note Licensed under the terms in LICENSE.txt.
  * @brief This is a unit test of the File System (FS) feature.
  * @author Chip Overclock <mailto:coverclock@diag.com>
@@ -23,6 +23,7 @@
 #include <string.h>
 #include <stdio.h>
 #include <limits.h>
+#include <pthread.h>
 
 static int callback(void * vp, const char * name, const char * path, size_t depth, const struct stat * statp)
 {
@@ -694,17 +695,20 @@ int main(int argc, char * argv[])
         int rc;
         char * path;
         char buffer[_POSIX_PATH_MAX];
+        pid_t pid;
+        char string[_POSIX_PATH_MAX];
 
         TEST();
 
-        path = "/dev/stdin";
+        path = "/proc/self";
         buffer[0] = '!';
         CHECKPOINT("relative=\"%s\"", path);
         rc = diminuto_fs_expand(path, buffer, sizeof(buffer));
         ASSERT(rc == 0);
         CHECKPOINT("absolute=\"%s\"", buffer);
-        /* What's returned depends on how the user runs this unit test. */
-        ASSERT(buffer[0] != '!');
+        pid = getpid();
+        (void)snprintf(string, sizeof(string), "%llu", (diminuto_llu_t)pid);
+        ASSERT(strncmp(string, buffer, sizeof(string)));
 
         STATUS();
     }
@@ -713,36 +717,22 @@ int main(int argc, char * argv[])
         int rc;
         char * path;
         char buffer[_POSIX_PATH_MAX];
+        pid_t pid;
+        pthread_t thread;
+        char string[_POSIX_PATH_MAX];
 
         TEST();
 
-        path = "/dev/stdout";
+        path = "/proc/thread-self";
         buffer[0] = '!';
         CHECKPOINT("relative=\"%s\"", path);
         rc = diminuto_fs_expand(path, buffer, sizeof(buffer));
         ASSERT(rc == 0);
         CHECKPOINT("absolute=\"%s\"", buffer);
-        /* What's returned depends on how the user runs this unit test. */
-        ASSERT(buffer[0] != '!');
-
-        STATUS();
-    }
-
-    {
-        int rc;
-        char * path;
-        char buffer[_POSIX_PATH_MAX];
-
-        TEST();
-
-        path = "/dev/stderr";
-        buffer[0] = '!';
-        CHECKPOINT("relative=\"%s\"", path);
-        rc = diminuto_fs_expand(path, buffer, sizeof(buffer));
-        ASSERT(rc == 0);
-        CHECKPOINT("absolute=\"%s\"", buffer);
-        /* What's returned depends on how the user runs this unit test. */
-        ASSERT(buffer[0] != '!');
+        pid = getpid();
+        thread = pthread_self();
+        (void)snprintf(string, sizeof(string), "%llu/task/%llu", (diminuto_llu_t)pid, (diminuto_llu_t)thread);
+        ASSERT(strncmp(string, buffer, sizeof(string)));
 
         STATUS();
     }
