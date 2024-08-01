@@ -342,7 +342,7 @@ Similarly, environmental variables have qualified names like
 * version - provides printable strings for Diminuto version, revision, vintage.
 * widthof - macro to return width in bits of a type.
 
-## Data Structures
+## Data
 
 * bits - get, set, and clear bits in a bit field array.
 * list - circular doubly linked list implementation.
@@ -378,10 +378,6 @@ Similarly, environmental variables have qualified names like
 * debug - simple debug tools to help with Work In Progress (WIP).
 * dump - a variety of formatted memory dump functions.
 * endianess - determine processor endianess.
-* escape - collapse and expand escape sequences in strings.
-* fletcher - implement the Fletcher-16 checksum.
-* hamming - implement the Hamming(8,4) code.
-* kermit - implement the Kermit-16 a.k.a. CRC-CCITT cyclic redundancy check.
 * log - generic logging mechanism for applications, daemons, and kernel modules.
 * lowpassfilter - implements a trivial low pass filter macro.
 * number - alternative interfaces to strtol(3) and strtoul(3).
@@ -402,6 +398,14 @@ Similarly, environmental variables have qualified names like
 * ping6 - programmatic ICMP6 ECHO REQUEST.
 * poll - file descriptor multiplexer using poll(2).
 * scattergather - support for vector I/O and IPC.
+
+## Channels
+
+* escape - collapse and expand escape sequences in strings.
+* fletcher - implement the Fletcher-16 checksum.
+* framer - HDLC-like framing of binary serial streams using byte stuffing.
+* hamming - implement the Hamming(8,4) code.
+* kermit - implement the Kermit-16 a.k.a. CRC-CCITT cyclic redundancy check.
 
 ## Time
 
@@ -445,7 +449,6 @@ Similarly, environmental variables have qualified names like
 * coherentsection - macros to implement scoped code blocks with acquire/release memory barriers.
 * controller - proportional/integral/derivative (PID) controller.
 * cue - logic level debouncer and edge detector.
-* framer - HDLC-like framing of binary serial streams using byte stuffing.
 * i2c - simplified thread-safe API around Linux I2C API.
 * line - get and set GPIO lines using the ioctl ABI.
 * modulator - software pulse width modulation (PWM) generator.
