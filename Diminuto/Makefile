@@ -1113,6 +1113,7 @@ sanity-test:	criticalsection-test
 	unittest-pool
 	unittest-posixtime && unittest-gpstime && unittest-juliantime && unittest-spartntime
 	unittest-proxy
+	unittest-realtime
 	unittest-reaper
 	unittest-renameat2
 	unittest-ring
