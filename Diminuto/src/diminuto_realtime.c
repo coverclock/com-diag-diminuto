@@ -3,10 +3,11 @@
  * @file
  * @copyright Copyright 2024 Digital Aggregates Corporation, Colorado, USA.
  * @note Licensed under the terms in LICENSE.txt.
- * @brief 
+ * @brief This implements the API to the RT_PREEMPT Linux kernel feature.
  * @author Chip Overclock <mailto:coverclock@diag.com>
  * @see Diminuto <https://github.com/coverclock/com-diag-diminuto>
  * @details
+ * This implements the API to the RT_PREEMPT Linux kernel feature.
  */
 
 #include "com/diag/diminuto/diminuto_realtime.h"
@@ -68,8 +69,6 @@ int diminuto_realtime_supported_path(const char * path)
     if (fp == (FILE *)0) {
         /* Do nothing. */
     } else if ((rc = fclose(fp)) >= 0) {
-        /* Do nothing. */
-    } else if (result < 0) {
         /* Do nothing. */
     } else {
         result = -1;
