@@ -6,7 +6,7 @@
  * @file
  * @copyright Copyright 2024 Digital Aggregates Corporation, Colorado, USA.
  * @note Licensed under the terms in LICENSE.txt.
- * @brief Defines the public API for support for the RT_PREEMPT kernel feature.
+ * @brief Defines the public API for support for the PREEMPT_RT kernel feature.
  * @author Chip Overclock <mailto:coverclock@diag.com>
  * @see Diminuto <https://github.com/coverclock/com-diag-diminuto>
  * @details
@@ -15,7 +15,7 @@
  */
 
 /**
- * Tests the default path to see if it indicates support for RT_PREEMPT.
+ * Tests the default path to see if it indicates support for PREEMPT_RT.
  * @param path points to the path name.
  * @return >0 if supported, 0 if not supported, <0 if an error occurred.
  */
