@@ -12,6 +12,7 @@
 
 #include "com/diag/diminuto/diminuto_realtime.h"
 #include "com/diag/diminuto/diminuto_unittest.h"
+#include "diminuto_realtime.h"
 
 int main(int argc, char * argv[])
 {
@@ -19,22 +20,40 @@ int main(int argc, char * argv[])
 
     {
         int rc;
+        FILE * fp;
 
         TEST();
 
         rc = diminuto_realtime_supported_path((const char *)0);
         ASSERT(rc < 0);
-
-        rc = diminuto_realtime_supported_path("/tmp/DOES-NOT-EXIST");
-        ASSERT(rc == 0);
+        EXPECT(errno == EINVAL);
 
         rc = diminuto_realtime_supported_path("/proc/1/mem");
         ASSERT(rc < 0);
+        EXPECT(errno == EACCES);
+
+        rc = diminuto_realtime_supported_path("./DOES-NOT-EXIST");
+        ASSERT(rc == 0);
+
+        ASSERT((fp = tmpfile()) != (FILE *)0);
+        ASSERT((rc = fprintf(fp, "%d\n", -1)) > 0);
+        rc = diminuto_realtime_supported_fp(fp, "TMP1");
+        ASSERT(rc == 0);
+
+        ASSERT((fp = tmpfile()) != (FILE *)0);
+        ASSERT((rc = fprintf(fp, "%d\n", 0)) > 0);
+        rc = diminuto_realtime_supported_fp(fp, "TMP2");
+        ASSERT(rc == 0);
+
+        ASSERT((fp = tmpfile()) != (FILE *)0);
+        ASSERT((rc = fprintf(fp, "%d\n", 1)) > 0);
+        rc = diminuto_realtime_supported_fp(fp, "TMP3");
+        ASSERT(rc > 0);
 
         rc = diminuto_realtime_supported();
         ASSERT(rc >= 0);
 
-        NOTIFY("RT_EXEMPT is %ssupported\n", rc ? "" : "not ");
+        NOTIFY("RT_EXEMPT is %ssupported.\n", rc ? "" : "not ");
 
         STATUS();
     }

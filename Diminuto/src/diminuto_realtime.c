@@ -14,36 +14,26 @@
 #include "com/diag/diminuto/diminuto_error.h"
 #include <fcntl.h>
 #include <stddef.h>
-#include <stdio.h>
 #include <stdint.h>
 #include <errno.h>
+#include "diminuto_realtime.h"
 
-int diminuto_realtime_supported_path(const char * path)
+int diminuto_realtime_supported_fp(FILE * fp, const char * path)
 {
     int result = 0;
-    FILE * fp = (FILE *)0;
-    int rc = EOF;
+    int rc = -1;
     int value = 0;
 
     do {
 
-        if (path == (const char *)0) {
-            errno = EINVAL;
+        if (fp == (FILE *)0) {
             result = -1;
-            diminuto_perror("NULL");
-            break;
-        }
-
-        fp = fopen(path, "r");
-        if (fp != (FILE *)0) {
-            /* Do nothing. */
-        } else if (errno == ENOENT) {
-            break;
-        } else {
-            result = -1;
+            errno = EBADF;
             diminuto_perror(path);
             break;
         }
+
+        rewind(fp);
 
         rc = fscanf(fp, "%d", &value);
         if (rc >= 1) {
@@ -66,6 +56,39 @@ int diminuto_realtime_supported_path(const char * path)
 
     } while (0);
 
+    return result;
+}
+
+int diminuto_realtime_supported_path(const char * path)
+{
+    int result = 0;
+    FILE * fp = (FILE *)0;
+    int rc = -1;
+
+    do {
+
+        if (path == (const char *)0) {
+            errno = EINVAL;
+            result = -1;
+            diminuto_perror("NULL");
+            break;
+        }
+
+        fp = fopen(path, "r");
+        if (fp != (FILE *)0) {
+            /* Do nothing. */
+        } else if (errno == ENOENT) {
+            break;
+        } else {
+            result = -1;
+            diminuto_perror(path);
+            break;
+        }
+
+        result = diminuto_realtime_supported_fp(fp, path);
+
+    } while (0);
+
     if (fp == (FILE *)0) {
         /* Do nothing. */
     } else if ((rc = fclose(fp)) >= 0) {
@@ -76,4 +99,8 @@ int diminuto_realtime_supported_path(const char * path)
     }
 
     return result;
+}
+
+int diminuto_realtime_supported(void) {
+    return diminuto_realtime_supported_path(DIMINUTO_REALTIME_PATH);
 }

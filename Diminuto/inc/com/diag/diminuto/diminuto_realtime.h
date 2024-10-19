@@ -15,25 +15,10 @@
  */
 
 /**
- * This is the SYSFS file that, if it exists, indicates that the running
- * Linux kernel supports the Real-Time Preemptive scheduling feature.
- */
-static const char DIMINUTO_REALTIME_PATH[] = "/sys/kernel/realtime";
-
-/**
- * Tests the specified path to see if it indicates support for RT_PREEMPT.
- * @param path points to the path name.
- * @return >0 if supported, 0 if not supported, <0 if an error occurred.
- */
-extern int diminuto_realtime_supported_path(const char * path);
-
-/**
  * Tests the default path to see if it indicates support for RT_PREEMPT.
  * @param path points to the path name.
  * @return >0 if supported, 0 if not supported, <0 if an error occurred.
  */
-static inline int diminuto_realtime_supported(void) {
-    return diminuto_realtime_supported_path(DIMINUTO_REALTIME_PATH);
-}
+extern int diminuto_realtime_supported(void);
 
 #endif
