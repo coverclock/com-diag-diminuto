@@ -39,19 +39,19 @@
 #include <stdio.h>
 
 /**
- * @def COM_DIAG_DIMIUTO_CONTROLLER_MAXIMUM_VALUE
+ * @def COM_DIAG_DIMINUTO_CONTROLLER_MAXIMUM_VALUE
  * Defines the maximum possible controller value.
  */
 #define COM_DIAG_DIMINUTO_CONTROLLER_MAXIMUM_VALUE ((diminuto_controller_value_t)(~(((diminuto_controller_value_t)1) << ((sizeof(diminuto_controller_value_t) * 8) - 1))))
 
 /**
- * @def COM_DIAG_DIMIUTO_CONTROLLER_MINIMUM_OUTPUT
+ * @def COM_DIAG_DIMINUTO_CONTROLLER_MINIMUM_OUTPUT
  * Defines the mininum possible controller output.
  */
 #define COM_DIAG_DIMINUTO_CONTROLLER_MINIMUM_OUTPUT ((diminuto_controller_output_t)((((diminuto_controller_output_t)1) << ((sizeof(diminuto_controller_output_t) * 8) - 1))))
 
 /**
- * @def COM_DIAG_DIMIUTO_CONTROLLER_MAXIMUM_OUTPUT
+ * @def COM_DIAG_DIMINUTO_CONTROLLER_MAXIMUM_OUTPUT
  * Defines the maximum possible controller output.
  */
 #define COM_DIAG_DIMINUTO_CONTROLLER_MAXIMUM_OUTPUT ((diminuto_controller_output_t)(~(((diminuto_controller_output_t)1) << ((sizeof(diminuto_controller_output_t) * 8) - 1))))

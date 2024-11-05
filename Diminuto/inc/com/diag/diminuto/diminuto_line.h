@@ -43,7 +43,7 @@
 #define COM_DIAG_DIMINUTO_LINE_ROOT "/dev"
 
 /**
- * @def COM_DIAG_DIMINUTO_LINE_PRFFIX
+ * @def COM_DIAG_DIMINUTO_LINE_PREFIX
  * Defines the prefix for line devices.
  */
 #define COM_DIAG_DIMINUTO_LINE_PREFIX "gpiochip"

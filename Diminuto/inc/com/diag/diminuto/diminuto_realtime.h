@@ -16,7 +16,6 @@
 
 /**
  * Tests the default path to see if it indicates support for PREEMPT_RT.
- * @param path points to the path name.
  * @return >0 if supported, 0 if not supported, <0 if an error occurred.
  */
 extern int diminuto_realtime_is_supported(void);
