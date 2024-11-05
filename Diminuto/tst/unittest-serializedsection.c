@@ -1,7 +1,7 @@
 /* vi: set ts=4 expandtab shiftwidth=4: */
 /**
  * @file
- * @copyright Copyright 2014-2023 Digital Aggregates Corporation, Colorado, USA.
+ * @copyright Copyright 2014-2024 Digital Aggregates Corporation, Colorado, USA.
  * @note Licensed under the terms in LICENSE.txt.
  * @brief This is a unit test of the Serialized Section feature.
  * @author Chip Overclock <mailto:coverclock@diag.com>
@@ -60,14 +60,6 @@ int main(void)
     {
         TEST();
 #if !defined(COM_DIAG_DIMINUTO_SERIALIZED_SECTION)
-        FAILURE();
-#endif
-        STATUS();
-    }
-
-    {
-        TEST();
-#if !defined(COM_DIAG_DIMINUTO_CONDITIONAL_SECTION)
         FAILURE();
 #endif
         STATUS();
@@ -159,28 +151,57 @@ int main(void)
 
         ASSERT(lock == 0);
         ASSERT(state == 0);
-        DIMINUTO_CONDITIONAL_SECTION_BEGIN(&lock);
+        DIMINUTO_SERIALIZED_SECTION_TRY(&lock);
             ASSERT(lock != 0);
             state = 1;
-        DIMINUTO_CONDITIONAL_SECTION_END;
+        DIMINUTO_SERIALIZED_SECTION_END;
         ASSERT(lock == 0);
         ASSERT(state == 1);
-        DIMINUTO_CONDITIONAL_SECTION_BEGIN(&lock);
+        DIMINUTO_SERIALIZED_SECTION_TRY(&lock);
             ASSERT(lock != 0);
             state = 2;
-            DIMINUTO_CONDITIONAL_SECTION_BEGIN(&lock);
+            DIMINUTO_SERIALIZED_SECTION_TRY(&lock);
                 state = 3;
-            DIMINUTO_CONDITIONAL_SECTION_END;
+            DIMINUTO_SERIALIZED_SECTION_END;
             ASSERT(lock != 0);
-        DIMINUTO_CONDITIONAL_SECTION_END;
+        DIMINUTO_SERIALIZED_SECTION_END;
         ASSERT(lock == 0);
         ASSERT(state == 2);
-        DIMINUTO_CONDITIONAL_SECTION_BEGIN(&lock);
+        DIMINUTO_SERIALIZED_SECTION_TRY(&lock);
             ASSERT(lock != 0);
             state = 4;
-        DIMINUTO_CONDITIONAL_SECTION_END;
+        DIMINUTO_SERIALIZED_SECTION_END;
         ASSERT(lock == 0);
         ASSERT(state == 4);
+
+        STATUS();
+    }
+
+    {
+        volatile diminuto_spinlock_t lock = 0;
+        int state = 0;
+
+        TEST();
+        ASSERT(state == 0);
+
+        DIMINUTO_SERIALIZED_SECTION_BEGIN(&lock);
+        state = 1;
+        DIMINUTO_SERIALIZED_SECTION_END;
+        ASSERT(state == 1);
+
+        DIMINUTO_SERIALIZED_SECTION_TRY(&lock);
+        state = 2;
+        DIMINUTO_SERIALIZED_SECTION_END;
+        ASSERT(state == 2);
+
+        DIMINUTO_SERIALIZED_SECTION_BEGIN(&lock);
+            state = 3;
+            DIMINUTO_SERIALIZED_SECTION_TRY(&lock);
+                state = 4;
+            DIMINUTO_SERIALIZED_SECTION_END;
+            ASSERT(state == 3);
+        DIMINUTO_SERIALIZED_SECTION_END;
+        ASSERT(state == 3);
 
         STATUS();
     }

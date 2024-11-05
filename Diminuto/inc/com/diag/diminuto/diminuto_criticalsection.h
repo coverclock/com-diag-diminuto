@@ -60,7 +60,9 @@ extern void diminuto_criticalsection_cleanup(void * vp);
  * @def DIMINUTO_CRITICAL_SECTION_TRY
  * Conditionally begin a code section that is serialized using a pthread
  * mutex specified by the caller as a pointer in the argument @a _MP_
- * by locking the mutex.
+ * by locking the mutex. Applications can use their own variable that
+ * changes state within the critical section to determine if the lock
+ * succeeded or failed.
  */
 #define DIMINUTO_CRITICAL_SECTION_TRY(_MP_) \
     do { \

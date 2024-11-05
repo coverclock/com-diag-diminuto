@@ -4,7 +4,7 @@
 
 /**
  * @file
- * @copyright Copyright 2010-2023 Digital Aggregates Corporation, Colorado, USA.
+ * @copyright Copyright 2010-2024 Digital Aggregates Corporation, Colorado, USA.
  * @note Licensed under the terms in LICENSE.txt.
  * @brief Provides capabilities common to IPv4, IPv6, and local sockets.
  * @author Chip Overclock <mailto:coverclock@diag.com>

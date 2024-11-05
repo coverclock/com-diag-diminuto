@@ -4,7 +4,7 @@
 
 /**
  * @file
- * @copyright Copyright 2018-2022 Digital Aggregates Corporation, Colorado, USA.
+ * @copyright Copyright 2018-2024 Digital Aggregates Corporation, Colorado, USA.
  * @note Licensed under the terms in LICENSE.txt.
  * @brief Implements a PWM generator.
  * @author Chip Overclock <mailto:coverclock@diag.com>

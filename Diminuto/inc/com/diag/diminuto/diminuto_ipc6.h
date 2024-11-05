@@ -4,7 +4,7 @@
 
 /**
  * @file
- * @copyright Copyright 2015-2023 Digital Aggregates Corporation, Colorado, USA.
+ * @copyright Copyright 2015-2024 Digital Aggregates Corporation, Colorado, USA.
  * @note Licensed under the terms in LICENSE.txt.
  * @brief Provides a slightly simpler interface to stream and datagram IPv6 sockets.
  * @author Chip Overclock <mailto:coverclock@diag.com>

@@ -4,7 +4,7 @@
 
 /**
  * @file
- * @copyright Copyright 2022 Digital Aggregates Corporation, Colorado, USA.
+ * @copyright Copyright 2022-2024 Digital Aggregates Corporation, Colorado, USA.
  * @note Licensed under the terms in LICENSE.txt.
  * @brief Atomically perform a read-modify-write operation. EXPERIMENTAL
  * @author Chip Overclock <mailto:coverclock@diag.com>

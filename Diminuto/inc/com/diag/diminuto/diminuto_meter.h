@@ -4,7 +4,7 @@
 
 /**
  * @file
- * @copyright Copyright 2022 Digital Aggregates Corporation, Colorado, USA.
+ * @copyright Copyright 2022-2024 Digital Aggregates Corporation, Colorado, USA.
  * @note Licensed under the terms in LICENSE.txt.
  * @brief Implements a Meter with the peak and sustainable rate.
  * @author Chip Overclock <mailto:coverclock@diag.com>
