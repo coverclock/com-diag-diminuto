@@ -21,6 +21,7 @@
  * PREREQUISITES
  **********************************************************************/
 
+#include "com/diag/diminuto/diminuto_assert.h"
 #include <pthread.h>
 #include <errno.h>
 
@@ -135,10 +136,11 @@ extern void diminuto_mutex_cleanup(void * vp);
  */
 #define DIMINUTO_MUTEX_BEGIN(_MP_) \
     do { \
-        diminuto_mutex_t * diminuto_mutex_p = (diminuto_mutex_t *)0; \
-        diminuto_mutex_p = (_MP_); \
-        if (diminuto_mutex_lock(diminuto_mutex_p) == 0) { \
-            pthread_cleanup_push(diminuto_mutex_cleanup, diminuto_mutex_p); \
+        diminuto_mutex_t * _diminuto_mutex_p = (diminuto_mutex_t *)0; \
+        _diminuto_mutex_p = (_MP_); \
+        diminuto_contract(diminuto_mutex_lock(_diminuto_mutex_p) == 0); \
+        if (!0) { \
+            pthread_cleanup_push(diminuto_mutex_cleanup, _diminuto_mutex_p); \
             do { \
                 (void)0
 
@@ -150,10 +152,10 @@ extern void diminuto_mutex_cleanup(void * vp);
  */
 #define DIMINUTO_MUTEX_TRY(_MP_) \
     do { \
-        diminuto_mutex_t * diminuto_mutex_p = (diminuto_mutex_t *)0; \
-        diminuto_mutex_p = (_MP_); \
-        if (diminuto_mutex_lock_try(diminuto_mutex_p) == 0) { \
-            pthread_cleanup_push(diminuto_mutex_cleanup, diminuto_mutex_p); \
+        diminuto_mutex_t * _diminuto_mutex_p = (diminuto_mutex_t *)0; \
+        _diminuto_mutex_p = (_MP_); \
+        if (diminuto_mutex_lock_try(_diminuto_mutex_p) == 0) { \
+            pthread_cleanup_push(diminuto_mutex_cleanup, _diminuto_mutex_p); \
             do { \
                 (void)0
 
@@ -166,7 +168,6 @@ extern void diminuto_mutex_cleanup(void * vp);
             } while (0); \
             pthread_cleanup_pop(!0); \
         } \
-        diminuto_mutex_p = (diminuto_mutex_t *)0; \
     } while (0)
 
 #endif
