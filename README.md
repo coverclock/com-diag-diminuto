@@ -333,7 +333,8 @@ own code), in addition to ```-Iinc``` (for Diminuto's own header files),
 in their own build system.
 
 Preprocessor symbols that are not strictly speaking part of the public API being
-defined may have qualified names like ```COM_DIAG_DIMINUTO_TIMER_FREQUENCY```
+defined, or which may conflict with the names of related static constants that
+are part of the public API,  may have qualified names like ```COM_DIAG_DIMINUTO_TIMER_FREQUENCY```
 to prevent symbol conflicts.
 
 Similarly, environmental variables have qualified names like
@@ -1388,6 +1389,8 @@ J. Postel, "Internet Control Message Protocol", RFC 792, September 1981
 
 R. Quattlebaum, "Framing Protocol", 2018-09-26,
 <https://chromium.googlesource.com/external/github.com/openthread/openthread/+/refs/tags/upstream/thread-reference-20180926/doc/spinel-protocol-src/spinel-framing.md>
+
+F. Reghenzani et al. "The Real-Time Linux Kernel: A Survey on PREEMPT_RT", ACM COMPUTING SURVEYS, 52.1.18, 2019-02
 
 W. Sewell, "Ephemeral port exhaustion and how to avoid it", 2018-05-22, <https://making.pusher.com/ephemeral-port-exhaustion-and-how-to-avoid-it/>
 

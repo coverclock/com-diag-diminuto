@@ -84,6 +84,22 @@
 #include <stdio.h>
 
 /*******************************************************************************
+ * CODE GENERATORS
+ ******************************************************************************/
+
+/**
+ * @def COM_DIAG_DIMINUTO_READERWRITER_POLL
+ * Defines the timeout value used to request polling instead of waiting.
+ */
+#define COM_DIAG_DIMINUTO_READERWRITER_POLL (0)
+
+/**
+ * @def COM_DIAG_DIMINUTO_READERWRITER_INFINITY
+ * Defines the timeout value used to infinite waiting.
+ */
+#define COM_DIAG_DIMINUTO_READERWRITER_INFINITY (~(diminuto_ticks_t)0)
+
+/*******************************************************************************
  * SYMBOLS
  ******************************************************************************/
 
@@ -149,13 +165,13 @@ typedef struct DiminutoReaderWriter {
  * This value when used as a timeout specifies that the caller polls and
  * does not wait.
  */
-static const diminuto_ticks_t DIMINUTO_READERWRITER_POLL = 0;
+static const diminuto_ticks_t DIMINUTO_READERWRITER_POLL = COM_DIAG_DIMINUTO_READERWRITER_POLL;
 
 /**
  * This value when used as a timeout specifies that the caller waits
  * indefinitely.
  */
-static const diminuto_ticks_t DIMINUTO_READERWRITER_INFINITY = (~(diminuto_ticks_t)0);
+static const diminuto_ticks_t DIMINUTO_READERWRITER_INFINITY = COM_DIAG_DIMINUTO_READERWRITER_INFINITY;
 
 /*******************************************************************************
  * STRUCTORS

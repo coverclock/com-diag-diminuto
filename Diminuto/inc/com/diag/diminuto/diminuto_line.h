@@ -33,6 +33,22 @@
 #include <stdint.h>
 
 /*******************************************************************************
+ * CODE GENERATORS
+ ******************************************************************************/
+
+/**
+ * @def COM_DIAG_DIMINUTO_LINE_ROOT
+ * Defines the root path for line devices.
+ */
+#define COM_DIAG_DIMINUTO_LINE_ROOT "/dev"
+
+/**
+ * @def COM_DIAG_DIMINUTO_LINE_PRFFIX
+ * Defines the prefix for line devices.
+ */
+#define COM_DIAG_DIMINUTO_LINE_PREFIX "gpiochip"
+
+/*******************************************************************************
  * TYPES
  ******************************************************************************/
 
@@ -86,13 +102,13 @@ typedef uint32_t diminuto_line_duration_t;
  * This is the default root of the device directory (typically a special file
  * system instantiated at boot time).
  */
-static const char DIMINUTO_LINE_ROOT[] = "/dev";
+static const char DIMINUTO_LINE_ROOT[] = COM_DIAG_DIMINUTO_LINE_ROOT;
 
 /**
  * Each GPIO controller instantiates a device whose name begins with this
  * prefix in the device directory.
  */
-static const char DIMINUTO_LINE_PREFIX[] = "gpiochip";
+static const char DIMINUTO_LINE_PREFIX[] = COM_DIAG_DIMINUTO_LINE_PREFIX;
 
 /*******************************************************************************
  * DEBUGGING

@@ -163,6 +163,8 @@ static diminuto_log_mask_t diminuto_log_mask = DIMINUTO_LOG_MASK_DEFAULT;
 
 #include <android/log.h>
 
+#define COM_DIAG_DIMINUTO_LOG_IDENT_DEFAULT "Diminuto"
+
 /**
  * This enumerates the log priority values that map from the log level
  * to one of the log priority values used by the Android Bionic library.
@@ -183,7 +185,7 @@ typedef enum DiminutoLogPriority {
 /**
  * This is the default log identifier used by the Android Bionic library.
  */
-static const char DIMINUTO_LOG_IDENT_DEFAULT[] = "Diminuto";
+static const char DIMINUTO_LOG_IDENT_DEFAULT[] = COM_DIAG_DIMINUTO_LOG_IDENT_DEFAULT;
 
 /**
  * This enumerates the log priority values that map from the log level

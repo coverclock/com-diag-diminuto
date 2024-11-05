@@ -115,7 +115,7 @@ typedef struct DiminutoList {
 typedef int (diminuto_list_functor_t)(void * datap, void * contextp);
 
 /*******************************************************************************
- * GENERATORS
+ * CODE GENERATORS
  ******************************************************************************/
 
 /**

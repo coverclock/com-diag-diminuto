@@ -18,7 +18,7 @@
 #include <errno.h>
 #include "diminuto_realtime.h"
 
-int diminuto_realtime_supported_fp(FILE * fp, const char * path)
+int diminuto_realtime_is_supported_fp(FILE * fp, const char * path)
 {
     int result = 0;
     int rc = -1;
@@ -59,7 +59,7 @@ int diminuto_realtime_supported_fp(FILE * fp, const char * path)
     return result;
 }
 
-int diminuto_realtime_supported_path(const char * path)
+int diminuto_realtime_is_supported_path(const char * path)
 {
     int result = 0;
     FILE * fp = (FILE *)0;
@@ -85,7 +85,7 @@ int diminuto_realtime_supported_path(const char * path)
             break;
         }
 
-        result = diminuto_realtime_supported_fp(fp, path);
+        result = diminuto_realtime_is_supported_fp(fp, path);
 
     } while (0);
 
@@ -101,6 +101,6 @@ int diminuto_realtime_supported_path(const char * path)
     return result;
 }
 
-int diminuto_realtime_supported(void) {
-    return diminuto_realtime_supported_path(DIMINUTO_REALTIME_PATH);
+int diminuto_realtime_is_supported(void) {
+    return diminuto_realtime_is_supported_path(DIMINUTO_REALTIME_PATH);
 }

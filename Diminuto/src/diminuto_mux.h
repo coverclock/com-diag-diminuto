@@ -18,8 +18,27 @@
 
 #include "com/diag/diminuto/diminuto_mux.h"
 
-static const int DIMINUTO_MUX_MOSTPOSITIVE = ~(((int)1)<<((sizeof(int)*8)-1)); /* Most positive integer. */
-static const int DIMINUTO_MUX_MOSTNEGATIVE =  (((int)1)<<((sizeof(int)*8)-1)); /* Most negative integer (produces -pendantic warning). */
+/**
+ * @def COM_DIAG_DIMINUTO_MUX_MOSTPOSITIVE
+ * Defines the most positive integer.
+ */
+#define COM_DIAG_DIMINUTO_MUX_MOSTPOSITIVE (~(((int)1)<<((sizeof(int)*8)-1)))
+
+/**
+ * @def COM_DIAG_DIMINUTO_MUX_MOSTNEGATIVE
+ * Defines the most negative integer.
+ */
+#define COM_DIAG_DIMINUTO_MUX_MOSTNEGATIVE (((int)1)<<((sizeof(int)*8)-1))
+
+/**
+ * Most positive integer.
+ */
+static const int DIMINUTO_MUX_MOSTPOSITIVE = COM_DIAG_DIMINUTO_MUX_MOSTPOSITIVE;
+
+/**
+ * Most negative integer. (May produce a -pedantic warning.)
+ */
+static const int DIMINUTO_MUX_MOSTNEGATIVE =  COM_DIAG_DIMINUTO_MUX_MOSTNEGATIVE; 
 
 /**
  * Initialize a multiplexer set.

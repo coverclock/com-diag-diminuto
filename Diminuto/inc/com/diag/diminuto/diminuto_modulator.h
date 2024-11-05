@@ -49,6 +49,18 @@
 #define COM_DIAG_DIMINUTO_MODULATOR_FREQUENCY (10000LL)
 
 /**
+ * @def COM_DIAG_DIMINUTO_MODULATOR_DUTY_MIN
+ * Defines the minimum modulator duty value.
+ */
+#define COM_DIAG_DIMINUTO_MODULATOR_DUTY_MIN (0)
+
+/**
+ * @def COM_DIAG_DIMINUTO_MODULATOR_DUTY_MAX
+ * Defines the maximum modulator duty value.
+ */
+#define COM_DIAG_DIMINUTO_MODULATOR_DUTY_MAX (255)
+
+/**
  * Returns the frequency of this feature: the number of cycles per second that
  * it can operate at. The inverse is the period of the PWM generator.
  * @return the frequency of this feature in Hertz.
@@ -98,12 +110,12 @@ typedef enum DiminutoModulatorState {
 /**
  * This is the smallest duty cycle value.
  */
-static const diminuto_modulator_cycle_t DIMINUTO_MODULATOR_DUTY_MIN = 0;
+static const diminuto_modulator_cycle_t DIMINUTO_MODULATOR_DUTY_MIN = COM_DIAG_DIMINUTO_MODULATOR_DUTY_MIN;
 
 /**
  * This is the largest duty cycle value.
  */
-static const diminuto_modulator_cycle_t DIMINUTO_MODULATOR_DUTY_MAX = 255;
+static const diminuto_modulator_cycle_t DIMINUTO_MODULATOR_DUTY_MAX = COM_DIAG_DIMINUTO_MODULATOR_DUTY_MAX;
 
 /**
  * Defines the structure containing the state of a PWM generator.

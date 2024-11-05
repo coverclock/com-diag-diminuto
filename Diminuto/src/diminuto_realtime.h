@@ -17,17 +17,23 @@
 #include <stdio.h>
 
 /**
+ * @def COM_DIAG_DIMINUTO_REALTIME_PATH
+ * Defines the path in the file system for the realtime variable.
+ */
+#define COM_DIAG_DIMINUTO_REALTIME_PATH "/sys/kernel/realtime"
+
+/**
  * This is the SYSFS file that, if it exists, indicates that the running
  * Linux kernel supports the Real-Time Preemptive scheduling feature.
  */
-static const char DIMINUTO_REALTIME_PATH[] = "/sys/kernel/realtime";
+static const char DIMINUTO_REALTIME_PATH[] = COM_DIAG_DIMINUTO_REALTIME_PATH;
 
 /**
  * Tests the specified path to see if it indicates support for PREEMPT_RT.
  * @param path points to the path name.
  * @return >0 if supported, 0 if not supported, <0 if an error occurred.
  */
-extern int diminuto_realtime_supported_path(const char * path);
+extern int diminuto_realtime_is_supported_path(const char * path);
 
 /**
  * Tests the specified file to see if it indicates support for PREEMPT_RT.
@@ -35,6 +41,6 @@ extern int diminuto_realtime_supported_path(const char * path);
  * @param path points to the path name.
  * @return >0 if supported, 0 if not supported, <0 if an error occurred.
  */
-extern int diminuto_realtime_supported_fp(FILE * fp, const char * path);
+extern int diminuto_realtime_is_supported_fp(FILE * fp, const char * path);
 
 #endif

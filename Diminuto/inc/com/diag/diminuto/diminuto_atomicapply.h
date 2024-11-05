@@ -21,9 +21,15 @@
 #include <pthread.h>
 
 /**
+ * @def COM_DIAG_DIMINUTO_ATOMIC_ERROR
+ * Defines the error return result value.
+ */
+#define COM_DIAG_DIMINUTO_ATOMIC_ERROR ((void *)(intptr_t)-1)
+
+/**
  * Error return result.
  */
-static const void * DIMINUTO_ATOMIC_ERROR = (void *)(intptr_t)-1;
+static const void * DIMINUTO_ATOMIC_ERROR = COM_DIAG_DIMINUTO_ATOMIC_ERROR;
 
 /**
  * This defines the prototype for a functor that applies a context (whatever

@@ -22,6 +22,36 @@
 #include <math.h> /* For HUGE_VAL. */
 
 /*******************************************************************************
+ * CODE_GENERATORS
+ ******************************************************************************/
+
+/**
+ * @def COM_DIAG_DIMINUTO_METER_OVERFLOW
+ * Defines the value to indicate a meter overflow.
+ */
+#define COM_DIAG_DIMINUTO_METER_OVERFLOW (diminuto_maximumof(size_t))
+
+/**
+ * @def COM_DIAG_DIMINUTO_METER_ERROR
+ * Defines the value to indicate a meter error.
+ */
+#define COM_DIAG_DIMINUTO_METER_ERROR (HUGE_VAL)
+
+/**
+ * @def DIMINUTO_METER_INITIALIZER
+ * This macro generates a static initializer for a Meter object.
+ */
+#define DIMINUTO_METER_INITIALIZER \
+    { \
+        0, \
+        0, \
+        0.0, \
+        0, \
+        0, \
+        0, \
+    }
+
+/*******************************************************************************
  * TYPES
  ******************************************************************************/
 
@@ -39,20 +69,6 @@ typedef struct DiminutoMeter {
     size_t              count;  /**< Number of measurements taken. */
 } diminuto_meter_t;
 
-/**
- * @def DIMINUTO_METER_INITIALIZER
- * This macro generates a static initializer for a Meter object.
- */
-#define DIMINUTO_METER_INITIALIZER \
-    { \
-        0, \
-        0, \
-        0.0, \
-        0, \
-        0, \
-        0, \
-    }
-
 /*******************************************************************************
  * CONSTANTS
  ******************************************************************************/
@@ -60,12 +76,12 @@ typedef struct DiminutoMeter {
 /**
  * When an event count gets too large, this is the value to which it is set.
  */
-static const size_t DIMINUTO_METER_OVERFLOW = diminuto_maximumof(size_t);
+static const size_t DIMINUTO_METER_OVERFLOW = COM_DIAG_DIMINUTO_METER_OVERFLOW;
 
 /**
  * When a rate cannot be computed, this is the value to which it is set.
  */
-static const double DIMINUTO_METER_ERROR = HUGE_VAL;
+static const double DIMINUTO_METER_ERROR = COM_DIAG_DIMINUTO_METER_ERROR;
 
 /*******************************************************************************
  * TIME

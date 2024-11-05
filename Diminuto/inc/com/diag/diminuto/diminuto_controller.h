@@ -38,6 +38,24 @@
 #include "com/diag/diminuto/diminuto_types.h"
 #include <stdio.h>
 
+/**
+ * @def COM_DIAG_DIMIUTO_CONTROLLER_MAXIMUM_VALUE
+ * Defines the maximum possible controller value.
+ */
+#define COM_DIAG_DIMINUTO_CONTROLLER_MAXIMUM_VALUE ((diminuto_controller_value_t)(~(((diminuto_controller_value_t)1) << ((sizeof(diminuto_controller_value_t) * 8) - 1))))
+
+/**
+ * @def COM_DIAG_DIMIUTO_CONTROLLER_MINIMUM_OUTPUT
+ * Defines the mininum possible controller output.
+ */
+#define COM_DIAG_DIMINUTO_CONTROLLER_MINIMUM_OUTPUT ((diminuto_controller_output_t)((((diminuto_controller_output_t)1) << ((sizeof(diminuto_controller_output_t) * 8) - 1))))
+
+/**
+ * @def COM_DIAG_DIMIUTO_CONTROLLER_MAXIMUM_OUTPUT
+ * Defines the maximum possible controller output.
+ */
+#define COM_DIAG_DIMINUTO_CONTROLLER_MAXIMUM_OUTPUT ((diminuto_controller_output_t)(~(((diminuto_controller_output_t)1) << ((sizeof(diminuto_controller_output_t) * 8) - 1))))
+
 /*
  * You can change these data types as you see fit. I chose them to
  * deliberately limit the dynamic range supported by the PID algorithm,
@@ -69,17 +87,17 @@ typedef int32_t diminuto_controller_value_t;
 /**
  * This is the maximum value the value type can assume.
  */
-static const diminuto_controller_value_t DIMINUTO_CONTROLLER_MAXIMUM_VALUE = (diminuto_controller_value_t)(~(((diminuto_controller_value_t)1) << ((sizeof(diminuto_controller_value_t) * 8) - 1)));
+static const diminuto_controller_value_t DIMINUTO_CONTROLLER_MAXIMUM_VALUE = COM_DIAG_DIMINUTO_CONTROLLER_MAXIMUM_VALUE;
 
 /**
  * This is the minimum value the output type can assume.
  */
-static const diminuto_controller_output_t DIMINUTO_CONTROLLER_MINIMUM_OUTPUT = (diminuto_controller_output_t)((((diminuto_controller_output_t)1) << ((sizeof(diminuto_controller_output_t) * 8) - 1)));
+static const diminuto_controller_output_t DIMINUTO_CONTROLLER_MINIMUM_OUTPUT = COM_DIAG_DIMINUTO_CONTROLLER_MINIMUM_OUTPUT;
 
 /**
  * This is the maximum value the output type can assume.
  */
-static const diminuto_controller_output_t DIMINUTO_CONTROLLER_MAXIMUM_OUTPUT = (diminuto_controller_output_t)(~(((diminuto_controller_output_t)1) << ((sizeof(diminuto_controller_output_t) * 8) - 1)));
+static const diminuto_controller_output_t DIMINUTO_CONTROLLER_MAXIMUM_OUTPUT = COM_DIAG_DIMINUTO_CONTROLLER_MAXIMUM_OUTPUT;
 
 /**
  * This is the structure used for using ratios as gains (numerator greater than

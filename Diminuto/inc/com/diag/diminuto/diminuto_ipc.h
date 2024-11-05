@@ -85,6 +85,15 @@
 #include <linux/sockios.h> /* For SIOCINQ, SIOCOUTQ. */
 #include <asm/ioctls.h> /* For FIONREAD, TIOCOUTQ. */
 
+/*******************************************************************************
+ * CODE GENERATORS
+ ******************************************************************************/
+
+/**
+ * @def COM_DIAG_DIMINUTO_IPC_EPHEMERAL
+ * Defines the emphemeral port value.
+ */
+#define COM_DIAG_DIMINUTO_IPC_EPHEMERAL (0)
 
 /*******************************************************************************
  * CONSTANTS
@@ -97,7 +106,7 @@
  * use the constant 0; this value is not going to change. But using this
  * constant makes it easier to search for uses in the source code.)
  */
-static const diminuto_port_t DIMINUTO_IPC_EPHEMERAL = 0;
+static const diminuto_port_t DIMINUTO_IPC_EPHEMERAL = COM_DIAG_DIMINUTO_IPC_EPHEMERAL;
 
 /*******************************************************************************
  * TYPES

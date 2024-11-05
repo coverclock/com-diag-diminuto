@@ -79,11 +79,11 @@ int main(int argc, char * argv[])
     FILE * input = (FILE *)0;
     FILE * output = (FILE *)0;
     diminuto_mux_t multiplexor = { 0 };
-    diminuto_ipv4_t service4 = DIMINUTO_IPC4_UNSPECIFIED_INIT;
-    diminuto_ipv6_t service6 = DIMINUTO_IPC6_UNSPECIFIED_INIT;
+    diminuto_ipv4_t service4 = DIMINUTO_IPC4_UNSPECIFIED;
+    diminuto_ipv6_t service6 = DIMINUTO_IPC6_UNSPECIFIED;
     diminuto_port_t serviceport = 0;
-    diminuto_ipv4_t sender4 = DIMINUTO_IPC4_UNSPECIFIED_INIT;
-    diminuto_ipv6_t sender6 = DIMINUTO_IPC6_UNSPECIFIED_INIT;
+    diminuto_ipv4_t sender4 = DIMINUTO_IPC4_UNSPECIFIED;
+    diminuto_ipv6_t sender6 = DIMINUTO_IPC6_UNSPECIFIED;
     diminuto_port_t senderport = 0;
     bool error = false;
     bool done = false;

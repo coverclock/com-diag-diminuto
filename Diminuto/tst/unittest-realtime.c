@@ -24,33 +24,33 @@ int main(int argc, char * argv[])
 
         TEST();
 
-        rc = diminuto_realtime_supported_path((const char *)0);
+        rc = diminuto_realtime_is_supported_path((const char *)0);
         ASSERT(rc < 0);
         EXPECT(errno == EINVAL);
 
-        rc = diminuto_realtime_supported_path("/proc/1/mem");
+        rc = diminuto_realtime_is_supported_path("/proc/1/mem");
         ASSERT(rc < 0);
         EXPECT(errno == EACCES);
 
-        rc = diminuto_realtime_supported_path("./PREEMPT_RT-NOT-EXIST");
+        rc = diminuto_realtime_is_supported_path("./PREEMPT_RT-NOT-EXIST");
         ASSERT(rc == 0);
 
         ASSERT((fp = tmpfile()) != (FILE *)0);
         ASSERT((rc = fprintf(fp, "%d\n", -1)) > 0);
-        rc = diminuto_realtime_supported_fp(fp, "PREEMPT_RT-1");
+        rc = diminuto_realtime_is_supported_fp(fp, "PREEMPT_RT-1");
         ASSERT(rc == 0);
 
         ASSERT((fp = tmpfile()) != (FILE *)0);
         ASSERT((rc = fprintf(fp, "%d\n", 0)) > 0);
-        rc = diminuto_realtime_supported_fp(fp, "PREEMPT_RT-2");
+        rc = diminuto_realtime_is_supported_fp(fp, "PREEMPT_RT-2");
         ASSERT(rc == 0);
 
         ASSERT((fp = tmpfile()) != (FILE *)0);
         ASSERT((rc = fprintf(fp, "%d\n", 1)) > 0);
-        rc = diminuto_realtime_supported_fp(fp, "PREEMPT_RT-3");
+        rc = diminuto_realtime_is_supported_fp(fp, "PREEMPT_RT-3");
         ASSERT(rc > 0);
 
-        rc = diminuto_realtime_supported();
+        rc = diminuto_realtime_is_supported();
         ASSERT(rc >= 0);
 
         NOTIFY("PREEMPT_RT is %ssupported.\n", rc ? "" : "not ");
