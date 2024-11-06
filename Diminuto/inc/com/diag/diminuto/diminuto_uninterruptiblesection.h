@@ -15,6 +15,7 @@
  * code sections that cannot be interrupted by specified set of signals.
  */
 
+#include "com/diag/diminuto/diminuto_assert.h"
 #include "com/diag/diminuto/diminuto_countof.h"
 #include <signal.h>
 #include <pthread.h>
@@ -45,7 +46,8 @@ extern void diminuto_uninterruptiblesection_cleanup(void * vp);
     do { \
         const int _diminuto_uninterrutiblesection_signals[] = { __VA_ARGS__ }; \
         sigset_t _diminuto_uninterruptiblesection_set; \
-        if (diminuto_uninterruptiblesection_block(_diminuto_uninterrutiblesection_signals, diminuto_countof(_diminuto_uninterrutiblesection_signals), &_diminuto_uninterruptiblesection_set) == 0) { \
+        diminuto_contract(diminuto_uninterruptiblesection_block(_diminuto_uninterrutiblesection_signals, diminuto_countof(_diminuto_uninterrutiblesection_signals), &_diminuto_uninterruptiblesection_set) == 0); \
+        do { \
             pthread_cleanup_push(diminuto_uninterruptiblesection_cleanup, &_diminuto_uninterruptiblesection_set); \
             do { \
                 ((void)0)
@@ -59,7 +61,7 @@ extern void diminuto_uninterruptiblesection_cleanup(void * vp);
 #define DIMINUTO_UNINTERRUPTIBLE_SECTION_END \
             } while (0); \
             pthread_cleanup_pop(!0); \
-        } \
+        } while (0); \
     } while (0)
 
 #endif

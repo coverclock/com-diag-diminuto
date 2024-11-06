@@ -31,7 +31,7 @@ TITLE				:=	Diminuto
 
 MAJOR				:=	104# API changes that may require that applications be modified.
 MINOR				:=	1# Only functionality or features added with no legacy API changes.
-BUILD				:=	0# Only bugs fixed with no API changes or new functionality.
+BUILD				:=	1# Only bugs fixed with no API changes or new functionality.
 
 # Disclaimer: the only target that I routinely build and test for is "host",
 # using the native GCC compilers on my X86_64 Ubuntu or ARMv7 Raspbian systems.
@@ -1189,6 +1189,7 @@ signals-test:
 	unittest-terminator
 
 threads-test:
+	unittest-uninterruptiblesection
 	unittest-mutex
 	unittest-condition
 	unittest-thread
