@@ -47,7 +47,22 @@ extern void diminuto_uninterruptiblesection_cleanup(void * vp);
         const int _diminuto_uninterrutiblesection_signals[] = { __VA_ARGS__ }; \
         sigset_t _diminuto_uninterruptiblesection_set; \
         diminuto_contract(diminuto_uninterruptiblesection_block(_diminuto_uninterrutiblesection_signals, diminuto_countof(_diminuto_uninterrutiblesection_signals), &_diminuto_uninterruptiblesection_set) == 0); \
-        do { \
+        if (!0) { \
+            pthread_cleanup_push(diminuto_uninterruptiblesection_cleanup, &_diminuto_uninterruptiblesection_set); \
+            do { \
+                ((void)0)
+
+/**
+ * @def DIMINUTO_UNINTERRUPTIBLE_SECTION_TRY
+ * Attempt to begin  a code block that is uninterruptible by a comma separated
+ * list of signals by adding those signals to the mask of signals that are
+ * already blocked.
+ */
+#define DIMINUTO_UNINTERRUPTIBLE_SECTION_TRY(...) \
+    do { \
+        const int _diminuto_uninterrutiblesection_signals[] = { __VA_ARGS__ }; \
+        sigset_t _diminuto_uninterruptiblesection_set; \
+        if (diminuto_uninterruptiblesection_block(_diminuto_uninterrutiblesection_signals, diminuto_countof(_diminuto_uninterrutiblesection_signals), &_diminuto_uninterruptiblesection_set) == 0) { \
             pthread_cleanup_push(diminuto_uninterruptiblesection_cleanup, &_diminuto_uninterruptiblesection_set); \
             do { \
                 ((void)0)
@@ -61,7 +76,7 @@ extern void diminuto_uninterruptiblesection_cleanup(void * vp);
 #define DIMINUTO_UNINTERRUPTIBLE_SECTION_END \
             } while (0); \
             pthread_cleanup_pop(!0); \
-        } while (0); \
+        } \
     } while (0)
 
 #endif
