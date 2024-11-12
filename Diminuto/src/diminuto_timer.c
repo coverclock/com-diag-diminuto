@@ -34,6 +34,19 @@
 #include <stdlib.h>
 #include <unistd.h>
 
+#if 0
+/**
+ * THis is the original choice for Diminuto timer scheduling.
+ */
+static const int DIMINUTO_TIMER_SCHED = SCHED_FIFO;
+#else
+/**
+ * THis is the current choice for Diminuto timer scheduling, based
+ * on studying real-time systems like Asterisk.
+ */
+static const int DIMINUTO_TIMER_SCHED = SCHED_RR;
+#endif
+
 static void proxy(union sigval sv)
 {
     diminuto_timer_t * tp = (diminuto_timer_t *)0;
@@ -131,13 +144,13 @@ diminuto_timer_t * diminuto_timer_init_generic(diminuto_timer_t * tp, int period
             break;
         }
 
-        if ((rc = pthread_attr_setschedpolicy(&(tp->attributes), SCHED_FIFO)) != 0) {
+        if ((rc = pthread_attr_setschedpolicy(&(tp->attributes), DIMINUTO_TIMER_SCHED)) != 0) {
             errno = rc;
             diminuto_perror("diminuto_timer_init: pthread_attr_setsched_policy");
             break;
         }
 
-        if ((tp->param.sched_priority = sched_get_priority_max(SCHED_FIFO)) < 0) {
+        if ((tp->param.sched_priority = sched_get_priority_max(DIMINUTO_TIMER_SCHED)) < 0) {
             diminuto_perror("diminuto_timer_init: sched_get_priority_max");
             break;
         }

@@ -45,9 +45,13 @@ KERNELCHAIN			:=
 KERNEL_REV			:=	$(shell uname -r)
 KERNEL_DIR			:=	/lib/modules/$(KERNEL_REV)/build
 GNUARCH				:=	-D__USE_GNU -D_GNU_SOURCE
+ifeq (0, 1)
 # Try: sudo apt-get install linux-headers-$(uname -r)
 # Or:  sudo apt-get install raspberrypi-kernel-headers
-CPPARCH				:=	-isystem /usr/src/linux-headers-$(KERNEL_REV) $(GNUARCH)
+CPPARCH				:=	-isystem /usr/src/linux-headers-$(KERNEL_REV)/include $(GNUARCH)
+else
+CPPARCH				:=	$(GNUARCH)
+endif
 CARCH				:=	-rdynamic -fPIC -Wall
 CXXARCH				:=	$(CARCH)
 LDARCH				:=	-L$(OUT)/$(LIB_DIR)
