@@ -10,6 +10,8 @@
  * This is the unit test for the Real Time feature supporting PREEMPT_RT.
  */
 
+#include <sched.h>
+#include "com/diag/diminuto/diminuto_countof.h"
 #include "com/diag/diminuto/diminuto_realtime.h"
 #include "com/diag/diminuto/diminuto_unittest.h"
 #include "diminuto_realtime.h"
@@ -54,6 +56,75 @@ int main(int argc, char * argv[])
         ASSERT(rc >= 0);
 
         NOTIFY("PREEMPT_RT is %ssupported.\n", rc ? "" : "not ");
+
+        STATUS();
+    }
+
+    {
+        int scheduler[] = {
+#if defined(SCHED_NORMAL)
+            SCHED_NORMAL,
+#endif
+#if defined(SCHED_OTHER)
+            SCHED_OTHER,
+#endif
+#if defined(SCHED_FIFO)
+            SCHED_FIFO,
+#endif
+#if defined(SCHED_RR)
+            SCHED_RR,
+#endif
+#if defined(SCHED_BATCH)
+            SCHED_BATCH,
+#endif
+#if defined(SCHED_ISO)
+            SCHED_ISO,
+#endif
+#if defined(SCHED_IDLE)
+            SCHED_IDLE,
+#endif
+#if defined(SCHED_DEADLINE)
+            SCHED_DEADLINE,
+#endif
+        };
+        const char * name[] = {
+#if defined(SCHED_NORMAL)
+            "SCHED_NORMAL",
+#endif
+#if defined(SCHED_OTHER)
+            "SCHED_OTHER",
+#endif
+#if defined(SCHED_FIFO)
+            "SCHED_FIFO",
+#endif
+#if defined(SCHED_RR)
+            "SCHED_RR",
+#endif
+#if defined(SCHED_BATCH)
+            "SCHED_BATCH",
+#endif
+#if defined(SCHED_ISO)
+            "SCHED_ISO",
+#endif
+#if defined(SCHED_IDLE)
+            "SCHED_IDLE",
+#endif
+#if defined(SCHED_DEADLINE)
+            "SCHED_DEADLINE",
+#endif
+        };
+        int ii;
+
+        TEST();
+
+        for (ii = 0; ii < countof(scheduler); ++ii) {
+            NOTIFY("Scheduler [%d] %s (%d) min %d max %d\n",
+                ii,
+                name[ii],
+                scheduler[ii],
+                sched_get_priority_min(scheduler[ii]),
+                sched_get_priority_max(scheduler[ii]));
+        }
 
         STATUS();
     }
