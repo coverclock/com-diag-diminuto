@@ -36,13 +36,16 @@
 
 #if 0
 /**
- * THis is the original choice for Diminuto timer scheduling.
+ * THis is the original choice for Diminuto timer scheduling. The First In,
+ * First Out policy runs each timer thread until it completes.
  */
 static const int DIMINUTO_TIMER_SCHED = SCHED_FIFO;
 #else
 /**
  * THis is the current choice for Diminuto timer scheduling, based
- * on studying real-time systems like Asterisk.
+ * on studying real-time systems like Asterisk.The Round Robin policy runs
+ * each timer thread untiul it completes or the default time interval has
+ * expired, whichever comes first.
  */
 static const int DIMINUTO_TIMER_SCHED = SCHED_RR;
 #endif
