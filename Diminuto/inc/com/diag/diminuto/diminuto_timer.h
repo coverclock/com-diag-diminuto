@@ -85,7 +85,7 @@ typedef struct DiminutoTimer {
     diminuto_ticks_t            ticks;      /**< Timer interval in ticks. */
     diminuto_condition_t        condition;  /**< Diminuto condition object. */
     struct sigevent             event;      /**< Event: thread or signal? */
-    struct sched_param          param;      /**< Scheduling parameters. */
+    struct sched_param          parameters; /**< Scheduling parameters. */
     pthread_attr_t              attributes; /**< POSIX timer attributes. */
     struct itimerspec           current;    /**< Current time interval. */
     struct itimerspec           remaining;  /**< Remaining time interval. */

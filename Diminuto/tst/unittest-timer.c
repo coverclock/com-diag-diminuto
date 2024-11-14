@@ -74,13 +74,53 @@ int main(int argc, char ** argv)
         TEST();
 
         ASSERT(diminuto_timer_init_generic(&timer, 0, callback, 0) == &timer);
-        ASSERT(diminuto_timer_state(&timer) == DIMINUTO_TIMER_STATE_IDLE);
-        ASSERT(diminuto_timer_error(&timer) == 0);
+            ASSERT(diminuto_timer_state(&timer) == DIMINUTO_TIMER_STATE_IDLE);
+            ASSERT(diminuto_timer_error(&timer) == 0);
         ASSERT(diminuto_timer_fini(&timer) == (diminuto_timer_t *)0);
+
+        STATUS();
+    }
+
+    {
+        diminuto_timer_t timer;
+        diminuto_timer_t timer2;
+
+        TEST();
+
+        /*
+         * This block - and only this block - is failing valgrind,
+         * which suggests a "possible" leak of what I think is  a
+         * POSIX thread object.
+         */
         ASSERT(diminuto_timer_init_generic(&timer, 0, callback, 0) == &timer);
-        ASSERT(diminuto_timer_state(&timer) == DIMINUTO_TIMER_STATE_IDLE);
-        ASSERT(diminuto_timer_error(&timer) == 0);
+            ASSERT(diminuto_timer_state(&timer) == DIMINUTO_TIMER_STATE_IDLE);
+            ASSERT(diminuto_timer_error(&timer) == 0);
         ASSERT(diminuto_timer_fini(&timer) == (diminuto_timer_t *)0);
+
+        ASSERT(diminuto_timer_init_generic(&timer, 0, callback, 0) == &timer);
+            ASSERT(diminuto_timer_state(&timer) == DIMINUTO_TIMER_STATE_IDLE);
+            ASSERT(diminuto_timer_error(&timer) == 0);
+        ASSERT(diminuto_timer_fini(&timer) == (diminuto_timer_t *)0);
+
+        ASSERT(diminuto_timer_init_generic(&timer, 0, callback, 0) == &timer);
+            ASSERT(diminuto_timer_state(&timer) == DIMINUTO_TIMER_STATE_IDLE);
+            ASSERT(diminuto_timer_error(&timer) == 0);
+        ASSERT(diminuto_timer_fini(&timer) == (diminuto_timer_t *)0);
+
+        ASSERT(diminuto_timer_init_generic(&timer2, 0, callback, 0) == &timer2);
+            ASSERT(diminuto_timer_state(&timer2) == DIMINUTO_TIMER_STATE_IDLE);
+            ASSERT(diminuto_timer_error(&timer2) == 0);
+        ASSERT(diminuto_timer_fini(&timer2) == (diminuto_timer_t *)0);
+
+        ASSERT(diminuto_timer_init_generic(&timer2, 0, callback, 0) == &timer2);
+            ASSERT(diminuto_timer_state(&timer2) == DIMINUTO_TIMER_STATE_IDLE);
+            ASSERT(diminuto_timer_error(&timer2) == 0);
+        ASSERT(diminuto_timer_fini(&timer2) == (diminuto_timer_t *)0);
+
+        ASSERT(diminuto_timer_init_generic(&timer2, 0, callback, 0) == &timer2);
+            ASSERT(diminuto_timer_state(&timer2) == DIMINUTO_TIMER_STATE_IDLE);
+            ASSERT(diminuto_timer_error(&timer2) == 0);
+        ASSERT(diminuto_timer_fini(&timer2) == (diminuto_timer_t *)0);
 
         STATUS();
     }

@@ -1291,6 +1291,9 @@ K. Astrom, T. Hagglund, "PID Controllers: Theory, Design, and Tuning", 2nd ed., 
 
 ATM Forum, Traffic Management Specification Version 4.1, af-tm-0121.000, 1999-03
 
+E. Barbieri, "Technical deep-dive into a real-time kernel", Canonical,
+2023-06-08, <https://ubuntu.com/blog/real-time-kernel-technical>
+
 B. Beauregard, "Improving the Beginner's PID", Project Blog, 2011-04
 
 T. Berners-Lee, R. Fielding, L. Masinter, "Uniform Resource Identifier (URI) Syntax", RFC 3986, 2005-01

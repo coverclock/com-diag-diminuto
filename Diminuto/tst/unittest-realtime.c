@@ -11,6 +11,7 @@
  */
 
 #include <sched.h>
+#include <unistd.h>
 #include "com/diag/diminuto/diminuto_countof.h"
 #include "com/diag/diminuto/diminuto_realtime.h"
 #include "com/diag/diminuto/diminuto_unittest.h"
@@ -55,7 +56,7 @@ int main(int argc, char * argv[])
         rc = diminuto_realtime_is_supported();
         ASSERT(rc >= 0);
 
-        NOTIFY("PREEMPT_RT is %ssupported.\n", rc ? "" : "not ");
+        CHECKPOINT("PREEMPT_RT is %ssupported.\n", rc ? "" : "not ");
 
         STATUS();
     }
@@ -118,13 +119,33 @@ int main(int argc, char * argv[])
         TEST();
 
         for (ii = 0; ii < countof(scheduler); ++ii) {
-            NOTIFY("Scheduler [%d] %s (%d) min %d max %d\n",
+            CHECKPOINT("Scheduler [%d] %s (%d) min %d max %d\n",
                 ii,
                 name[ii],
                 scheduler[ii],
                 sched_get_priority_min(scheduler[ii]),
                 sched_get_priority_max(scheduler[ii]));
         }
+
+        STATUS();
+    }
+
+    {
+        pid_t pid;
+        int rc;
+        struct timespec ts = { 0, 0 };
+
+        TEST();
+
+        pid = getpid();
+        ASSERT(pid >= 0);
+
+        rc = sched_rr_get_interval(pid, &ts);
+        ASSERT(rc == 0);
+
+        CHECKPOINT("Round Robin Interval %llu.%09llus\n",
+            (long long unsigned)ts.tv_sec,
+            (long long unsigned)ts.tv_nsec);
 
         STATUS();
     }

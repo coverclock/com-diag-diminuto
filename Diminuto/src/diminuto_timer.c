@@ -34,21 +34,60 @@
 #include <stdlib.h>
 #include <unistd.h>
 
-#if 0
+#if !defined(COM_DIAG_DIMINUTO_TIMER_POLICY)
+# if 0
 /**
- * THis is the original choice for Diminuto timer scheduling. The First In,
- * First Out policy runs each timer thread until it completes.
+ * @def COM_DIAG_DIMINUTO_TIMER_POLICY
+ * This defines the scheduling policy to use for Diminuto timers.
+ * The First In, First Out policy runs each timer thread until it completes.
  */
-static const int DIMINUTO_TIMER_SCHED = SCHED_FIFO;
-#else
+#define COM_DIAG_DIMINUTO_TIMER_POLICY (SCHED_FIFO)
+# else
 /**
- * THis is the current choice for Diminuto timer scheduling, based
- * on studying real-time systems like Asterisk.The Round Robin policy runs
- * each timer thread untiul it completes or the default time interval has
- * expired, whichever comes first.
+ * @def COM_DIAG_DIMINUTO_TIMER_POLICY
+ * This defines the scheduling policy to use for Diminuto timers.
+ * The Round Robin policy runs each timer thread untiul it completes or the
+ * default time interval has expired, whichever comes first. This is the
+ * policy used by the real-time system Asterisk open source PBX.
  */
-static const int DIMINUTO_TIMER_SCHED = SCHED_RR;
+#  define COM_DIAG_DIMINUTO_TIMER_POLICY (SCHED_RR)
+# endif
 #endif
+
+#if !defined(COM_DIAG_DIMINUTO_TIMER_PRIORITY)
+/**
+ * @def COM_DIAG_DIMINUTO_TIMER_PRIORITY
+ * This is the maximum priority for a Diminuto timer thread. Priorities
+ * can range from 0 (lowest) to 99 (highest). But internal Linux threads
+ * run at priorities like 99 or 50. Running at higher priorities can break
+ * things. [Barbieri 2023]
+ */
+# define COM_DIAG_DIMINUTO_TIMER_PRIORITY (49)
+#endif
+
+#if !defined(COM_DIAG_DIMINUTO_TIMER_CLOCK)
+/**
+ * @def COM_DIAG_DIMINUTO_TIMER_CLOCK
+ * This defines the kind of clock Diminuto timers use. A monotonic clock
+ * is not affected by changes to the system real-time clock.
+ */
+# define COM_DIAG_DIMINUTO_TIMER_CLOCK (CLOCK_MONOTONIC)
+#endif
+
+/**
+ * This is the scheduling policy used for Diminuto timers.
+ */
+static const int DIMINUTO_TIMER_POLICY = COM_DIAG_DIMINUTO_TIMER_POLICY;
+
+/**
+ * This is the maximum scheduling priority for Diminuto timers.
+ */
+static const int DIMINUTO_TIMER_PRIORITY = COM_DIAG_DIMINUTO_TIMER_PRIORITY;
+
+/**
+ * This is the kind of clock Diminuto timers use.
+ */
+static const clockid_t DIMINUTO_TIMER_CLOCK = COM_DIAG_DIMINUTO_TIMER_CLOCK;
 
 static void proxy(union sigval sv)
 {
@@ -133,6 +172,8 @@ diminuto_timer_t * diminuto_timer_init_generic(diminuto_timer_t * tp, int period
 
     do {
 
+        memset(tp, 0, sizeof(*tp));
+
         tp->ticks = 0;
         tp->periodic = !!periodic;
         tp->state = DIMINUTO_TIMER_STATE_IDLE;
@@ -147,18 +188,21 @@ diminuto_timer_t * diminuto_timer_init_generic(diminuto_timer_t * tp, int period
             break;
         }
 
-        if ((rc = pthread_attr_setschedpolicy(&(tp->attributes), DIMINUTO_TIMER_SCHED)) != 0) {
+        if ((rc = pthread_attr_setschedpolicy(&(tp->attributes), DIMINUTO_TIMER_POLICY)) != 0) {
             errno = rc;
             diminuto_perror("diminuto_timer_init: pthread_attr_setsched_policy");
             break;
         }
 
-        if ((tp->param.sched_priority = sched_get_priority_max(DIMINUTO_TIMER_SCHED)) < 0) {
+        if ((tp->parameters.sched_priority = sched_get_priority_max(DIMINUTO_TIMER_POLICY)) < 0) {
             diminuto_perror("diminuto_timer_init: sched_get_priority_max");
             break;
         }
+        if (tp->parameters.sched_priority > DIMINUTO_TIMER_PRIORITY) {
+            tp->parameters.sched_priority = DIMINUTO_TIMER_PRIORITY;
+        }
 
-        if ((rc = pthread_attr_setschedparam(&(tp->attributes), &(tp->param))) != 0) {
+        if ((rc = pthread_attr_setschedparam(&(tp->attributes), &(tp->parameters))) != 0) {
             errno = rc;
             diminuto_perror("diminuto_timer_init: pthread_attr_setschedparam");
             break;
@@ -187,7 +231,7 @@ diminuto_timer_t * diminuto_timer_init_generic(diminuto_timer_t * tp, int period
             break;
         }
 
-        if ((rc = timer_create(CLOCK_MONOTONIC, &(tp->event), &(tp->timer))) < 0) {
+        if ((rc = timer_create(DIMINUTO_TIMER_CLOCK, &(tp->event), &(tp->timer))) < 0) {
             diminuto_perror("diminuto_timer_init: timer_create");
             break;
         }
@@ -218,6 +262,8 @@ diminuto_timer_t * diminuto_timer_fini(diminuto_timer_t * tp)
     if (diminuto_condition_fini(&(tp->condition)) != (diminuto_condition_t *)0) {
         result = tp;
     }
+
+    memset(tp, 0, sizeof(*tp));
 
     return result;
 }
