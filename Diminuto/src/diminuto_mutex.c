@@ -84,7 +84,7 @@ int diminuto_mutex_lock_try(diminuto_mutex_t * mp)
     if ((rc = pthread_mutex_trylock(&(mp->mutex))) == 0) {
         /* Do nothing. */ 
     } else if (rc == DIMINUTO_MUTEX_BUSY) {
-        /* Do nothing. */ 
+        errno = rc;
     } else {
         errno = rc;
         diminuto_perror("diminuto_mutex_lock_try: pthread_mutex_trylock");
