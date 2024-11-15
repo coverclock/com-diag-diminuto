@@ -1259,6 +1259,33 @@ IPv6. Typically these have "6" (instead of "4") in their names. Some
 platforms (e.g. Raspbian a.k.a. Raspberry Pi OS) do not come with IPv6
 enabled by default. I mention this above in the "Dependencies" section.
 
+## Valgrind Failures
+
+### Diminuto Timer
+
+Valgrind complains about a "possible" memory leak in the Diminuto Timer
+unit test. I poked around in my own code for a long time before I finally
+Googled this, to discover I'm hardly the first person to see this. The current
+hypothesis is that the POSIX thread implementation allocates memory on its
+first call in a process, then caches the reference for later use. Since it is
+never freed, valgrind detects it.
+
+Even wierder, I do NOT see this valgrind failure in the unit tests for
+Diminuto Thread or Diminuto Condition. (However: see below, for Diminuto
+Mutex valgrind weirdness.)
+
+This on a Raspberry Pi 5, Ubuntu 24.04.1, Linux 6.8.0-2013-raspi-realtime,
+valgrind-3.22.0.
+
+### Diminuto Mutex
+
+Valgrind hangs - if not forever, at least for longer than I am willing to
+wait - when run on the unit test for Diminuto Mutex. This is a unit test that
+without valgrind runs almost instantaneously.
+
+This on a Raspberry Pi 5, Ubuntu 24.04.1, Linux 6.8.0-2013-raspi-realtime,
+valgrind-3.22.0.
+
 # Repository
 
 <https://github.com/coverclock/com-diag-diminuto>

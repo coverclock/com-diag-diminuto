@@ -73,6 +73,17 @@ int main(int argc, char ** argv)
 
         TEST();
 
+        /*
+         * VALGRIND ISSUE: this block of test code - and only this block -
+         * is failing valgrind, which complains about a "possible" memory
+         * leak. After poking around in my own code for a long time, I finally
+         * Googled it, to discover I am hardly the only person to have seen
+         * this. The current hypothesis is that the POSIX thread code allocates
+         * memory on the first call, and then caches it for later use. This
+         * block is the first successful Diminuto Timer initilization in this
+         * unit test. Weird.
+         */
+
         ASSERT(diminuto_timer_init_generic(&timer, 0, callback, 0) == &timer);
             ASSERT(diminuto_timer_state(&timer) == DIMINUTO_TIMER_STATE_IDLE);
             ASSERT(diminuto_timer_error(&timer) == 0);
@@ -87,11 +98,6 @@ int main(int argc, char ** argv)
 
         TEST();
 
-        /*
-         * This block - and only this block - is failing valgrind,
-         * which suggests a "possible" leak of what I think is  a
-         * POSIX thread object.
-         */
         ASSERT(diminuto_timer_init_generic(&timer, 0, callback, 0) == &timer);
             ASSERT(diminuto_timer_state(&timer) == DIMINUTO_TIMER_STATE_IDLE);
             ASSERT(diminuto_timer_error(&timer) == 0);
