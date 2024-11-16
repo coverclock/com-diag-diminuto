@@ -18,14 +18,13 @@
 #include "com/diag/diminuto/diminuto_frequency.h"
 #include "com/diag/diminuto/diminuto_log.h"
 #include "com/diag/diminuto/diminuto_platform.h"
+#include "com/diag/diminuto/diminuto_policy.h"
 #include <errno.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <time.h>
 #include <sys/time.h>
 #include "../src/diminuto_time.h"
-
-#if defined(_POSIX_TIMERS) && (_POSIX_TIMERS > 0) && defined(CLOCK_REALTIME)
 
 /**
  * Return the number of ticks since the epoch using a POSIX real-time clock.
@@ -49,96 +48,34 @@ static diminuto_sticks_t diminuto_time_generic(clockid_t clock, int logging)
     return ticks;
 }
 
-#else
-
-#   warning clock_gettime(2) not available on this platform!
-
-/**
- * Return the number of ticks since the epoch using the system clock.
- * @param clock is unused.
- * @param logging is true if this is being used by the Log feature.
- * @return ticks since the epoch or DIMINUTO_TIME_ERROR.
- */
-static diminuto_sticks_t diminuto_time_generic(int32_t clock, int logging)
-{
-    diminuto_sticks_t ticks = COM_DIAG_DIMINUTO_TIME_ERROR;
-    struct timeval elapsed = { 0, };
-
-    if (gettimeofday(&elapsed, (void *)0) >= 0) {
-        ticks = diminuto_frequency_seconds2ticks(elapsed.tv_sec, elapsed.tv_usec, 1000000LL);
-    } else if (logging) {
-        /* Do nothing. */
-    } else {
-        diminuto_perror("diminuto_time_generic: gettimeofday");
-    }
-
-    return ticks;
-}
-
-#   if !defined(CLOCK_REALTIME)
-#       define CLOCK_REALTIME 0
-#   endif
-
-#endif
-
 diminuto_sticks_t diminuto_time_clock()
 {
-    return diminuto_time_generic(CLOCK_REALTIME, 0);
+    return diminuto_time_generic(DIMINUTO_POLICY_CLOCK_REALTIME, 0);
 }
 
-diminuto_sticks_t diminuto_time_clock_logging()
+diminuto_sticks_t diminuto_time_logging()
 {
-    return diminuto_time_generic(CLOCK_REALTIME, !0);
+    return diminuto_time_generic(DIMINUTO_POLICY_CLOCK_REALTIME, !0);
 }
 
 diminuto_sticks_t diminuto_time_atomic()
 {
-#if (!defined(_POSIX_TIMERS)) || (_POSIX_TIMERS <= 0) || (!defined(CLOCK_TAI))
-    errno = ENOSYS;
-    diminuto_perror("diminuto_time_atomic");
-    return DIMINUTO_TIME_ERROR;
-#else
-    return diminuto_time_generic(CLOCK_TAI, 0);
-#endif
+    return diminuto_time_generic(DIMINUTO_POLICY_CLOCK_TAI, 0);
 }
 
 diminuto_sticks_t diminuto_time_elapsed()
 {
-#if (!defined(_POSIX_TIMERS)) || (_POSIX_TIMERS <= 0)
-    return diminuto_time_generic(CLOCK_REALTIME, 0);
-#elif defined(CLOCK_BOOTTIME)
-    return diminuto_time_generic(CLOCK_BOOTTIME, 0); /* Linux 2.6.39 */
-#elif defined(CLOCK_MONOTONIC_RAW)
-    return diminuto_time_generic(CLOCK_MONOTONIC_RAW, 0); /* Linux 2.6.28 */
-#elif defined(CLOCK_MONOTONIC)
-    return diminuto_time_generic(CLOCK_MONOTONIC, 0);
-#else
-    errno = ENOSYS;
-    diminuto_perror("diminuto_time_elapsed");
-    return DIMINUTO_TIME_ERROR;
-#endif
+    return diminuto_time_generic(DIMINUTO_POLICY_CLOCK_BOOTTIME, 0); /* Linux 2.6.39 */
 }
 
 diminuto_sticks_t diminuto_time_process()
 {
-#if defined(CLOCK_PROCESS_CPUTIME_ID)
-    return diminuto_time_generic(CLOCK_PROCESS_CPUTIME_ID, 0);
-#else
-    errno = ENOSYS;
-    diminuto_perror("diminuto_time_process");
-    return DIMINUTO_TIME_ERROR;
-#endif
+    return diminuto_time_generic(DIMINUTO_POLICY_CLOCK_PROCESS_CPUTIME_ID, 0);
 }
 
 diminuto_sticks_t diminuto_time_thread()
 {
-#if defined(CLOCK_THREAD_CPUTIME_ID)
-    return diminuto_time_generic(CLOCK_THREAD_CPUTIME_ID, 0);
-#else
-    errno = ENOSYS;
-    diminuto_perror("diminuto_time_thread");
-    return DIMINUTO_TIME_ERROR;
-#endif
+    return diminuto_time_generic(DIMINUTO_POLICY_CLOCK_THREAD_CPUTIME_ID, 0);
 }
 
 diminuto_sticks_t diminuto_time_timezone()
@@ -226,8 +163,6 @@ diminuto_sticks_t diminuto_time_epoch(int year, int month, int day, int hour, in
 
     do {
 
-#if defined(__USE_GNU)
-
         /*
          * timegm(3) is a GNU extension since 2.19. It might be non-standard
          * but it sure solves a thorny problem. Note that -1 is an error
@@ -250,46 +185,6 @@ diminuto_sticks_t diminuto_time_epoch(int year, int month, int day, int hour, in
         }
 
         ticks = diminuto_frequency_seconds2ticks(seconds, 0, 1);
-
-#else
-
-#       warning timegm(3) not available on this platform!
-
-        /*
-         * mktime(3) indicates that a return of -1 indicates an error. But
-         * -1 is a valid return value that indicates a date and time one
-         * second earlier than the Epoch. So we have to check errno as well
-         * and hope the function sets it.
-         */
-
-        errno = 0;
-        DIMINUTO_ENVIRONMENT_READER_BEGIN;
-            seconds = mktime(&datetime);
-        DIMINUTO_ENVIRONMENT_READER_END;
-        if (seconds != (time_t)-1) {
-            /* Do nothing. */
-        } else if (errno == 0) {
-            /* Do nothing. */
-        } else {
-            diminuto_perror("diminuto_time_epoch: mktime");
-            break;
-        }
-
-        ticks = diminuto_frequency_seconds2ticks(seconds, 0, 1);
-
-        /*
-         * mktime(3) assumes the time in the tm structure is local time and
-         * adjusts the number of seconds it returns accordingly. So we have to
-         * make our own adjustments to eliminate the effects of the local time
-         * zone and of DST. This is really stupid.
-         */
-
-        ticks += diminuto_time_timezone();
-        ticks += diminuto_time_daylightsaving(seconds);
-
-#endif
-
-#if !0
 
         /*
          * The manual pages for both mktime(3) and timegm(3) specify that
@@ -321,12 +216,6 @@ diminuto_sticks_t diminuto_time_epoch(int year, int month, int day, int hour, in
             ticks = DIMINUTO_TIME_ERROR;
             break;
         }
-
-#else
-
-#   warning time_t overflow check disabled!
-
-#endif
 
         /*
          * The caller provides a date and time for some time zone. It might

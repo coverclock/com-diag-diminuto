@@ -23,71 +23,32 @@
  */
 
 #include "com/diag/diminuto/diminuto_timer.h"
-#include "com/diag/diminuto/diminuto_log.h"
-#include "com/diag/diminuto/diminuto_frequency.h"
-#include "com/diag/diminuto/diminuto_delay.h"
-#include "com/diag/diminuto/diminuto_criticalsection.h"
 #include "com/diag/diminuto/diminuto_coherentsection.h"
+#include "com/diag/diminuto/diminuto_criticalsection.h"
+#include "com/diag/diminuto/diminuto_delay.h"
+#include "com/diag/diminuto/diminuto_frequency.h"
+#include "com/diag/diminuto/diminuto_log.h"
+#include "com/diag/diminuto/diminuto_policy.h"
 #include "diminuto_timer.h"
-#include <string.h>
 #include <errno.h>
 #include <stdlib.h>
+#include <string.h>
 #include <unistd.h>
-
-#if !defined(COM_DIAG_DIMINUTO_TIMER_POLICY)
-# if 0
-/**
- * @def COM_DIAG_DIMINUTO_TIMER_POLICY
- * This defines the scheduling policy to use for Diminuto timers.
- * The First In, First Out policy runs each timer thread until it completes.
- */
-#define COM_DIAG_DIMINUTO_TIMER_POLICY (SCHED_FIFO)
-# else
-/**
- * @def COM_DIAG_DIMINUTO_TIMER_POLICY
- * This defines the scheduling policy to use for Diminuto timers.
- * The Round Robin policy runs each timer thread untiul it completes or the
- * default time interval has expired, whichever comes first. This is the
- * policy used by the real-time system Asterisk open source PBX.
- */
-#  define COM_DIAG_DIMINUTO_TIMER_POLICY (SCHED_RR)
-# endif
-#endif
-
-#if !defined(COM_DIAG_DIMINUTO_TIMER_PRIORITY)
-/**
- * @def COM_DIAG_DIMINUTO_TIMER_PRIORITY
- * This is the maximum priority for a Diminuto timer thread. Priorities
- * can range from 0 (lowest) to 99 (highest). But internal Linux threads
- * run at priorities like 99 or 50. Running at higher priorities can break
- * things. [Barbieri 2023]
- */
-# define COM_DIAG_DIMINUTO_TIMER_PRIORITY (49)
-#endif
-
-#if !defined(COM_DIAG_DIMINUTO_TIMER_CLOCK)
-/**
- * @def COM_DIAG_DIMINUTO_TIMER_CLOCK
- * This defines the kind of clock Diminuto timers use. A monotonic clock
- * is not affected by changes to the system real-time clock.
- */
-# define COM_DIAG_DIMINUTO_TIMER_CLOCK (CLOCK_MONOTONIC)
-#endif
 
 /**
  * This is the scheduling policy used for Diminuto timers.
  */
-static const int DIMINUTO_TIMER_POLICY = COM_DIAG_DIMINUTO_TIMER_POLICY;
+static const int DIMINUTO_TIMER_POLICY = DIMINUTO_POLICY_SCHEDULER_TIMER;
 
 /**
  * This is the maximum scheduling priority for Diminuto timers.
  */
-static const int DIMINUTO_TIMER_PRIORITY = COM_DIAG_DIMINUTO_TIMER_PRIORITY;
+static const int DIMINUTO_TIMER_PRIORITY = DIMINUTO_POLICY_PRIORITY_TIMER;
 
 /**
  * This is the kind of clock Diminuto timers use.
  */
-static const clockid_t DIMINUTO_TIMER_CLOCK = COM_DIAG_DIMINUTO_TIMER_CLOCK;
+static const clockid_t DIMINUTO_TIMER_CLOCK = DIMINUTO_POLICY_CLOCK_TIMER;
 
 static void proxy(union sigval sv)
 {

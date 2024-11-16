@@ -26,7 +26,7 @@
  * @return the number of ticks elapsed since the Epoch or -1 with
  * errno set if an error occurred.
  */
-extern diminuto_sticks_t diminuto_time_clock_logging(void);
+extern diminuto_sticks_t diminuto_time_logging(void);
 
 /**
  * Convert the number in ticks since the Epoch (shown here in ISO8601
