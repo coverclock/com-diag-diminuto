@@ -1152,12 +1152,12 @@ extended-test:	longer-test
 	unittest-ipc-ancillary
 	unittest-modulator
 	unittest-muxl
-	unittest-oneshot1
-	unittest-oneshot2
-	unittest-oneshot3
-	unittest-periodic1
-	unittest-periodic2
-	unittest-periodic3
+	unittest-timer-oneshot1
+	unittest-timer-oneshot2
+	unittest-timer-oneshot3
+	unittest-timer-periodic1
+	unittest-timer-periodic2
+	unittest-timer-periodic3
 	unittest-polll
 	unittest-readerwriter -d -f
 	unittest-time
@@ -1271,14 +1271,14 @@ timers-test:
 	unittest-realtime
 	unittest-frequency
 	unittest-timer
-	unittest-oneshot1
-	unittest-oneshot2
-	unittest-oneshot3
-	unittest-oneshot4
-	unittest-periodic1
-	unittest-periodic2
-	unittest-periodic3
-	unittest-periodic4
+	unittest-timer-oneshot1
+	unittest-timer-oneshot2
+	unittest-timer-oneshot3
+	unittest-timer-oneshot4
+	unittest-timer-periodic1
+	unittest-timer-periodic2
+	unittest-timer-periodic3
+	unittest-timer-periodic4
 	unittest-alarm
 	unittest-uninterruptiblesection
 	unittest-modulator

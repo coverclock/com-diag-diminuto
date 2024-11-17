@@ -6,16 +6,19 @@
  * @file
  * @copyright Copyright 2024 Digital Aggregates Corporation, Colorado, USA.
  * @note Licensed under the terms in LICENSE.txt.
- * @brief Defines constants for various Diminuto scheduling policy choices.
+ * @brief Defines constants for various Diminuto default policy choices.
  * @author Chip Overclock <mailto:coverclock@diag.com>
  * @see Diminuto <https://github.com/coverclock/com-diag-diminuto>
  * @details
- * Defines constants for various Diminuto scheduling policy choices.
+ * Defines constants for various Diminuto default policy choices.
  */
 
 #include <sched.h>
 #include <time.h>
 
+/**
+ * Defines the possible Diminuto scheduler policies in a type-safe way.
+ */
 typedef enum DiminutoPolicyScheduler {
     DIMINUTO_POLICY_SCHEDULER_OTHER     = SCHED_OTHER,
     DIMINUTO_POLICY_SCHEDULER_FIFO      = SCHED_FIFO,
@@ -31,6 +34,9 @@ typedef enum DiminutoPolicyScheduler {
     DIMINUTO_POLICU_SCHEDULER_THREAD    = SCHED_RR,
 } diminuto_policy_scheduler_t;
 
+/**
+ * Defines the possible Diminuto clock policies in a type-safe way.
+ */
 typedef enum DiminutoPolicyClock {
     DIMINUTO_POLICY_CLOCK_REALTIME              = CLOCK_REALTIME,
     DIMINUTO_POLICY_CLOCK_MONOTONIC             = CLOCK_MONOTONIC,
@@ -55,6 +61,9 @@ typedef enum DiminutoPolicyClock {
     DIMINUTO_POLICY_CLOCK_TIMER                 = CLOCK_MONOTONIC,
 } diminuto_policy_clock_t;
 
+/**
+ * Defines the possible Diminuto priority policies in a type-safe way.
+ */
 typedef enum DiminutoPolicyPriority {
     /*
      * DEFAULTS
