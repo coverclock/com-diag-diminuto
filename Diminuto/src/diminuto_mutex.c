@@ -17,6 +17,7 @@
 #include "com/diag/diminuto/diminuto_mutex.h"
 #include "com/diag/diminuto/diminuto_log.h"
 #include <errno.h>
+#include <string.h>
 
 /***********************************************************************
  * INITIALIZERS AND FINALIZERS
@@ -26,6 +27,8 @@ diminuto_mutex_t * diminuto_mutex_init(diminuto_mutex_t * mp)
 {
     diminuto_mutex_t * result = (diminuto_mutex_t *)0;
     int rc = DIMINUTO_MUTEX_ERROR;
+
+    memset(mp, 0, sizeof(*mp));
 
     if ((rc = pthread_mutexattr_init(&(mp->attribute))) != 0) {
         errno = rc;

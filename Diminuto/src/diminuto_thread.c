@@ -19,12 +19,12 @@
 #include "com/diag/diminuto/diminuto_coherentsection.h"
 #include "com/diag/diminuto/diminuto_frequency.h"
 #include "com/diag/diminuto/diminuto_log.h"
-#include <time.h>
 #include <errno.h>
+#include <sched.h>
 #include <signal.h>
 #include <string.h>
+#include <time.h>
 #include <unistd.h>
-#include <sched.h>
 
 /***********************************************************************
  * GLOBALS
@@ -173,6 +173,8 @@ static void setup()
 diminuto_thread_t * diminuto_thread_init(diminuto_thread_t * tp, void * (*fp)(void *))
 {
     diminuto_thread_t * result = (diminuto_thread_t *)0;
+
+    memset(tp, 0, sizeof(*tp));
 
     if (diminuto_condition_init(&(tp->condition)) == &(tp->condition)) {
         memset(&(tp->thread), 0, sizeof(tp->thread));

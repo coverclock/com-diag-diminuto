@@ -15,10 +15,11 @@
  **********************************************************************/
 
 #include "com/diag/diminuto/diminuto_condition.h"
-#include "com/diag/diminuto/diminuto_thread.h"
 #include "com/diag/diminuto/diminuto_frequency.h"
 #include "com/diag/diminuto/diminuto_log.h"
+#include "com/diag/diminuto/diminuto_thread.h"
 #include <errno.h>
+#include <string.h>
 
 /***********************************************************************
  * INITIALIZERS AND FINALIZERS
@@ -28,6 +29,8 @@ diminuto_condition_t * diminuto_condition_init(diminuto_condition_t * cp)
 {
     diminuto_condition_t * result = (diminuto_condition_t *)0;
     int rc = DIMINUTO_CONDITION_ERROR;
+
+    memset(cp, 0, sizeof(*cp));
 
     if (diminuto_mutex_init(&(cp->mutex)) != &(cp->mutex)) {
         /* Do nothing. */
