@@ -19,7 +19,29 @@
 
 int main(int argc, char * argv[])
 {
+    uid_t uid;
+    uid_t euid;
+    gid_t gid;
+    gid_t egid;
+
     SETLOGMASK();
+
+    {
+        TEST();
+
+        uid = getuid();
+        ASSERT(uid >= 0);
+        euid = geteuid();
+        ASSERT(euid >= 0);
+        gid = getgid();
+        ASSERT(gid >= 0);
+        egid = getegid();
+        ASSERT(egid >= 0);
+
+        CHECKPOINT("uid=%d euid=%d gid=%d egid=%d\n", uid, euid, gid, egid);
+
+        STATUS();
+    }
 
     {
         int rc;
@@ -32,8 +54,8 @@ int main(int argc, char * argv[])
         EXPECT(errno == EINVAL);
 
         rc = diminuto_realtime_is_supported_path("/proc/1/mem");
-        ASSERT(rc < 0);
-        EXPECT(errno == EACCES);
+        EXPECT(rc < 0);
+        EXPECT(((euid > 0) && (errno == EACCES)) || ((euid == 0) && (errno == EIO)));
 
         rc = diminuto_realtime_is_supported_path("./PREEMPT_RT-NOT-EXIST");
         ASSERT(rc == 0);

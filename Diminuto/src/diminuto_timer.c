@@ -1,7 +1,7 @@
 /* vi: set ts=4 expandtab shiftwidth=4: */
 /**
  * @file
- * @copyright Copyright 2009-2022 Digital Aggregates Corporation, Colorado, USA.
+ * @copyright Copyright 2009-2024 Digital Aggregates Corporation, Colorado, USA.
  * @note Licensed under the terms in LICENSE.txt.
  * @brief This is the implementation of the Timer feature.
  * @author Chip Overclock <mailto:coverclock@diag.com>
@@ -38,7 +38,7 @@
 /**
  * This is the scheduling policy used for Diminuto timers.
  */
-static const int DIMINUTO_TIMER_POLICY = DIMINUTO_POLICY_SCHEDULER_TIMER;
+static const int DIMINUTO_TIMER_SCHEDULER = DIMINUTO_POLICY_SCHEDULER_TIMER;
 
 /**
  * This is the maximum scheduling priority for Diminuto timers.
@@ -48,7 +48,7 @@ static const int DIMINUTO_TIMER_PRIORITY = DIMINUTO_POLICY_PRIORITY_TIMER;
 /**
  * This is the kind of clock Diminuto timers use.
  */
-static const clockid_t DIMINUTO_TIMER_CLOCK = DIMINUTO_POLICY_CLOCK_TIMER;
+static const clockid_t DIMINUTO_TIMER_CLOCK = (clockid_t)DIMINUTO_POLICY_CLOCK_TIMER;
 
 static void proxy(union sigval sv)
 {
@@ -130,6 +130,7 @@ diminuto_timer_t * diminuto_timer_init_generic(diminuto_timer_t * tp, int period
 {
     diminuto_timer_t * result = (diminuto_timer_t *)0;
     int rc = -1;
+    int limit = 0;
 
     do {
 
@@ -149,18 +150,32 @@ diminuto_timer_t * diminuto_timer_init_generic(diminuto_timer_t * tp, int period
             break;
         }
 
-        if ((rc = pthread_attr_setschedpolicy(&(tp->attributes), DIMINUTO_TIMER_POLICY)) != 0) {
+        if ((rc = pthread_attr_setinheritsched(&(tp->attributes), PTHREAD_EXPLICIT_SCHED)) != 0) {
+            errno = rc;
+            diminuto_perror("diminuto_timer_init: pthread_attr_setinheritsched");
+            break;
+        }
+
+        if ((rc = pthread_attr_setschedpolicy(&(tp->attributes), DIMINUTO_TIMER_SCHEDULER)) != 0) {
             errno = rc;
             diminuto_perror("diminuto_timer_init: pthread_attr_setsched_policy");
             break;
         }
 
-        if ((tp->parameters.sched_priority = sched_get_priority_max(DIMINUTO_TIMER_POLICY)) < 0) {
+        tp->parameters.sched_priority = DIMINUTO_TIMER_PRIORITY;
+        if ((limit = sched_get_priority_min(DIMINUTO_TIMER_SCHEDULER)) < 0) {
+            diminuto_perror("diminuto_timer_init: sched_get_priority_min");
+            break;
+        }
+        if (tp->parameters.sched_priority < limit) {
+            tp->parameters.sched_priority = limit;
+        }
+        if ((limit = sched_get_priority_max(DIMINUTO_TIMER_SCHEDULER)) < 0) {
             diminuto_perror("diminuto_timer_init: sched_get_priority_max");
             break;
         }
-        if (tp->parameters.sched_priority > DIMINUTO_TIMER_PRIORITY) {
-            tp->parameters.sched_priority = DIMINUTO_TIMER_PRIORITY;
+        if (tp->parameters.sched_priority > limit) {
+            tp->parameters.sched_priority = limit;
         }
 
         if ((rc = pthread_attr_setschedparam(&(tp->attributes), &(tp->parameters))) != 0) {

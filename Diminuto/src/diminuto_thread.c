@@ -1,7 +1,7 @@
 /* vi: set ts=4 expandtab shiftwidth=4: */
 /**
  * @file
- * @copyright Copyright 2020-2022 Digital Aggregates Corporation, Colorado, USA.
+ * @copyright Copyright 2020-2024 Digital Aggregates Corporation, Colorado, USA.
  * @note Licensed under the terms in LICENSE.txt.
  * @brief This is the implementation of the Thread feature.
  * @author Chip Overclock <mailto:coverclock@diag.com>
@@ -170,22 +170,64 @@ static void setup()
  * INITIALIZERS AND FINALIZERS
  **********************************************************************/
 
-diminuto_thread_t * diminuto_thread_init(diminuto_thread_t * tp, void * (*fp)(void *))
+diminuto_thread_t * diminuto_thread_init_generic(diminuto_thread_t * tp, void * (*fp)(void *), diminuto_policy_scheduler_t scheduler, int priority)
 {
     diminuto_thread_t * result = (diminuto_thread_t *)0;
+    int rc = -1;
+    int limit = 0;
 
-    memset(tp, 0, sizeof(*tp));
+    do {
 
-    if (diminuto_condition_init(&(tp->condition)) == &(tp->condition)) {
-        memset(&(tp->thread), 0, sizeof(tp->thread));
+        memset(tp, 0, sizeof(*tp));
+
+        if (diminuto_condition_init(&(tp->condition)) != &(tp->condition)) {
+            break;
+        }
+
         tp->function = fp;
         tp->context = (void *)0;
         tp->value = (void *)~0;
         tp->notify = DIMINUTO_THREAD_NOTIFY;
         tp->notifications = 0;
         tp->state = DIMINUTO_THREAD_STATE_INITIALIZED;
+
+        if ((rc = pthread_attr_setinheritsched(&(tp->attributes), PTHREAD_EXPLICIT_SCHED)) != 0) {
+            errno = rc;
+            diminuto_perror("diminuto_thread_init: pthread_attr_setinheritsched");
+            break;
+        }
+
+        if ((rc = pthread_attr_setschedpolicy(&(tp->attributes), scheduler)) != 0) {
+            errno = rc;
+            diminuto_perror("diminuto_thread_init: pthread_attr_setsched_policy");
+            break;
+        }
+
+        tp->parameters.sched_priority = priority;
+        if ((limit = sched_get_priority_min(scheduler)) < 0) {
+            diminuto_perror("diminuto_thread_init: sched_get_priority_min");
+            break;
+        }
+        if (tp->parameters.sched_priority < limit) {
+            tp->parameters.sched_priority = limit;
+        }
+        if ((limit = sched_get_priority_max(scheduler)) < 0) {
+            diminuto_perror("diminuto_thread_init: sched_get_priority_max");
+            break;
+        }
+        if (tp->parameters.sched_priority > limit) {
+            tp->parameters.sched_priority = limit;
+        }
+
+        if ((rc = pthread_attr_setschedparam(&(tp->attributes), &(tp->parameters))) != 0) {
+            errno = rc;
+            diminuto_perror("diminuto_thread_init: pthread_attr_setschedparam");
+            break;
+        }
+
         result = tp;
-    }
+
+    } while (0);
 
     return result;
 }
@@ -347,7 +389,7 @@ int diminuto_thread_start(diminuto_thread_t * tp, void * cp)
                 tp->context = cp;
                 tp->value = (void *)(~0);
                 tp->notifications = 0;
-                if ((rc = pthread_create(&(tp->thread), (const pthread_attr_t *)0, proxy, tp)) != 0) {
+                if ((rc = pthread_create(&(tp->thread), &(tp->attributes), proxy, tp)) != 0) {
                     errno = rc;
                     diminuto_perror("diminuto_thread_start: pthread_create");
                     tp->state = DIMINUTO_THREAD_STATE_FAILED;

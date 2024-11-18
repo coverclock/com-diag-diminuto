@@ -1016,7 +1016,7 @@ vintage:	$(OUT)/$(SYM_DIR)/vintage $(OUT)/$(BIN_DIR)/platform $(OUT)/$(BIN_DIR)/
 	platform
 	sizeof
 
-.PHONY:	brackets-test criticalsections-test criticalsection-test cxxcapi-test extended-test geologic-test gnuish-test logger-test logging-test log-test longer-test multiplexors4-test multiplexors6-test multiplexorsl-test multiplexors-test newdelete-test privileged4-test privileged6-test privileged-test readerwriter-test realtime-test reassuring4-test reassuring-test renameat2-test sanity-test signals-test sockets0-test sockets4-test sockets6-test socketsl-test sockets-test sourcing-test tagging-test threads-test timers-test unittest-test unittest-testify valgrind-test
+.PHONY:	brackets-test criticalsections-test criticalsection-test cxxcapi-test extended-test geologic-test gnuish-test logger-test logging-test log-test longer-test multiplexors4-test multiplexors6-test multiplexorsl-test multiplexors-test newdelete-test privileged4-test privileged6-test privileged-test readerwriter-test realtime-test reassuring4-test reassuring-test renameat2-test sanity-test signals-test sockets0-test sockets4-test sockets6-test socketsl-test sockets-test sourcing-test tagging-test threads-test time-test timers-test unittest-test unittest-testify valgrind-test
 
 sourcing-test:	vintage
 	unittest-sourcing
@@ -1266,6 +1266,12 @@ logging-test:	$(OUT)/$(SYM_DIR)/logging
 	echo "Testing alert."       | log -N ALRT -a -B 256
 	echo "Testing emergency."   | log -N EMER -E -B 256
 	echo "Testing debug."       | log -N DBUG -d -U
+
+time-test:
+	unittest-time
+	unittest-time-logical
+	unittest-time-zone
+	unittest-time-cost
 
 timers-test:
 	unittest-realtime

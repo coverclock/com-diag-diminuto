@@ -1,7 +1,7 @@
 /* vi: set ts=4 expandtab shiftwidth=4: */
 /**
  * @file
- * @copyright Copyright 2008-2023 Digital Aggregates Corporation, Colorado, USA.
+ * @copyright Copyright 2008-2024 Digital Aggregates Corporation, Colorado, USA.
  * @note Licensed under the terms in LICENSE.txt.
  * @brief This is the implementation of the Time feature.
  * @author Chip Overclock <mailto:coverclock@diag.com>
@@ -50,32 +50,32 @@ static diminuto_sticks_t diminuto_time_generic(clockid_t clock, int logging)
 
 diminuto_sticks_t diminuto_time_clock()
 {
-    return diminuto_time_generic(DIMINUTO_POLICY_CLOCK_REALTIME, 0);
+    return diminuto_time_generic((clockid_t)DIMINUTO_POLICY_CLOCK_REALTIME, 0);
 }
 
 diminuto_sticks_t diminuto_time_logging()
 {
-    return diminuto_time_generic(DIMINUTO_POLICY_CLOCK_REALTIME, !0);
+    return diminuto_time_generic((clockid_t)DIMINUTO_POLICY_CLOCK_REALTIME, !0);
 }
 
 diminuto_sticks_t diminuto_time_atomic()
 {
-    return diminuto_time_generic(DIMINUTO_POLICY_CLOCK_TAI, 0);
+    return diminuto_time_generic((clockid_t)DIMINUTO_POLICY_CLOCK_TAI, 0);
 }
 
 diminuto_sticks_t diminuto_time_elapsed()
 {
-    return diminuto_time_generic(DIMINUTO_POLICY_CLOCK_BOOTTIME, 0); /* Linux 2.6.39 */
+    return diminuto_time_generic((clockid_t)DIMINUTO_POLICY_CLOCK_BOOTTIME, 0); /* Linux 2.6.39 */
 }
 
 diminuto_sticks_t diminuto_time_process()
 {
-    return diminuto_time_generic(DIMINUTO_POLICY_CLOCK_PROCESS_CPUTIME_ID, 0);
+    return diminuto_time_generic((clockid_t)DIMINUTO_POLICY_CLOCK_PROCESS_CPUTIME_ID, 0);
 }
 
 diminuto_sticks_t diminuto_time_thread()
 {
-    return diminuto_time_generic(DIMINUTO_POLICY_CLOCK_THREAD_CPUTIME_ID, 0);
+    return diminuto_time_generic((clockid_t)DIMINUTO_POLICY_CLOCK_THREAD_CPUTIME_ID, 0);
 }
 
 diminuto_sticks_t diminuto_time_timezone()

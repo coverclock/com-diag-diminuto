@@ -4,7 +4,7 @@
 
 /**
  * @file
- * @copyright Copyright 2020-2022 Digital Aggregates Corporation, Colorado, USA.
+ * @copyright Copyright 2020-2024 Digital Aggregates Corporation, Colorado, USA.
  * @note Licensed under the terms in LICENSE.txt.
  * @brief Implements a framework to use POSIX threads.
  * @author Chip Overclock <mailto:coverclock@diag.com>
@@ -25,10 +25,11 @@
  * PREREQUISITES
  **********************************************************************/
 
-#include <signal.h>
-#include <errno.h>
 #include "com/diag/diminuto/diminuto_types.h"
 #include "com/diag/diminuto/diminuto_condition.h"
+#include "com/diag/diminuto/diminuto_policy.h"
+#include <signal.h>
+#include <errno.h>
 
 /***********************************************************************
  * GENERATORS
@@ -100,6 +101,8 @@ typedef struct DiminutoThread {
     void *                          context;        /**< Function context. */
     void *                          value;          /**< Function value. */
     diminuto_condition_t            condition;      /**< Diminuto condition object. */
+    struct sched_param              parameters;     /**< Scheduling parameters. */
+    pthread_attr_t                  attributes;     /**< POSIX timer attributes. */
     pthread_t                       thread;         /**< POSIX Thread thread object. */
     diminuto_thread_state_t         state;          /**< Diminuto thread state. */
     diminuto_sig_t                  notify;         /**< Notification signal or 0. */
@@ -117,6 +120,8 @@ typedef struct DiminutoThread {
         (void *)0, \
         (void *)(~0), \
         DIMINUTO_CONDITION_INITIALIZER, \
+        { 0, }, \
+        { { 0 }, }, \
         0, \
         DIMINUTO_THREAD_STATE_INITIALIZED, \
         DIMINUTO_THREAD_NOTIFY, \
@@ -172,9 +177,22 @@ extern void diminuto_thread_exit(void * vp);
  * The thread is not started.
  * @param tp points to the object.
  * @param fp points to the function to be associated with the object.
+ * @param scheduler identifies the thread scheduler to be used.
+ * @param priority specifies the priority to be used for this thread.
  * @return a pointer to the object or NULL if initialization failed.
  */
-extern diminuto_thread_t * diminuto_thread_init(diminuto_thread_t * tp, diminuto_thread_function_t * fp);
+extern diminuto_thread_t * diminuto_thread_init_generic(diminuto_thread_t * tp, void * (*fp)(void *), diminuto_policy_scheduler_t scheduler, int priority);
+
+/**
+ * Initialize a Diminuto thread object. Allocate any resources.
+ * The thread is not started.
+ * @param tp points to the object.
+ * @param fp points to the function to be associated with the object.
+ * @return a pointer to the object or NULL if initialization failed.
+ */
+static inline diminuto_thread_t * diminuto_thread_init(diminuto_thread_t * tp, diminuto_thread_function_t * fp) {
+    return diminuto_thread_init_generic(tp, fp, DIMINUTO_POLICY_SCHEDULER_THREAD, DIMINUTO_POLICY_PRIORITY_THREAD);
+}
 
 /**
  * Finalize a Diminuto thread object. Free any resources. The thread

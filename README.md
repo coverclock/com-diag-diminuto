@@ -453,6 +453,8 @@ Similarly, environmental variables have qualified names like
 ## Real-Time
 
 * meter - measures a stream of events for peak and sustainable rates.
+* policy - defines defaults used with PREEMPT_RT optional kernel features.
+* realtime - assists in the use of PREEMPT_RT optional kernel features.
 * shaper - use the throttle feature to implement a bursty traffic shaper.
 * throttle - implement a traffic shaper for a traffic contract.
 
@@ -582,6 +584,7 @@ a bug.
 * sockets-test - these unit tests test the ipc4, ipc6, ipcl, mux, and poll features.
 * tagging-test - a very long test suite done before tagging a new release.
 * threads-test - these unit tests exercise the POSIX thread-based features.
+* time-test - these unit tests exercise the time features.
 * timers-test - these unit tests exercise the timer features.
 
 Important safety tip: on some (most?) platforms, if you run a unit test
@@ -744,6 +747,14 @@ The observe script requires the inotify tools. Not all distros install
 these by default (e.g. Raspbian).
 
     sudo apt-get install inotify-tools
+
+## PREEMPT_RT
+
+Some features of Diminuto depend on the optional PREEMPT_RT kernel
+configuration that enable kernel preemption and other process and thread
+scheduling algorithms like SCHED_RR (Round Robin) or SCHED_FIFO (First
+In, First Out). Furthermore, the features that depend on PREEMPT_RT will
+probably have to be used in applications running as root.
 
 ## Scripts
 
@@ -1339,6 +1350,8 @@ P. Courtois, F. Heymans, D. Parnas, "Concurrent Control with ''Readers'' and ''W
 
 E. Davies, S. Krishnan, P. Sovola, "IPv6 Transition/Coexistence Security Considerations", RFC 4942, 2007-09 
 
+S. Dietrich, D. Walker, "The Evolution of Real-Time Linux", MontaVista Software, Inc., 2004-10
+
 J. Fletcher, "An Arithmetic Checksum for Serial Transmissions", IEEE Transactions on Communication, COM-30, No. 1, pp. 247-252, January 1982
 
 Free Software Foundation et al., Standard Template Library, include/bits/stl_tree.h
@@ -1370,6 +1383,9 @@ ISO3309-1984, 1984
 V. Jacobson et al., “TCP Extensions for High Performance”, RFC1323, 1992
 
 A. Kalvans, "Using select(2)", 2017-04-06, <http://aivarsk.github.io/2017/04/06/select/>
+
+S. Kaushik, "Legacy to Linux: Migrating from proprietary RTOS to Open Source Linux",
+MVWP-LGC2LNX-051916, MontaVista Software, LLC, 2016-05-19
 
 D. Kegel, "The C10K Problem", 2014-02-05, <http://www.kegel.com/c10k.html>
 
@@ -1408,6 +1424,8 @@ NXP, "I2C-bus specification and user manual", UM10204, Rev.6, NXP Semiconductor 
 Open Group, pthread_cond_broadcast, pthead_cond_signal, Open Group Base Specification Issue 7, 2018 edition, IEEE Std. 1003.1-2017, 2018
 
 Open Group, pthread_cond_timedwait, pthead_cond_wait, Open Group Base Specification Issue 7, 2018 edition, IEEE Std. 1003.1-2017, 2018
+
+Open Group, "Threads", 2.9, The Open Group Base Specifications Issue 6, IEEE Std 1003.1, 2004
 
 V. Popov, O. Mazonka, "Faster Fair Solution for the Reader-Writer Problem", 2013
 
