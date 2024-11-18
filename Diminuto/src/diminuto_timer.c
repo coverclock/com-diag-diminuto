@@ -150,6 +150,11 @@ diminuto_timer_t * diminuto_timer_init_generic(diminuto_timer_t * tp, int period
             break;
         }
 
+        /*
+         * The fact that we can set an explicit scheduler for the timer thread
+         * without being root is probably a bug.
+         */
+
         if ((rc = pthread_attr_setinheritsched(&(tp->attributes), PTHREAD_EXPLICIT_SCHED)) != 0) {
             errno = rc;
             diminuto_perror("diminuto_timer_init: pthread_attr_setinheritsched");

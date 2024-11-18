@@ -16,10 +16,12 @@
 #include "com/diag/diminuto/diminuto_delay.h"
 #include "com/diag/diminuto/diminuto_mux.h"
 #include "com/diag/diminuto/diminuto_log.h"
+#include "com/diag/diminuto/diminuto_policy.h"
+#include <errno.h>
 #include <pthread.h>
 #include <stdint.h>
-#include <errno.h>
 #include <string.h>
+#include <unistd.h>
 
 static int shared = 0;
 static const int LIMIT = 100;
@@ -288,7 +290,7 @@ static void * body8(void * arg)
     return arg;
 }
 
-int main(void)
+int main(int argc, char ** argv)
 {
     diminuto_log_setmask();
 
@@ -741,6 +743,50 @@ int main(void)
 
         ASSERT(diminuto_thread_init(&even, body8) == &even);
         ASSERT(diminuto_thread_init(&odd, body8) == &odd);
+
+        rc = diminuto_thread_start(&even, (void *)0);
+        ASSERT(rc == 0);
+
+        rc = diminuto_thread_start(&odd, (void *)1);
+        ASSERT(rc == 0);
+
+        final = (void *)~0;
+        rc = diminuto_thread_join(&even, &final);
+        ASSERT(rc == 0);
+        ASSERT(final == (void *)0);
+
+        final = (void *)~0;
+        rc = diminuto_thread_join(&odd, &final);
+        ASSERT(rc == 0);
+        ASSERT(final == (void *)1);
+
+        ASSERT(shared == LIMIT);
+
+        ASSERT(diminuto_thread_fini(&odd) == (diminuto_thread_t *)0);
+        ASSERT(diminuto_thread_fini(&even) == (diminuto_thread_t *)0);
+
+        STATUS();
+    }
+
+    /*
+     * Only root processes can set an explicit scheduler for threads.
+     * So we only run this test if this unit test is being run as root,
+     * or there is a command line flag to override this.
+     */
+
+    if ((geteuid() == 0) || ((argc > 1) && (strcmp(argv[1], "root") == 0)))
+    {
+        int rc;
+        diminuto_thread_t odd;
+        diminuto_thread_t even;
+        void * final;
+
+        TEST();
+
+        shared = 0;
+
+        ASSERT(diminuto_thread_init_generic(&even, body8, DIMINUTO_POLICY_SCHEDULER_THREAD, DIMINUTO_POLICY_PRIORITY_THREAD) == &even);
+        ASSERT(diminuto_thread_init_generic(&odd, body8, DIMINUTO_POLICY_SCHEDULER_THREAD, DIMINUTO_POLICY_PRIORITY_THREAD) == &odd);
 
         rc = diminuto_thread_start(&even, (void *)0);
         ASSERT(rc == 0);

@@ -191,7 +191,7 @@ extern diminuto_thread_t * diminuto_thread_init_generic(diminuto_thread_t * tp, 
  * @return a pointer to the object or NULL if initialization failed.
  */
 static inline diminuto_thread_t * diminuto_thread_init(diminuto_thread_t * tp, diminuto_thread_function_t * fp) {
-    return diminuto_thread_init_generic(tp, fp, DIMINUTO_POLICY_SCHEDULER_THREAD, DIMINUTO_POLICY_PRIORITY_THREAD);
+    return diminuto_thread_init_generic(tp, fp, DIMINUTO_POLICY_SCHEDULER_DEFAULT, DIMINUTO_POLICY_PRIORITY_DEFAULT);
 }
 
 /**

@@ -141,7 +141,7 @@ int main(int argc, char * argv[])
         TEST();
 
         for (ii = 0; ii < countof(scheduler); ++ii) {
-            CHECKPOINT("Scheduler [%d] %s (%d) min %d max %d\n",
+            CHECKPOINT("Scheduler [%d] %s (%d) Priority min %d max %d\n",
                 ii,
                 name[ii],
                 scheduler[ii],
