@@ -174,7 +174,8 @@ extern void diminuto_thread_exit(void * vp);
 
 /**
  * Initialize a Diminuto thread object. Allocate any resources.
- * The thread is not started.
+ * The thread is not started. N.B.: the caller must have root
+ * privileges to use the SCHED_RR or SCHED_FIFO schedulers.
  * @param tp points to the object.
  * @param fp points to the function to be associated with the object.
  * @param scheduler identifies the thread scheduler to be used.
@@ -185,7 +186,8 @@ extern diminuto_thread_t * diminuto_thread_init_generic(diminuto_thread_t * tp, 
 
 /**
  * Initialize a Diminuto thread object. Allocate any resources.
- * The thread is not started.
+ * The thread is not started. The default SCHED_OTHER scheduler is
+ * used, with a priority of zero.
  * @param tp points to the object.
  * @param fp points to the function to be associated with the object.
  * @return a pointer to the object or NULL if initialization failed.
