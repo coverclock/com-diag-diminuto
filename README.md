@@ -753,8 +753,19 @@ these by default (e.g. Raspbian).
 Some features of Diminuto depend on the optional PREEMPT_RT kernel
 configuration that enable kernel preemption and other process and thread
 scheduling algorithms like SCHED_RR (Round Robin) or SCHED_FIFO (First
-In, First Out). Furthermore, the features that depend on PREEMPT_RT will
-probably have to be used in applications running as root.
+In, First Out). Furthermore, the features that depend on PREEMPT_RT
+(like the real-time thread shedulers) will probably have to be run in
+applications running as root.
+
+If the effective user identifier (EUID) of the caller is root (0),
+the Diminuto Timer feature will automatically try to use the First In,
+First Out (SCHED_FIFO) thread scheduler, with a significantly elevated
+priority, for the thread(-like) code segment run when the timer fires.
+This is to try to insure that the timer thread logic is [1] run in the
+order that the timers fire, and [2] are run to completion. Any other
+approprach may result in wackiness ensuing, particularly (if my own
+professional experience is any indication) in applications like protocol
+stacks that depend on time outs to, for example, implement link recovery.
 
 ## Scripts
 
