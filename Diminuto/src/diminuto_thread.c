@@ -203,21 +203,23 @@ diminuto_thread_t * diminuto_thread_init_generic(diminuto_thread_t * tp, void * 
             break;
         }
 
-        tp->parameters.sched_priority = priority;
         if ((limit = sched_get_priority_min(scheduler)) < 0) {
             diminuto_perror("diminuto_thread_init: sched_get_priority_min");
             break;
         }
-        if (tp->parameters.sched_priority < limit) {
-            tp->parameters.sched_priority = limit;
+        if (priority < limit) {
+            priority = limit;
         }
         if ((limit = sched_get_priority_max(scheduler)) < 0) {
             diminuto_perror("diminuto_thread_init: sched_get_priority_max");
             break;
         }
-        if (tp->parameters.sched_priority > limit) {
-            tp->parameters.sched_priority = limit;
+        if (priority > limit) {
+            priority = limit;
         }
+        tp->parameters.sched_priority = priority;
+
+        DIMINUTO_LOG_DEBUG("diminuto_thread@%p: euid %d scheduler %d priority %d", tp, geteuid(), scheduler, priority);
 
         if ((rc = pthread_attr_setschedparam(&(tp->attributes), &(tp->parameters))) != 0) {
             errno = rc;

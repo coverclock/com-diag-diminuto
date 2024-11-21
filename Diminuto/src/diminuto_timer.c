@@ -116,6 +116,7 @@ diminuto_timer_t * diminuto_timer_init_generic(diminuto_timer_t * tp, int period
     diminuto_timer_t * result = (diminuto_timer_t *)0;
     int rc = -1;
     diminuto_policy_scheduler_t scheduler = DIMINUTO_POLICY_SCHEDULER_DEFAULT;
+    uid_t euid = -1;
     int priority = DIMINUTO_POLICY_PRIORITY_DEFAULT;
     int limit = 0;
 
@@ -131,49 +132,56 @@ diminuto_timer_t * diminuto_timer_init_generic(diminuto_timer_t * tp, int period
         tp->value = (void *)0;
         tp->error = 0;
 
-        if ((rc = pthread_attr_init(&(tp->attributes))) != 0) {
-            errno = rc;
-            diminuto_perror("diminuto_timer_init: pthread_attr_init");
-            break;
-        }
+        if (fp != (diminuto_timer_function_t *)0) {
 
-        if ((rc = pthread_attr_setinheritsched(&(tp->attributes), PTHREAD_EXPLICIT_SCHED)) != 0) {
-            errno = rc;
-            diminuto_perror("diminuto_timer_init: pthread_attr_setinheritsched");
-            break;
-        }
+            if ((rc = pthread_attr_init(&(tp->attributes))) != 0) {
+                errno = rc;
+                diminuto_perror("diminuto_timer_init: pthread_attr_init");
+                break;
+            }
 
-        if (geteuid() == 0) {
-            scheduler = DIMINUTO_POLICY_SCHEDULER_TIMER;
-            priority = DIMINUTO_POLICY_PRIORITY_TIMER;
-        }
+            if ((rc = pthread_attr_setinheritsched(&(tp->attributes), PTHREAD_EXPLICIT_SCHED)) != 0) {
+                errno = rc;
+                diminuto_perror("diminuto_timer_init: pthread_attr_setinheritsched");
+                break;
+            }
 
-        if ((rc = pthread_attr_setschedpolicy(&(tp->attributes), scheduler)) != 0) {
-            errno = rc;
-            diminuto_perror("diminuto_timer_init: pthread_attr_setsched_policy");
-            break;
-        }
+            euid = geteuid();
+            if (euid == 0) {
+                scheduler = DIMINUTO_POLICY_SCHEDULER_TIMER;
+                priority = DIMINUTO_POLICY_PRIORITY_TIMER;
+            }
 
-        tp->parameters.sched_priority = priority;
-        if ((limit = sched_get_priority_min(scheduler)) < 0) {
-            diminuto_perror("diminuto_timer_init: sched_get_priority_min");
-            break;
-        }
-        if (tp->parameters.sched_priority < limit) {
-            tp->parameters.sched_priority = limit;
-        }
-        if ((limit = sched_get_priority_max(scheduler)) < 0) {
-            diminuto_perror("diminuto_timer_init: sched_get_priority_max");
-            break;
-        }
-        if (tp->parameters.sched_priority > limit) {
-            tp->parameters.sched_priority = limit;
-        }
+            if ((rc = pthread_attr_setschedpolicy(&(tp->attributes), scheduler)) != 0) {
+                errno = rc;
+                diminuto_perror("diminuto_timer_init: pthread_attr_setsched_policy");
+                break;
+            }
 
-        if ((rc = pthread_attr_setschedparam(&(tp->attributes), &(tp->parameters))) != 0) {
-            errno = rc;
-            diminuto_perror("diminuto_timer_init: pthread_attr_setschedparam");
-            break;
+            if ((limit = sched_get_priority_min(scheduler)) < 0) {
+                diminuto_perror("diminuto_timer_init: sched_get_priority_min");
+                break;
+            }
+            if (priority < limit) {
+                priority = limit;
+            }
+            if ((limit = sched_get_priority_max(scheduler)) < 0) {
+                diminuto_perror("diminuto_timer_init: sched_get_priority_max");
+                break;
+            }
+            if (priority > limit) {
+                priority = limit;
+            }
+            tp->parameters.sched_priority = priority;
+
+            DIMINUTO_LOG_DEBUG("diminuto_timer@%p: euid %d scheduler %d priority %d", tp, euid, scheduler, priority);
+
+            if ((rc = pthread_attr_setschedparam(&(tp->attributes), &(tp->parameters))) != 0) {
+                errno = rc;
+                diminuto_perror("diminuto_timer_init: pthread_attr_setschedparam");
+                break;
+            }
+
         }
 
         if (diminuto_condition_init(&(tp->condition)) == (diminuto_condition_t *)0) {
