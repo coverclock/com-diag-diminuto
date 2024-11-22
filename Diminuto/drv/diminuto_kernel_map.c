@@ -3,7 +3,7 @@
  * @file
  * @copyright Copyright 2010-2011 Digital Aggregates Corporation, Colorado, USA.
  * @note Licensed under the terms in LICENSE.txt.
- * @brief Implements kernel-space memory mapping functions.
+ * @brief Implements kernel-space memory mapping functions. DEPRECATED
  * @author Chip Overclock <mailto:coverclock@diag.com>
  * @see Diminuto <https://github.com/coverclock/com-diag-diminuto>
  * @details

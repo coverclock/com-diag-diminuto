@@ -780,7 +780,7 @@ $(OUT)/$(MOD_DIR)/%.$(SO):	$(MOD_DIR)/%.cpp $(TARGETLIBRARIESXX) $(TARGETLIBRARI
 	D=`dirname $@`; mkdir -p $$D
 	$(CXX) $(CPPFLAGS) $(CXXFLAGS) -shared -o $@ $< $(MOXXFLAGS) -Wl,--whole-archive $(LDWHOLEARCHIVES) -Wl,--no-whole-archive
 
-########## Kernel-Space Loadable Modules
+########## Kernel-Space Loadable Modules (DEPRECATED)
 
 .PHONY:	drivers drivers-clean drivers-make
 

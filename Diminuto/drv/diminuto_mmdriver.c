@@ -3,7 +3,7 @@
  * @file
  * @copyright Copyright 2010-2014 Digital Aggregates Corporation, Colorado, USA.
  * @note Licensed under the terms in LICENSE.txt.
- * @brief Implements a generic memory mapped kernel-space device driver.
+ * @brief Implements a generic memory mapped kernel-space device driver. DEPRECATED
  * @author Chip Overclock <mailto:coverclock@diag.com>
  * @see Diminuto <https://github.com/coverclock/com-diag-diminuto>
  * @details
