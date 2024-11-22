@@ -3,7 +3,7 @@
  * @file
  * @copyright Copyright 2010-2011 Digital Aggregates Corporation, Colorado, USA.
  * @note Licensed under the terms in LICENSE.txt.
- * @brief Manipulate memory registers using the memory-map driver.
+ * @brief Manipulate memory registers using the memory-map driver. DEPRECATED
  * @author Chip Overclock <mailto:coverclock@diag.com>
  * @see Diminuto <https://github.com/coverclock/com-diag-diminuto>
  * @details
