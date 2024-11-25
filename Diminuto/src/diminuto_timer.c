@@ -28,7 +28,6 @@
 #include "com/diag/diminuto/diminuto_delay.h"
 #include "com/diag/diminuto/diminuto_frequency.h"
 #include "com/diag/diminuto/diminuto_log.h"
-#include "com/diag/diminuto/diminuto_policy.h"
 #include "diminuto_timer.h"
 #include <errno.h>
 #include <stdlib.h>
@@ -113,11 +112,24 @@ diminuto_timer_state_t diminuto_timer_state(diminuto_timer_t * tp)
 
 diminuto_timer_t * diminuto_timer_init_generic(diminuto_timer_t * tp, int periodic, diminuto_timer_function_t * fp, int signum)
 {
+    uid_t euid = -1;
+    diminuto_policy_scheduler_t scheduler = DIMINUTO_POLICY_SCHEDULER_DEFAULT;
+    int priority = DIMINUTO_POLICY_PRIORITY_DEFAULT;
+
+    euid = geteuid();
+    diminuto_contract(euid >= 0);
+    if (euid == 0) {
+        scheduler = DIMINUTO_POLICY_SCHEDULER_TIMER;
+        priority = DIMINUTO_POLICY_PRIORITY_TIMER;
+    }
+
+    return diminuto_timer_init_base(tp, periodic, fp, signum, scheduler, priority);
+}
+
+diminuto_timer_t * diminuto_timer_init_base(diminuto_timer_t * tp, int periodic, diminuto_timer_function_t * fp, int signum, diminuto_policy_scheduler_t scheduler, int priority)
+{
     diminuto_timer_t * result = (diminuto_timer_t *)0;
     int rc = -1;
-    diminuto_policy_scheduler_t scheduler = DIMINUTO_POLICY_SCHEDULER_DEFAULT;
-    uid_t euid = -1;
-    int priority = DIMINUTO_POLICY_PRIORITY_DEFAULT;
     int limit = 0;
 
     do {
@@ -132,24 +144,18 @@ diminuto_timer_t * diminuto_timer_init_generic(diminuto_timer_t * tp, int period
         tp->value = (void *)0;
         tp->error = 0;
 
-        if (fp != (diminuto_timer_function_t *)0) {
+        if ((rc = pthread_attr_init(&(tp->attributes))) != 0) {
+            errno = rc;
+            diminuto_perror("diminuto_timer_init: pthread_attr_init");
+            break;
+        }
 
-            if ((rc = pthread_attr_init(&(tp->attributes))) != 0) {
-                errno = rc;
-                diminuto_perror("diminuto_timer_init: pthread_attr_init");
-                break;
-            }
+        if (fp != (diminuto_timer_function_t *)0) {
 
             if ((rc = pthread_attr_setinheritsched(&(tp->attributes), PTHREAD_EXPLICIT_SCHED)) != 0) {
                 errno = rc;
                 diminuto_perror("diminuto_timer_init: pthread_attr_setinheritsched");
                 break;
-            }
-
-            euid = geteuid();
-            if (euid == 0) {
-                scheduler = DIMINUTO_POLICY_SCHEDULER_TIMER;
-                priority = DIMINUTO_POLICY_PRIORITY_TIMER;
             }
 
             if ((rc = pthread_attr_setschedpolicy(&(tp->attributes), scheduler)) != 0) {
@@ -174,7 +180,7 @@ diminuto_timer_t * diminuto_timer_init_generic(diminuto_timer_t * tp, int period
             }
             tp->parameters.sched_priority = priority;
 
-            DIMINUTO_LOG_DEBUG("diminuto_timer@%p: euid %d scheduler %d priority %d", tp, euid, scheduler, priority);
+            DIMINUTO_LOG_DEBUG("diminuto_timer@%p: euid %d scheduler %d priority %d", tp, (int)geteuid(), scheduler, priority);
 
             if ((rc = pthread_attr_setschedparam(&(tp->attributes), &(tp->parameters))) != 0) {
                 errno = rc;

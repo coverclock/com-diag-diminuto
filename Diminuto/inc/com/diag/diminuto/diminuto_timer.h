@@ -26,6 +26,7 @@
  */
 
 #include "com/diag/diminuto/diminuto_types.h"
+#include "com/diag/diminuto/diminuto_policy.h"
 #include "com/diag/diminuto/diminuto_condition.h"
 #include <pthread.h>
 #include <signal.h>
@@ -99,7 +100,26 @@ typedef struct DiminutoTimer {
  * Initialize a timer object. The behavior is undefined if the timer is
  * active. The timer must either call a function, or send a signal,
  * but not both. The timer is initialized in the disarmed (idle) state.
+ * The scheduler and priority parameters are only used if the timer function
+ * is non-null.
  * @param tp points to the timer object.
+ * @param periodic if true makes the timer periodic, else a one-shot.
+ * @param fp points to the timer function or NULL.
+ * @param signum is the signal number or 0.
+ * @param scheduler identifies the thread scheduler to be used.
+ * @param priority specifies the priority to be used for this thread.
+ * @return a pointer to the timer object if successful or NULL otherwise.
+ */
+extern diminuto_timer_t * diminuto_timer_init_base(diminuto_timer_t * tp, int periodic, diminuto_timer_function_t * fp, int signum, diminuto_policy_scheduler_t scheduler, int priority);
+
+/**
+ * Initialize a timer object. The behavior is undefined if the timer is
+ * active. The timer must either call a function, or send a signal,
+ * but not both. The timer is initialized in the disarmed (idle) state.
+ * @param tp points to the timer object. If the caller's effective user
+ * identifier is 0 (root), and if the timer function argument is non-null,
+ * the timer thread scheduler is set to the Diminuto default (FIFO) and its
+ * priority to the Diminuto "high" value (49).
  * @param periodic if true makes the timer periodic, else a one-shot.
  * @param fp points to the timer function or NULL.
  * @param signum is the signal number or 0.

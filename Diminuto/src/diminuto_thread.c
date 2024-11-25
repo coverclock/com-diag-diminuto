@@ -219,7 +219,7 @@ diminuto_thread_t * diminuto_thread_init_generic(diminuto_thread_t * tp, void * 
         }
         tp->parameters.sched_priority = priority;
 
-        DIMINUTO_LOG_DEBUG("diminuto_thread@%p: euid %d scheduler %d priority %d", tp, geteuid(), scheduler, priority);
+        DIMINUTO_LOG_DEBUG("diminuto_thread@%p: euid %d scheduler %d priority %d", tp, (int)geteuid(), scheduler, priority);
 
         if ((rc = pthread_attr_setschedparam(&(tp->attributes), &(tp->parameters))) != 0) {
             errno = rc;
