@@ -182,18 +182,30 @@ extern void diminuto_thread_exit(void * vp);
  * @param priority specifies the priority to be used for this thread.
  * @return a pointer to the object or NULL if initialization failed.
  */
-extern diminuto_thread_t * diminuto_thread_init_generic(diminuto_thread_t * tp, void * (*fp)(void *), diminuto_policy_scheduler_t scheduler, int priority);
+extern diminuto_thread_t * diminuto_thread_init_base(diminuto_thread_t * tp, diminuto_thread_function_t * fp, diminuto_policy_scheduler_t scheduler, int priority);
 
 /**
  * Initialize a Diminuto thread object. Allocate any resources.
- * The thread is not started. The default SCHED_OTHER scheduler is
- * used, with a priority of zero.
+ * The thread is not started. N.B.: the caller must have root
+ * privileges to use the SCHED_RR or SCHED_FIFO schedulers. If
+ * the caller's effective user id (EUID) is 0 (root), the Round
+ * Robin (SCHED_RR) scheduler is used, with the Diminuto thread
+ * priority.
+ * @param tp points to the object.
+ * @param fp points to the function to be associated with the object.
+ * @return a pointer to the object or NULL if initialization failed.
+ */
+extern diminuto_thread_t * diminuto_thread_init_generic(diminuto_thread_t * tp, diminuto_thread_function_t * fp);
+
+/**
+ * Initialize a Diminuto thread object. Allocate any resources.
+ * The thread is not started.
  * @param tp points to the object.
  * @param fp points to the function to be associated with the object.
  * @return a pointer to the object or NULL if initialization failed.
  */
 static inline diminuto_thread_t * diminuto_thread_init(diminuto_thread_t * tp, diminuto_thread_function_t * fp) {
-    return diminuto_thread_init_generic(tp, fp, DIMINUTO_POLICY_SCHEDULER_DEFAULT, DIMINUTO_POLICY_PRIORITY_DEFAULT);
+    return diminuto_thread_init_generic(tp, fp);
 }
 
 /**

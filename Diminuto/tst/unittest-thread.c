@@ -785,8 +785,8 @@ int main(int argc, char ** argv)
 
         shared = 0;
 
-        ASSERT(diminuto_thread_init_generic(&even, body8, DIMINUTO_POLICY_SCHEDULER_THREAD, DIMINUTO_POLICY_PRIORITY_THREAD) == &even);
-        ASSERT(diminuto_thread_init_generic(&odd, body8, DIMINUTO_POLICY_SCHEDULER_THREAD, DIMINUTO_POLICY_PRIORITY_THREAD) == &odd);
+        ASSERT(diminuto_thread_init_base(&even, body8, DIMINUTO_POLICY_SCHEDULER_THREAD, DIMINUTO_POLICY_PRIORITY_THREAD) == &even);
+        ASSERT(diminuto_thread_init_base(&odd, body8, DIMINUTO_POLICY_SCHEDULER_THREAD, DIMINUTO_POLICY_PRIORITY_THREAD) == &odd);
 
         rc = diminuto_thread_start(&even, (void *)0);
         ASSERT(rc == 0);

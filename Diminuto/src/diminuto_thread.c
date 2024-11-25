@@ -170,7 +170,23 @@ static void setup()
  * INITIALIZERS AND FINALIZERS
  **********************************************************************/
 
-diminuto_thread_t * diminuto_thread_init_generic(diminuto_thread_t * tp, void * (*fp)(void *), diminuto_policy_scheduler_t scheduler, int priority)
+diminuto_thread_t * diminuto_thread_init_generic(diminuto_thread_t * tp, diminuto_thread_function_t * fp)
+{
+    uid_t euid = -1;
+    diminuto_policy_scheduler_t scheduler = DIMINUTO_POLICY_SCHEDULER_DEFAULT;
+    int priority = DIMINUTO_POLICY_PRIORITY_DEFAULT;
+
+    euid = geteuid();
+    diminuto_contract(euid >= 0);
+    if (euid == 0) {
+        scheduler = DIMINUTO_POLICY_SCHEDULER_THREAD;
+        priority = DIMINUTO_POLICY_PRIORITY_THREAD;
+    }
+
+    return diminuto_thread_init_base(tp, fp, scheduler, priority);
+}
+
+diminuto_thread_t * diminuto_thread_init_base(diminuto_thread_t * tp, diminuto_thread_function_t * fp, diminuto_policy_scheduler_t scheduler, int priority)
 {
     diminuto_thread_t * result = (diminuto_thread_t *)0;
     int rc = -1;
