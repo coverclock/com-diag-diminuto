@@ -52,10 +52,18 @@ diminuto_kernel_map(
 
         if (!pagepp) {
             /* Do nothing. */
+#if 0
         } else if (!(*pagepp = ioremap_nocache(address, size))) {
             pr_err("diminuto_kernel_map: ioremap_nocache failed!\n");
             rc = -ENOMEM;
             break;
+#else
+        } else if (!(*pagepp = ioremap(address, size))) {
+            /* Linux kernel 4.8 */
+            pr_err("diminuto_kernel_map: ioremap failed!\n");
+            rc = -ENOMEM;
+            break;
+#endif
         } else if (basepp) {
             *basepp = (char *)*pagepp + offset;
         } else {

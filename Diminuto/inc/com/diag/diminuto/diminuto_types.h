@@ -18,7 +18,7 @@
 
 #if defined(COM_DIAG_DIMINUTO_PLATFORM_KERNEL)
 #   include <linux/types.h>
-#   include <linux/limits.h>
+#   include <linux/limits.h>    /* NAME_MAX, PATH_MAX */
 #   include <linux/un.h>
 #   if 0
        typedef unsigned long uintptr_t;
@@ -102,7 +102,7 @@ enum DiminutoTypesBufferSizes {
     DIMINUTO_TYPES_IPV4_BUFFER_SIZE     = sizeof("255.255.255.255"),                            /* (4*3)+(3*1)+1=16 */
     DIMINUTO_TYPES_IPV6_BUFFER_SIZE     = sizeof("ffff:ffff:ffff:ffff:ffff:ffff:ffff:ffff"),    /* (8*4)+(7*1)+1=40 */
     DIMINUTO_TYPES_IP_BUFFER_SIZE       = DIMINUTO_TYPES_IPV6_BUFFER_SIZE,                      /* 40 */
-    DIMINUTO_TYPES_LOCAL_BUFFER_SIZE    = _POSIX_PATH_MAX + 1,                                  /* 256+1=257 */
+    DIMINUTO_TYPES_LOCAL_BUFFER_SIZE    = NAME_MAX,                                             /* 255 */
     DIMINUTO_TYPES_PATH_BUFFER_SIZE     = PATH_MAX,                                             /* 4096 */
     DIMINUTO_TYPES_PORT_BUFFER_SIZE     = sizeof("65535"),                                      /* 6 */
     DIMINUTO_TYPES_ENDPOINT_BUFFER_SIZE = DIMINUTO_TYPES_LOCAL_BUFFER_SIZE,                     /* (((1+40+1)+(1+6)+(1+6))+1+(16+(1+6)+(1+6))+1)<257 */
