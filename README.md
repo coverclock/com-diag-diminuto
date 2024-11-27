@@ -748,26 +748,7 @@ these by default (e.g. Raspbian).
 
     sudo apt-get install inotify-tools
 
-## PREEMPT_RT
-
-Some features of Diminuto depend on the optional PREEMPT_RT kernel
-configuration that enable kernel preemption and other process and thread
-scheduling algorithms like SCHED_RR (Round Robin) or SCHED_FIFO (First
-In, First Out). Furthermore, the features that depend on PREEMPT_RT
-(like the real-time thread shedulers) will probably have to be run in
-applications running as root.
-
-If the effective user identifier (EUID) of the caller is root (0),
-the Diminuto Timer feature will automatically try to use the First In,
-First Out (SCHED_FIFO) thread scheduler, with a significantly elevated
-priority, for the thread(-like) code segment run when the timer fires.
-This is to try to insure that the timer thread logic is [1] run in the
-order that the timers fire, and [2] are run to completion. Any other
-approprach may result in wackiness ensuing, particularly (if my own
-professional experience is any indication) in applications like protocol
-stacks that depend on time outs to, for example, implement link recovery.
-
-## Scripts
+# Scripts
 
 I have a lot of bash scripts that I find useful, but which are not
 Diminuto-specific. These can be found in the separate repository
@@ -775,13 +756,44 @@ Diminuto-specific. These can be found in the separate repository
 require that you build, install, and use the Diminuto library or
 its command line utilities.
 
+# Real-Time
+
+## SCHED_FIFO, SCHED_RR
+
+The Diminuto Thread and Diminuto Timer features allow the use of
+alternative thread scheduling algorithms such as First In, First Out
+(SCHED_FIFO) or Round Robin (SCHED_RR). Use of such algorithms - which
+is completely optional - requires that the caller have an effective user
+identifier (EUID) of root (0). There are API calls in both features
+that can automatically use the alternative algorithms iff the EUID of
+the caller is 0, and will otherwise use the default thread scheduling
+algorithm. Use of thse API calls - which are also entirely optional -
+means the application may exhibit different behavior if run as root than
+if it is run as a normal user.
+
+In the case that an alternative thread scheduler is used, Diminuto Thread
+by default uses SCHED_RR (which implements a time slice), and Diminuto
+Timer by default uses SCHED_FIFO (which runs to completion).
+
+## PREEMPT_RT
+
+I've done a lot of development and testing of Diminuto (and its client
+Hazer) on a Raspberry Pi 5 running Ubuntu with a Linux kernel with
+the PREEMPT_RT patches. The PREEMPT_RT patches can trade throughput
+performance for lower latency in some operations. That's a fair trade
+for the kinds of applications for which I use Diminuto.
+
 # Branching
 
 Diminuto is big and complex enough that I sometimes move to a "master"
-(or "main") and "develop" dual branch model of development. I make and
-test major changes in the "develop" branch, and when I think I have a
-stable release, I merge "develop" into the "master" ("main") branch. I
-still make what I consider to be minor changes in the master branch.
+(or "main" in later repositories) and "develop" dual branch model of
+development. I make and test major changes in the "develop" branch,
+and when I think I have a stable release, I merge "develop" into the
+"master" branch. I still make what I consider to be minor changes to
+existing features, or new feature development, in the "master" branch.
+I sometimes have special purpose branches that, if successful, are merged
+into "master"; for example, "realtime" for my work with alternative
+thread schedulers.
 
 # Versioning
 
@@ -1024,7 +1036,7 @@ have a wealth of non-trivial examples of how to use the public APIs.
 The private APIs mostly exist to expose internal details so that they can
 be unit tested.
 
-# Remarks
+# Background
 
 Diminuto started out many years ago as a project to build a minimal
 Linux-based embedded system for an ARMv4 processor that seems laughably
