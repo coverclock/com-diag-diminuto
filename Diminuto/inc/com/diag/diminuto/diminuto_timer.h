@@ -97,6 +97,27 @@ typedef struct DiminutoTimer {
 } diminuto_timer_t;
 
 /**
+ * Static initializer for a Diminuto Timer structure.
+ */
+#define DIMINUTO_TIMER_INITIALIZER(_FP_) \
+    { \
+        (_FP_), \
+        (void *)0, \
+        (void *)0, \
+        (diminuto_ticks_t)0, \
+        DIMINUTO_CONDITION_INITIALIZER, \
+        { { 0, }, }, \
+        { 0, }, \
+        { { 0, }, }, \
+        { { 0, }, }, \
+        { { 0, }, }, \
+        0, \
+        0, \
+        DIMINUTO_TIMER_STATE_UNKNOWN, \
+        false, \
+    }
+
+/**
  * Initialize a timer object. The behavior is undefined if the timer is
  * active. The timer must either call a function, or send a signal,
  * but not both. The timer is initialized in the disarmed (idle) state.

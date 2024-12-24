@@ -47,6 +47,17 @@ int main(int argc, char ** argv)
     }
 
     {
+        diminuto_timer_t timer = DIMINUTO_TIMER_INITIALIZER((diminuto_timer_function_t *)0);
+
+        TEST();
+
+        ASSERT(timer.function == (diminuto_timer_function_t *)0);
+        ASSERT(diminuto_timer_error(&timer) == 0);
+
+        STATUS();
+    }
+
+    {
         diminuto_timer_t timer;
 
         TEST();
