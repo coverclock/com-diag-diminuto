@@ -4,7 +4,7 @@
 
 /**
  * @file
- * @copyright Copyright 2009-2022 Digital Aggregates Corporation, Colorado, USA.
+ * @copyright Copyright 2009-2024 Digital Aggregates Corporation, Colorado, USA.
  * @note Licensed under the terms in LICENSE.txt.
  * @brief Implements monotonic one-shot and periodic timers using POSIX timers.
  * @author Chip Overclock <mailto:coverclock@diag.com>
@@ -97,7 +97,7 @@ typedef struct DiminutoTimer {
 } diminuto_timer_t;
 
 /**
- * Static initializer for a Diminuto Timer structure.
+ * This is a static initializer for a Diminuto Timer structure.
  */
 #define DIMINUTO_TIMER_INITIALIZER(_FP_) \
     { \
