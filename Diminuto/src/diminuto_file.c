@@ -20,12 +20,14 @@
 #include "com/diag/diminuto/diminuto_serial.h"
 #include <errno.h>
 
-ssize_t diminuto_file_poll(FILE * fp) {
+ssize_t diminuto_file_poll_generic(FILE * fp, diminuto_file_method_t * mp) {
     int fd = -1;
     ssize_t bytes = -1;
     diminuto_mux_t mux = DIMINUTO_MUX_INIT;
     int ready = -1;
     int rc = -1;
+
+    *mp = DIMINUTO_FILE_METHOD_NONE;
 
     do {
 
@@ -33,6 +35,8 @@ ssize_t diminuto_file_poll(FILE * fp) {
             errno = EINVAL;
             break;
         }
+
+        *mp = DIMINUTO_FILE_METHOD_STDIO;
 
         if (feof(fp)) {
             bytes = 1;
@@ -42,6 +46,8 @@ ssize_t diminuto_file_poll(FILE * fp) {
         if ((bytes = diminuto_file_ready(fp)) > 0) {
             break;
         }
+
+        *mp = DIMINUTO_FILE_METHOD_SERIAL;
 
         if ((fd = fileno(fp)) < 0) {
             errno = EBADF;
@@ -55,6 +61,8 @@ ssize_t diminuto_file_poll(FILE * fp) {
         } else {
             break;
         }
+
+        *mp = DIMINUTO_FILE_METHOD_SELECT;
 
         if (diminuto_mux_init(&mux) == (diminuto_mux_t *)0) {
             break;

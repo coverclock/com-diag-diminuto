@@ -93,6 +93,28 @@ static inline ssize_t diminuto_file_writesize(const FILE * fp)
 }
 
 /**
+ * These are the different I/O methods that the poll function may use.
+ */
+typedef enum DiminutoFileMethod {
+    DIMINUTO_FILE_METHOD_IGNORE = '!',
+    DIMINUTO_FILE_METHOD_NONE   = '?',
+    DIMINUTO_FILE_METHOD_STDIO  = 'F',
+    DIMINUTO_FILE_METHOD_SERIAL = 'S',
+    DIMINUTO_FILE_METHOD_SELECT = 'M',
+} diminuto_file_method_t;
+
+/**
+ * Return the minimum number of bytes likely to be available for the
+ * specified FILE object, even if they are not available in the standard
+ * I/O buffer. A pending EOF may indicate one byte is available to cause
+ * the caller to receive it.
+ * @param fp points to the FILE object.
+ * @param mp points to where the I/O method is returned.
+ * @return 0 if no bytes are available, <0 for an error, or >0;
+ */
+ssize_t diminuto_file_poll_generic(FILE * fp, diminuto_file_method_t * mp);
+
+/**
  * Return the minimum number of bytes likely to be available for the
  * specified FILE object, even if they are not available in the standard
  * I/O buffer. A pending EOF may indicate one byte is available to cause
@@ -100,6 +122,9 @@ static inline ssize_t diminuto_file_writesize(const FILE * fp)
  * @param fp points to the FILE object.
  * @return 0 if no bytes are available, <0 for an error, or >0;
  */
-ssize_t diminuto_file_poll(FILE * fp);
+static inline ssize_t diminuto_file_poll(FILE * fp) {
+    diminuto_file_method_t ignore = DIMINUTO_FILE_METHOD_IGNORE;
+    return diminuto_file_poll_generic(fp, &ignore);
+}
 
 #endif

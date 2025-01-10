@@ -401,7 +401,6 @@ Similarly, environmental variables have qualified names like
 
 ## Sockets
 
-* endpoint - parse a string into an IP address and port or a UNIX domain path.
 * fd - general handling of file descriptors (including sockets).
 * ipc4 - IPv4 socket interface.
 * ipc6 - IPv6 socket interface (works for IPv4 endpoints too).
@@ -545,6 +544,8 @@ Similarly, environmental variables have qualified names like
 * adccontroller - PWM and ADC PID loop (Line, Modulator, I2C, Controller).    
 * adcrheostat - PWM and ADC rheostat (Line, Modulator, I2C).
 * dcdtest - DCD support on serial port (Serial).
+* endpoint - parse a string into an IP address and port or a UNIX domain path.
+* filepoller - tests the polling function of the File feature.
 * filestuff - tries out the Fs and Fd features (FD, FS).
 * internettooltests - use internettool in many configurations (IPC4, IPC6).
 * lbktest - loopback on serial port (Serial).
