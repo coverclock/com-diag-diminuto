@@ -1,7 +1,7 @@
 /* vi: set ts=4 expandtab shiftwidth=4: */
 /**
  * @file
- * @copyright Copyright 2013-2022 Digital Aggregates Corporation, Colorado, USA.
+ * @copyright Copyright 2013-2025 Digital Aggregates Corporation, Colorado, USA.
  * @note Licensed under the terms in LICENSE.txt.
  * @brief This is the implementation of the Mux feature.
  * @author Chip Overclock <mailto:coverclock@diag.com>
@@ -15,7 +15,6 @@
 #include "com/diag/diminuto/diminuto_log.h"
 #include <errno.h>
 #include <unistd.h>
-#include <errno.h>
 #include <pthread.h>
 #include "../src/diminuto_mux.h"
 

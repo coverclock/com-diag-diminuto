@@ -4,7 +4,7 @@
 
 /**
  * @file
- * @copyright Copyright 2019-2023 Digital Aggregates Corporation, Colorado, USA.
+ * @copyright Copyright 2019-2025 Digital Aggregates Corporation, Colorado, USA.
  * @note Licensed under the terms in LICENSE.txt.
  * @brief Implements a horrifyingly brittle mechanism to compute octets buffered in an input stream.
  * @author Chip Overclock <mailto:coverclock@diag.com>
@@ -91,5 +91,15 @@ static inline ssize_t diminuto_file_writesize(const FILE * fp)
 {
     return (fp->_IO_write_end - fp->_IO_write_base);
 }
+
+/**
+ * Return the minimum number of bytes likely to be available for the
+ * specified FILE object, even if they are not available in the standard
+ * I/O buffer. A pending EOF may indicate one byte is available to cause
+ * the caller to receive it.
+ * @param fp points to the FILE object.
+ * @return 0 if no bytes are available, <0 for an error, or >0;
+ */
+ssize_t diminuto_file_poll(FILE * fp);
 
 #endif

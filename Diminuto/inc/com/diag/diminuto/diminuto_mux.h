@@ -4,7 +4,7 @@
 
 /**
  * @file
- * @copyright Copyright 2013-2022 Digital Aggregates Corporation, Colorado, USA.
+ * @copyright Copyright 2013-2025 Digital Aggregates Corporation, Colorado, USA.
  * @note Licensed under the terms in LICENSE.txt.
  * @brief Provides a model for doing multiplexing using pselect(2).
  * @author Chip Overclock <mailto:coverclock@diag.com>
@@ -87,6 +87,11 @@ typedef struct DiminutoMux {
     diminuto_mux_set_t  interrupt;              /**< FDs for interrupt. */
     sigset_t            mask;                   /**< Signals being managed. */
 } diminuto_mux_t;
+
+/**
+ * @def COM_DIAG_DIMINUTO_MUX_INIT
+ */
+#define DIMINUTO_MUX_INIT { { { 0, } } }
 
 /**
  * Initialize a multiplexer. Any prior state is lost, although this does not

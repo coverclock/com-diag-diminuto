@@ -1,5 +1,5 @@
 # vi: set ts=4 shiftwidth=4:
-# Copyright 2008-2024 Digital Aggregates Corporation
+# Copyright 2008-2025 Digital Aggregates Corporation
 # Licensed under the terms in LICENSE.txt
 # author:Chip Overclock
 # mailto:coverclock@diag.com
@@ -30,7 +30,7 @@ HOMEPAGE			:=	https://github.com/coverclock/com-diag-diminuto
 TITLE				:=	Diminuto
 
 MAJOR				:=	105# API changes that may require that applications be modified.
-MINOR				:=	1# Only functionality or features added with no legacy API changes.
+MINOR				:=	2# Only functionality or features added with no legacy API changes.
 BUILD				:=	0# Only bugs fixed with no API changes or new functionality.
 
 # Disclaimer: the only target that I routinely build and test for is "host",
@@ -1101,6 +1101,7 @@ sanity-test:	criticalsection-test
 	unittest-minmaxof
 	unittest-module
 	unittest-mutex
+	unittest-mux
 	unittest-mux4 -q
 	unittest-number
 	unittest-observation && rm /tmp/diminuto-unittest-observation-*
