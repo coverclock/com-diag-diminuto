@@ -8,13 +8,30 @@
  * @see Diminuto <https://github.com/coverclock/com-diag-diminuto>
  * @details
  * Copies stdin to stdout while monitoring the stream using File poll.
+ *
  * E.g.
- * filepoller < lesser.txt > TEMP
- * diff lesser.txt TEMP
+ *
+ * filepoller
+ *
+ * filepoller < lesser.txt > temp.txt;
+ * diff lesser.txt temp.txt;
+ * rm temp.txt
+ *
+ * cat lesser.txt | filepoller > temp.txt;
+ * diff lesser.txt temp.txt;
+ * rm temp.txt
+ *
+ * mkfifo FIFO;
+ * filepoller < FIFO > temp.txt &
+ * cat lesser.txt > FIFO;
+ * diff lesser.txt temp.txt;
+ * rm temp.txt;
+ * rm FIFO;
  */
 
 #include "com/diag/diminuto/diminuto_file.h"
 #include "com/diag/diminuto/diminuto_dump.h"
+#include <stdbool.h>
 #include <stdint.h>
 #include <stdio.h>
 #include <unistd.h>
@@ -26,6 +43,7 @@ int main(int argc, char * argv[])
     ssize_t bytes = 0;
     diminuto_file_method_t method = DIMINUTO_FILE_METHOD_NONE;
     int ch = '\0';
+    bool sleepy = false;
 
     do {
         bytes = diminuto_file_poll_generic(stdin, &method);
@@ -33,10 +51,14 @@ int main(int argc, char * argv[])
             xc = 1;
             break;
         } else if (bytes == 0) {
+            if (!sleepy) {
+                fprintf(stderr, "%s [%lu] [%ld] '%c'\n", argv[0], total, bytes, method);
+            }
             usleep(1000000);
+            sleepy = true;
         } else {
-            fprintf(stderr, "%s [%lu] [%ld] '%c'\n", argv[0], total, bytes, method);
             total += bytes;
+            fprintf(stderr, "%s [%lu] [%ld] '%c'\n", argv[0], total, bytes, method);
             while (bytes > 0) {
                 if ((ch = fgetc(stdin)) == EOF) {
                     total -= 1;
@@ -45,6 +67,7 @@ int main(int argc, char * argv[])
                 (void)fputc(ch, stdout);
                 bytes -= 1;
             }
+            sleepy = false;
         }
     } while (ch != EOF);
 
