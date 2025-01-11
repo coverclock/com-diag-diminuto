@@ -20,7 +20,7 @@
 #include "com/diag/diminuto/diminuto_serial.h"
 #include <errno.h>
 
-ssize_t diminuto_file_poll_generic(FILE * fp, diminuto_file_method_t * mp) {
+ssize_t diminuto_file_poll_base(FILE * fp, diminuto_sticks_t timeout, diminuto_file_method_t * mp) {
     int fd = -1;
     ssize_t bytes = -1;
     diminuto_mux_t mux = DIMINUTO_MUX_INIT;
@@ -69,31 +69,27 @@ ssize_t diminuto_file_poll_generic(FILE * fp, diminuto_file_method_t * mp) {
         }
 
         if (diminuto_mux_register_read(&mux, fd) < 0) {
-            break;
-        }
-
-        while (!0) {
-            if ((ready = diminuto_mux_wait(&mux, 0 /* POLL */)) == 0) {
-                bytes = 0;
-                break;
-            } else if (ready > 0) {
-                rc = diminuto_mux_ready_read(&mux);
-                diminuto_contract(rc == fd);
-                bytes = 1;
-                /* May be EOF. */
-                break;
-            } else if (errno == EINTR) {
-                continue;
-            } else {
-                break;
-            }
+            /* Do nothing. */
+        } else if ((ready = diminuto_mux_wait(&mux, timeout)) == 0) {
+            bytes = 0;
+        } else if (ready > 0) {
+            rc = diminuto_mux_ready_read(&mux);
+            diminuto_contract(rc == fd);
+            /* May be EOF. */
+            bytes = 1;
+        } else {
+            /* Do nothing. */
         }
 
         (void)diminuto_mux_fini(&mux);
 
     } while (0);
 
-    if (bytes < 0) {
+    if (bytes >= 0) {
+        /* Do nothing. */
+    } else if (errno == EINTR) {
+        /* Not really an error but caller may handle. */
+    } else {
         diminuto_perror("diminuto_file_poll");
     }
 

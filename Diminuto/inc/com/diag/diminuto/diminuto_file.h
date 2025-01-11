@@ -38,6 +38,7 @@
  * https://sourceware.org/git/glibc.git:libio/genops.c
  */
 
+#include "com/diag/diminuto/diminuto_types.h"
 #include <stdio.h>
 #include <stddef.h>
 
@@ -109,10 +110,25 @@ typedef enum DiminutoFileMethod {
  * I/O buffer. A pending EOF may indicate one byte is available to cause
  * the caller to receive it.
  * @param fp points to the FILE object.
+ * @param timeout is a timeout period in ticks, 0 for polling, <0 for blocking.
  * @param mp points to where the I/O method is returned.
  * @return 0 if no bytes are available, <0 for an error, or >0;
  */
-ssize_t diminuto_file_poll_generic(FILE * fp, diminuto_file_method_t * mp);
+ssize_t diminuto_file_poll_base(FILE * fp, diminuto_sticks_t timeout, diminuto_file_method_t * mp);
+
+/**
+ * Return the minimum number of bytes likely to be available for the
+ * specified FILE object, even if they are not available in the standard
+ * I/O buffer. A pending EOF may indicate one byte is available to cause
+ * the caller to receive it.
+ * @param fp points to the FILE object.
+ * @param mp points to where the I/O method is returned.
+ * @return 0 if no bytes are available, <0 for an error, or >0;
+ */
+static inline ssize_t diminuto_file_poll_generic(FILE * fp, diminuto_file_method_t * mp) {
+    static const diminuto_sticks_t POLL = 0;
+    return diminuto_file_poll_base(fp, POLL, mp);
+}
 
 /**
  * Return the minimum number of bytes likely to be available for the

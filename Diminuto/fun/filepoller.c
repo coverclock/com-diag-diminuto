@@ -30,7 +30,10 @@
  */
 
 #include "com/diag/diminuto/diminuto_file.h"
+#include "com/diag/diminuto/diminuto_alarm.h"
+#include "com/diag/diminuto/diminuto_frequency.h"
 #include "com/diag/diminuto/diminuto_dump.h"
+#include <errno.h>
 #include <stdbool.h>
 #include <stdint.h>
 #include <stdio.h>
@@ -43,31 +46,36 @@ int main(int argc, char * argv[])
     ssize_t bytes = 0;
     diminuto_file_method_t method = DIMINUTO_FILE_METHOD_NONE;
     int ch = '\0';
-    bool sleepy = false;
+    bool timedout = false;
+    static const diminuto_sticks_t TIMEOUT = COM_DIAG_DIMINUTO_FREQUENCY;
+
+    (void)diminuto_alarm_install(0);
 
     do {
-        bytes = diminuto_file_poll_generic(stdin, &method);
-        if (bytes < 0) {
-            xc = 1;
-            break;
-        } else if (bytes == 0) {
-            if (!sleepy) {
+        bytes = diminuto_file_poll_base(stdin, TIMEOUT, &method);
+        if (bytes == 0) {
+            if (!timedout) {
                 fprintf(stderr, "%s [%lu] [%ld] '%c'\n", argv[0], total, bytes, method);
+                timedout = true;
             }
-            usleep(1000000);
-            sleepy = true;
-        } else {
+        } else if (bytes > 0) {
             total += bytes;
             fprintf(stderr, "%s [%lu] [%ld] '%c'\n", argv[0], total, bytes, method);
             while (bytes > 0) {
                 if ((ch = fgetc(stdin)) == EOF) {
-                    total -= 1;
                     break;
                 }
                 (void)fputc(ch, stdout);
                 bytes -= 1;
             }
-            sleepy = false;
+            timedout = false;
+        } else if (errno == EINTR) {
+            fprintf(stderr, "%s [%lu] [%ld] <%d>\n", argv[0], total, bytes, SIGALRM);
+            timedout = false;
+            continue;
+        } else {
+            xc = 1;
+            break;
         }
     } while (ch != EOF);
 
