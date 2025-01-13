@@ -70,7 +70,7 @@ int main(int argc, char * argv[])
             fp->_fileno = fd;
         }
 
-        CHECKPOINT("total %lu bufsize %d maximum %ld reads %lu noreads %lu\n", total, BUFSIZ, maximum, reads, noreads);
+        CHECKPOINT("total %lu bufsize %d maximum %ld reads %lu noreads %lu sum %lu\n", total, BUFSIZ, maximum, reads, noreads, reads + noreads);
 
         STATUS();
     }

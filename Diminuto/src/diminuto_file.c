@@ -21,6 +21,7 @@
 #include <errno.h>
 
 ssize_t diminuto_file_poll_base(FILE * fp, diminuto_sticks_t timeout, diminuto_file_method_t * mp) {
+    ssize_t result = -1;
     int fd = -1;
     ssize_t bytes = -1;
     diminuto_mux_t mux = DIMINUTO_MUX_INIT;
@@ -39,11 +40,13 @@ ssize_t diminuto_file_poll_base(FILE * fp, diminuto_sticks_t timeout, diminuto_f
         *mp = DIMINUTO_FILE_METHOD_STDIO;
 
         if (feof(fp)) {
-            bytes = 1;
+            /* EOF */
+            result = 1;
             break;
         }
 
         if ((bytes = diminuto_file_ready(fp)) > 0) {
+            result = bytes;
             break;
         }
 
@@ -56,10 +59,11 @@ ssize_t diminuto_file_poll_base(FILE * fp, diminuto_sticks_t timeout, diminuto_f
 
         if (!diminuto_serial_valid(fd)) {
             /* Do nothing. */
-        } else  if ((bytes = diminuto_serial_available(fd)) <= 0) {
-            /* Do nothing. */
-        } else {
+        } else  if ((bytes = diminuto_serial_available(fd)) > 0) {
+            result = bytes;
             break;
+        } else {
+            /* Do nothing. */
         }
 
         *mp = DIMINUTO_FILE_METHOD_SELECT;
@@ -71,21 +75,22 @@ ssize_t diminuto_file_poll_base(FILE * fp, diminuto_sticks_t timeout, diminuto_f
         if (diminuto_mux_register_read(&mux, fd) < 0) {
             /* Do nothing. */
         } else if ((ready = diminuto_mux_wait(&mux, timeout)) == 0) {
-            bytes = 0;
-        } else if (ready > 0) {
-            rc = diminuto_mux_ready_read(&mux);
-            diminuto_contract(rc == fd);
+            result = 0;
+        } else if (ready < 0) {
+            /* May be EINTR. */
+        } else if (diminuto_mux_ready_read(&mux) == fd) {
             /* May be EOF. */
-            bytes = 1;
+            result = 1;
         } else {
-            /* Do nothing. */
+            /* Should be impossible. */
+            errno = ERANGE;
         }
 
         (void)diminuto_mux_fini(&mux);
 
     } while (0);
 
-    if (bytes >= 0) {
+    if (result >= 0) {
         /* Do nothing. */
     } else if (errno == EINTR) {
         /* Not really an error but caller may handle. */
@@ -93,5 +98,5 @@ ssize_t diminuto_file_poll_base(FILE * fp, diminuto_sticks_t timeout, diminuto_f
         diminuto_perror("diminuto_file_poll");
     }
 
-    return bytes;
+    return result;
 }
