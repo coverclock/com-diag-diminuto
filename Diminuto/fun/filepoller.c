@@ -13,6 +13,8 @@
  *
  * filepoller # Serial.
  *
+ * filepoller 5000000000 # Serial with a longer timeout.
+ *
  * (sleep 5;filepoller) # Serial and gives time to queue chars up on UART.
  *
  * filepoller < lesser.txt > temp.txt;
