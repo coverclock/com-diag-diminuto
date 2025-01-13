@@ -13,7 +13,11 @@
  *
  * filepoller # Serial.
  *
- * filepoller 5000000000 # Serial with a longer timeout.
+ * filepoller 5000000000 # Serial with a 5s timeout in ticks.
+ *
+ * filepoller -1 # Serial with a wait.
+ *
+ * filepoller 0 # Serial with a busy wait.
  *
  * (sleep 5;filepoller) # Serial and gives time to queue chars up on UART.
  *
