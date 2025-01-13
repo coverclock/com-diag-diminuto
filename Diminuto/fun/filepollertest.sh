@@ -61,7 +61,9 @@ rm -f ${PIPFIL}
 
 # To test the serial device handling, you can try this interactive
 # test, which blocks the process for a bit and lets characters build
-# up in the hardware queue of the UART.
+# up in the hardware queue of the UART or the software buffer of the
+# device driver. Change the '5' seconds to something buffer for more
+# data.
 #
 # (sleep 5; filepoller)
 
