@@ -11,7 +11,9 @@
  *
  * E.g.
  *
- * filepoller
+ * filepoller # Serial.
+ *
+ * (sleep 5;filepoller) # Serial and gives time to queue chars up on UART.
  *
  * filepoller < lesser.txt > temp.txt;
  * diff lesser.txt temp.txt;
