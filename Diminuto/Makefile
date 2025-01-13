@@ -20,7 +20,7 @@ default:	all
 
 ########## Metadata
 
-COPYRIGHT			:=	2008-2024 Digital Aggregates Corporation
+COPYRIGHT			:=	2008-2025 Digital Aggregates Corporation
 LICENSE				:=	GNU Lesser General Public License 2.1
 CONTACT				:=	coverclock@diag.com
 HOMEPAGE			:=	https://github.com/coverclock/com-diag-diminuto
@@ -31,7 +31,7 @@ TITLE				:=	Diminuto
 
 MAJOR				:=	105# API changes that may require that applications be modified.
 MINOR				:=	2# Only functionality or features added with no legacy API changes.
-BUILD				:=	3# Only bugs fixed with no API changes or new functionality.
+BUILD				:=	4# Only bugs fixed with no API changes or new functionality.
 
 # Disclaimer: the only target that I routinely build and test for is "host",
 # using the native GCC compilers on my X86_64 Ubuntu or ARMv7 Raspbian systems.

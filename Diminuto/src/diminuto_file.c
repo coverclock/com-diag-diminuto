@@ -26,7 +26,6 @@ ssize_t diminuto_file_poll_base(FILE * fp, diminuto_sticks_t timeout, diminuto_f
     ssize_t bytes = -1;
     diminuto_mux_t mux = DIMINUTO_MUX_INIT;
     int ready = -1;
-    int rc = -1;
 
     *mp = DIMINUTO_FILE_METHOD_NONE;
 

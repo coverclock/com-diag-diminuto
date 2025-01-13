@@ -89,7 +89,10 @@ typedef struct DiminutoMux {
 } diminuto_mux_t;
 
 /**
- * @def COM_DIAG_DIMINUTO_MUX_INIT
+ * @def DIMINUTO_MUX_INIT
+ * Static initializer for Diminuto mux object. Does NOT duplicate
+ * what diminuto_mux_init() does. Instead, initializes all fields in the
+ * mux object in known values (zeros).
  */
 #define DIMINUTO_MUX_INIT { { { 0, } } }
 
