@@ -59,6 +59,12 @@ fi
 rm -f ${TMPFIL}
 rm -f ${PIPFIL}
 
+# To test the serial device handling, you can try this interactive
+# test, which blocks the process for a bit and lets characters build
+# up in the hardware queue of the UART.
+#
+# (sleep 5; filepoller)
+
 echo "${PGM} SUCCESS." 1>&2
 
 exit 0
