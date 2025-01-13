@@ -39,6 +39,7 @@
 #include <stdbool.h>
 #include <stdint.h>
 #include <stdio.h>
+#include <stdlib.h>
 #include <unistd.h>
 
 int main(int argc, char * argv[])
@@ -50,14 +51,33 @@ int main(int argc, char * argv[])
     int ch = '\0';
     bool timedout = false;
     static const diminuto_sticks_t TIMEOUT = COM_DIAG_DIMINUTO_FREQUENCY;
+    diminuto_sticks_t timeout = TIMEOUT;
+    long long argument = 0;
+    char * endptr = (char *)0;
 
     (void)diminuto_alarm_install(0);
 
+    if (argc > 1) {
+        argument = strtoll(argv[1], &endptr, 0 /* Any base. */);
+        if (endptr == (char *)0) {
+            /* Do nothing. */
+        } else if (*endptr != '\0') {
+            /* Do nothng. */
+        } else {
+            /*
+             * <0: wait
+             * 0:  poll
+             * >0: timeout
+             */
+            timeout = argument;
+        }
+    }
+
     do {
-        bytes = diminuto_file_poll_base(stdin, TIMEOUT, &method);
+        bytes = diminuto_file_poll_base(stdin, timeout, &method);
         if (bytes == 0) {
             if (!timedout) {
-                fprintf(stderr, "%s [%lu] [%ld] '%c'\n", argv[0], total, bytes, method);
+                fprintf(stderr, "%s [%lu] [%ld] '%c' %lldticks\n", argv[0], total, bytes, method, (long long)timeout);
                 timedout = true;
             }
         } else if (bytes > 0) {
