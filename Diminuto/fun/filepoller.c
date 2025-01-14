@@ -21,20 +21,28 @@
  *
  * (sleep 5;filepoller) # Serial and gives time to queue chars up on UART.
  *
- * filepoller < lesser.txt > temp.txt;
- * diff lesser.txt temp.txt;
+ * filepoller < lesser.txt > temp.txt
+ * diff lesser.txt temp.txt
  * rm temp.txt
  *
- * cat lesser.txt | filepoller > temp.txt;
- * diff lesser.txt temp.txt;
+ * cat lesser.txt | filepoller > temp.txt
+ * diff lesser.txt temp.txt
  * rm temp.txt
  *
- * mkfifo FIFO;
+ * mkfifo FIFO
  * filepoller < FIFO > temp.txt &
- * cat lesser.txt > FIFO;
- * diff lesser.txt temp.txt;
- * rm temp.txt;
- * rm FIFO;
+ * cat lesser.txt > FIFO
+ * diff lesser.txt temp.txt
+ * rm temp.txt
+ * rm FIFO
+ *
+ * filepoller 60000000
+ * (then in a seperate window)
+ * THATPID=$(pgrep filepoller)
+ * kill -SIGALRM ${THATPID}
+ * (then in the original window)
+ * Now is the time for all good men to come to the aid of their country.
+ * ^D
  */
 
 #include "com/diag/diminuto/diminuto_file.h"
