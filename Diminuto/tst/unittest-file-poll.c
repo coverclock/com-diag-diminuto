@@ -29,6 +29,7 @@ int main(int argc, char * argv[])
         FILE * fp;
         int fd;
         int ch;
+        int rc;
         static const size_t LIMIT = 1024 * 1024 * 1024;
         size_t total = 0;
         size_t reads = 0;
@@ -69,6 +70,9 @@ int main(int argc, char * argv[])
             }
             fp->_fileno = fd;
         }
+
+        rc = fclose(fp);
+        ASSERT(rc == 0);
 
         CHECKPOINT("total %lu bufsize %d maximum %ld reads %lu noreads %lu sum %lu\n", total, BUFSIZ, maximum, reads, noreads, reads + noreads);
 
