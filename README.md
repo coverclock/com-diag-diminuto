@@ -546,6 +546,7 @@ Similarly, environmental variables have qualified names like
 * dcdtest - DCD support on serial port (Serial).
 * endpoint - parse a string into an IP address and port or a UNIX domain path.
 * filepoller - tests the polling function of the File feature.
+* filepolling - tests the polling function of the File feature in different scenarios.
 * filestuff - tries out the Fs and Fd features (FD, FS).
 * internettooltests - use internettool in many configurations (IPC4, IPC6).
 * lbktest - loopback on serial port (Serial).
