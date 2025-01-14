@@ -31,7 +31,7 @@ TITLE				:=	Diminuto
 
 MAJOR				:=	105# API changes that may require that applications be modified.
 MINOR				:=	2# Only functionality or features added with no legacy API changes.
-BUILD				:=	4# Only bugs fixed with no API changes or new functionality.
+BUILD				:=	5# Only bugs fixed with no API changes or new functionality.
 
 # Disclaimer: the only target that I routinely build and test for is "host",
 # using the native GCC compilers on my X86_64 Ubuntu or ARMv7 Raspbian systems.
@@ -1071,6 +1071,7 @@ sanity-test:	criticalsection-test
 	unittest-fibonacci
 	unittest-file
 	unittest-file-poll
+	unittest-file-poll-2
 	unittest-fletcher
 	unittest-framer
 	unittest-frequency
