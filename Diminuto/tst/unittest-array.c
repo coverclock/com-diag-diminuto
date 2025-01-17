@@ -14,10 +14,12 @@
 
 #include "com/diag/diminuto/diminuto_unittest.h"
 #include <stdio.h>
+#include <string.h>
 
 int main() {
 
     SETLOGMASK();
+    char buffer[sizeof("[X,X,X]")];
 
     {
         static const char * ARRAY[3][3] = {
@@ -33,7 +35,7 @@ int main() {
         };
         int ii;
         int jj;
-        int kk;
+        int nn;
         char ** pp;
 
         TEST();
@@ -41,11 +43,74 @@ int main() {
         for (ii = 0; ii < 3; ++ii) {
             for (jj = 0; jj < 3; ++jj) {
                 printf("ARRAY[%d][%d]=\"%s\"\n", ii, jj, ARRAY[ii][jj]);
+                snprintf(buffer, sizeof(buffer), "[%d,%d]", ii, jj);
+                EXPECT(strcmp(buffer, ARRAY[ii][jj]) == 0);
             }
         }
 
-        for (kk = 0, pp = (char **)(&ARRAY); kk < 9; ++kk, ++pp) {
-            printf("ARRAY[%d]=\"%s\"\n", kk, *pp);
+        for (nn = 0, pp = (char **)(&ARRAY); nn < (3 * 3); ++nn, ++pp) {
+            printf("ARRAY[%d]=\"%s\"\n", nn, *pp);
+        }
+
+        STATUS();
+    }
+
+    {
+        static const char * ARRAY[3][3][3] = {
+            {
+                {
+                    "[0,0,0]", "[0,0,1]", "[0,0,2]",
+                },
+                {
+                    "[0,1,0]", "[0,1,1]", "[0,1,2]",
+                },
+                {
+                    "[0,2,0]", "[0,2,1]", "[0,2,2]",
+                },
+            },
+            {
+                {
+                    "[1,0,0]", "[1,0,1]", "[1,0,2]",
+                },
+                {
+                    "[1,1,0]", "[1,1,1]", "[1,1,2]",
+                },
+                {
+                    "[1,2,0]", "[1,2,1]", "[1,2,2]",
+                },
+            },
+            {
+                {
+                    "[2,0,0]", "[2,0,1]", "[2,0,2]",
+                },
+                {
+                    "[2,1,0]", "[2,1,1]", "[2,1,2]",
+                },
+                {
+                    "[2,2,0]", "[2,2,1]", "[2,2,2]",
+                },
+            },
+        };
+        int ii;
+        int jj;
+        int kk;
+        int nn;
+        char ** pp;
+
+        TEST();
+
+        for (ii = 0; ii < 3; ++ii) {
+            for (jj = 0; jj < 3; ++jj) {
+                for (kk = 0; kk < 3; ++kk) {
+                    printf("ARRAY[%d][%d][%d]=\"%s\"\n", ii, jj, kk, ARRAY[ii][jj][kk]);
+                    snprintf(buffer, sizeof(buffer), "[%d,%d,%d]", ii, jj, kk);
+                    EXPECT(strcmp(buffer, ARRAY[ii][jj][kk]) == 0);
+                }
+            }
+        }
+
+        for (nn = 0, pp = (char **)(&ARRAY); nn < (3 * 3 * 3); ++nn, ++pp) {
+            printf("ARRAY[%d]=\"%s\"\n", nn, *pp);
         }
 
         STATUS();
