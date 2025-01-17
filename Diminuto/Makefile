@@ -1043,6 +1043,7 @@ criticalsection-test:	unittest-test
 sanity-test:	criticalsection-test
 	unittest-absolute
 	unittest-ansi
+	unittest-array
 	unittest-arraytype
 	unittest-assert && false || true
 	unittest-barrier
