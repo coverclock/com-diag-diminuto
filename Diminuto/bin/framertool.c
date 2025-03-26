@@ -2,7 +2,7 @@
 /**
  * @file
  *
- * Copyright 2023 Digital Aggregates Corporation, Colorado, USA<BR>
+ * Copyright 2023-2025 Digital Aggregates Corporation, Colorado, USA<BR>
  * Licensed under the terms in LICENSE.txt<BR>
  * Chip Overclock (mailto:coverclock@diag.com)<BR>
  * https://github.com/coverclock/com-diag-diminuto<BR>
@@ -220,6 +220,7 @@ int main(int argc, char * argv[])
             break;
 
         case '?':
+        default:
             fprintf(stderr, "       -?                   prints this help menu and exits.\n");
             fprintf(stderr, "       -1                   sets DEVICE to one stop bits.\n");
             fprintf(stderr, "       -2                   sets DEVICE to two stop bits.\n");

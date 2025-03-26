@@ -1,7 +1,7 @@
 /* vi: set ts=4 expandtab shiftwidth=4: */
 /**
  * @file
- * @copyright Copyright 2022 Digital Aggregates Corporation, Colorado, USA.
+ * @copyright Copyright 2022-2025 Digital Aggregates Corporation, Colorado, USA.
  * @note Licensed under the terms in LICENSE.txt.
  * @brief Measure peak and sustained data rates from stdin to stdout.
  * @author Chip Overclock <mailto:coverclock@diag.com>
@@ -73,7 +73,7 @@ int main(int argc, char * argv[])
 
     /* PARAMETERS */
 
-    while ((opt = getopt(argc, argv, "b:dv")) >= 0) {
+    while ((opt = getopt(argc, argv, "b:dv?")) >= 0) {
 
         switch (opt) {
 
@@ -94,6 +94,7 @@ int main(int argc, char * argv[])
             verbose = !0;
             break;
 
+        case '?':
         default:
             fprintf(stderr, "usage: %s [ -d ] [ -v ] [ -l | -c ] [ -b BYTES ]\n", program);
             fprintf(stderr, "       -b BYTES             Use an I/O buffer of size BYTES instead of %zu bytes.\n", blocksize);

@@ -1,7 +1,7 @@
 /* vi: set ts=4 expandtab shiftwidth=4: */
 /**
  * @file
- * @copyright Copyright 2024 Digital Aggregates Corporation, Colorado, USA.
+ * @copyright Copyright 2024-2025 Digital Aggregates Corporation, Colorado, USA.
  * @note Licensed under the terms in LICENSE.txt.
  * @brief Manipulate GPIO pins using the ioctl ABI.
  * @author Chip Overclock <mailto:coverclock@diag.com>
@@ -675,11 +675,9 @@ int main(int argc, char * argv[])
             break;
 
         case '?':
-            usage(program);
-            break;
-
         default:
-            error = !0;
+            usage(program);
+            return 1;
             break;
 
         }

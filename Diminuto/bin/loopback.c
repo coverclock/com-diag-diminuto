@@ -1,7 +1,7 @@
 /* vi: set ts=4 expandtab shiftwidth=4: */
 /**
  * @file
- * @copyright Copyright 2010-2015 Digital Aggregates Corporation, Colorado, USA.
+ * @copyright Copyright 2010-2025 Digital Aggregates Corporation, Colorado, USA.
  * @note Licensed under the terms in LICENSE.txt.
  * @brief Loopback characters received from a serial-ish port.
  * @author Chip Overclock <mailto:coverclock@diag.com>
@@ -114,7 +114,9 @@ int main(int argc, char * argv[])
             break;
 
         case '?':
+        default:
             fprintf(stderr, "usage: %s [ -d ] [ -D DEVICE ] [ -b SPEED ] [ -(5|6|7|8) ] [ -(1|2) ] [ -(o|e|n) ] [ -s ] [ -h ] [ -(l|m) ]\n", program);
+            return 1;
             break;
 
         }

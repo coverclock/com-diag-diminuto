@@ -1,7 +1,7 @@
 /* vi: set ts=4 expandtab shiftwidth=4: */
 /**
  * @file
- * @copyright Copyright 2014-2020 Digital Aggregates Corporation, Colorado, USA.
+ * @copyright Copyright 2014-2025 Digital Aggregates Corporation, Colorado, USA.
  * @note Licensed under the terms in LICENSE.txt.
  * @brief Wipe a storage device by writing over it.
  * @author Chip Overclock <mailto:coverclock@diag.com>
@@ -136,7 +136,7 @@ int main(int argc, char ** argv)
 
     do {
 
-        while ((opt = getopt(argc, argv, "D:b:m:p:s:")) >= 0) {
+        while ((opt = getopt(argc, argv, "D:b:m:p:s:?")) >= 0) {
 
             switch (opt) {
 
@@ -160,9 +160,10 @@ int main(int argc, char ** argv)
                 sectorsize = strtoul(optarg, 0, 0);
                 break;
 
+            case '?':
             default:
                 fprintf(stderr, "usage: %s [ -D DEVICE ] [ -b BLOCKSIZE ] [ -m MODULO ] [ -p PAGESIZE ] [ -s SECTORSIZE ]\n", program);
-                ++errors;
+                return 1;
                 break;
 
             }

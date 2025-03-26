@@ -1,7 +1,7 @@
 /* vi: set ts=4 expandtab shiftwidth=4: */
 /**
  * @file
- * @copyright Copyright 2014-2022 Digital Aggregates Corporation, Colorado, USA.
+ * @copyright Copyright 2014-2025 Digital Aggregates Corporation, Colorado, USA.
  * @note Licensed under the terms in LICENSE.txt.
  * @brief Traffic shape and measure throughput from stdin to stdout.
  * @author Chip Overclock <mailto:coverclock@diag.com>
@@ -242,7 +242,7 @@ int main(int argc, char * argv[])
 
     /* PARAMETERS */
 
-    while ((opt = getopt(argc, argv, "b:cdj:lm:p:s:v")) >= 0) {
+    while ((opt = getopt(argc, argv, "b:cdj:lm:p:s:v?")) >= 0) {
 
         switch (opt) {
 
@@ -307,6 +307,7 @@ int main(int argc, char * argv[])
             verbose = !0;
             break;
 
+        case '?':
         default:
             fprintf(stderr, "usage: %s [ -d ] [ -v ] [ -l | -c ] [ -b BYTES ] [ -p BYTESPERSECOND ] [ -j USECONDS ] [ -s BYTESPERSECOND ] [ -m BYTES ]\n", program);
             fprintf(stderr, "       -b BYTES             Use an I/O buffer of size BYTES instead of %zu bytes.\n", blocksize);

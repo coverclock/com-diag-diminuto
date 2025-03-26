@@ -1,7 +1,7 @@
 /* vi: set ts=4 expandtab shiftwidth=4: */
 /**
  * @file
- * @copyright Copyright 2016-2023 Digital Aggregates Corporation, Colorado, USA.
+ * @copyright Copyright 2016-2025 Digital Aggregates Corporation, Colorado, USA.
  * @note Licensed under the terms in LICENSE.txt.
  * @brief Tests internet connectivity.
  * @author Chip Overclock <mailto:coverclock@diag.com>
@@ -250,6 +250,7 @@ int main(int argc, char * argv[])
             Exit = true; /* exit after parsing */
             break;
         case '?': 
+        default:
             fprintf(stderr, "usage: %s [ -? ] [ -I ] [ -4 | -6 ] [ -t | -u | -g ] [ -I INFD ] [ -O OUTFD ] [ -a NEADDR ] [ -p NEPORT ] [ -e NEPOINT ] [ -i NEINTF ] [ -A FEADDR ] [ -P FEPORT ] [ -E FEPOINT ] [ -b BYTES ] [ -x ]\n", Program);
             fprintf(stderr, "       -?          Display this menu.\n");
             fprintf(stderr, "       -4          Use IPv4.\n");
@@ -271,8 +272,6 @@ int main(int argc, char * argv[])
             fprintf(stderr, "       -x          Exit after parsing parameters.\n");
             fprintf(stderr, "       -?          Display this menu and exit.\n");
             return 1;
-            break;
-        default:
             break;
         }
     }

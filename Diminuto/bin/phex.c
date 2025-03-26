@@ -1,7 +1,7 @@
 /* vi: set ts=4 expandtab shiftwidth=4: */
 /**
  * @file
- * @copyright Copyright 2010 Digital Aggregates Corporation, Colorado, USA.
+ * @copyright Copyright 2010-2025 Digital Aggregates Corporation, Colorado, USA.
  * @note Licensed under the terms in LICENSE.txt.
  * @brief Prints characters from stdin to stdout encoding non-printables as C-style escape sequences.
  * @author Chip Overclock <mailto:coverclock@diag.com>
@@ -106,10 +106,6 @@ int main(int argc, char * argv[])
             break;
 
         case '?':
-            usage(stderr);
-            return 0;
-            break;
-
         default:
             usage(stderr);
             return 1;
