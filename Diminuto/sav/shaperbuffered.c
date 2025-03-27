@@ -10,7 +10,7 @@
  *
  * USAGE
  *
- * shaperlegacy [ -d ] [ -v ] [ -b BYTES ] [ -p BYTESPERSECOND ] [ -j TICKS ] [ -s BYTESPERSECOND ] [ -m BYTES ]
+ * shaperbuffered [ -d ] [ -v ] [ -b BYTES ] [ -p BYTESPERSECOND ] [ -j TICKS ] [ -s BYTESPERSECOND ] [ -m BYTES ]
  *
  * Consider letting the jitter tolerance ("-j") default to zero ticks and
  * setting the maximum burst size ("-m") to the same value in bytes as the
@@ -18,9 +18,9 @@
  *
  * EXAMPLES
  *
- * source | shaperlegacy | sink<BR>
- * source | shaperlegacy -b 4096 -p 2048 -s 1024 -m 4096 | sink<BR>
- * dd if=/dev/urandom bs=512 count=100 | shaperlegacy -b 512 | shaperlegacy -b 512 -p 2048 -s 1024 -m 512 | shaperlegacy -b 512 > /dev/null<BR>
+ * source | shaperbuffered | sink<BR>
+ * source | shaperbuffered -b 4096 -p 2048 -s 1024 -m 4096 | sink<BR>
+ * dd if=/dev/urandom bs=512 count=100 | shaperbuffered -b 512 | shaperbuffered -b 512 -p 2048 -s 1024 -m 512 | shaperbuffered -b 512 > /dev/null<BR>
  *
  * ABSTRACT
  *
