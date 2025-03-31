@@ -1,7 +1,7 @@
 /* vi: set ts=4 expandtab shiftwidth=4: */
 /**
  * @file
- * @copyright Copyright 2018-2023 Digital Aggregates Corporation, Colorado, USA.
+ * @copyright Copyright 2018-2025 Digital Aggregates Corporation, Colorado, USA.
  * @note Licensed under the terms in LICENSE.txt.
  * @brief This is a unit test of the Endpoint portion of the IPC feature.
  * @author Chip Overclock <mailto:coverclock@diag.com>
@@ -59,6 +59,9 @@
 #define FQDN46 "google.com"
 #define IPV4 "205.178.189.131"
 #define IPV6 "2607:f8b0:400f:805::200e"
+#define IPV4UNSPECIFIED "0.0.0.0"
+#define IPV6UNSPECIFIEDLONG "0:0:0:0:0:0:0:0"
+#define IPV6UNSPECIFIEDSHORT "::"
 #define PORT "8888"
 #define COLONPORT ":8888"
 #define TCP "http"
@@ -238,6 +241,9 @@ int main(int argc, char * argv[])
     COMMENT("FQDN46=\"%s\"\n", FQDN46);
     COMMENT("IPV4=\"%s\"\n", IPV4);
     COMMENT("IPV6=\"%s\"\n", IPV6);
+    COMMENT("IPV4UNSPECIFIED=\"%s\"\n", IPV4UNSPECIFIED);
+    COMMENT("IPV6UNSPECIFIEDLONG=\"%s\"\n", IPV6UNSPECIFIEDLONG);
+    COMMENT("IPV6UNSPECIFIEDSHORT=\"%s\"\n", IPV6UNSPECIFIEDSHORT);
     COMMENT("PORT=\"%s\"\n", PORT);
     COMMENT("COLONPORT=\"%s\"\n", COLONPORT);
     COMMENT("TCP=\"%s\"\n", TCP);
@@ -1185,6 +1191,46 @@ int main(int argc, char * argv[])
 
         STATUS();
     }
+
+    /**/
+
+    {
+        PREFACE;
+
+        TEST();
+
+        rc = diminuto_ipc_endpoint(endpoint = IPV4UNSPECIFIED ":" EITHER, &parse);
+        DISPLAY();
+        VERIFYINET4(&parse, unspecified4, unspecified6, eithertcp, eitherudp);
+
+        STATUS();
+    }
+
+    {
+        PREFACE;
+
+        TEST();
+
+        rc = diminuto_ipc_endpoint(endpoint = "[" IPV6UNSPECIFIEDLONG "]:" EITHER, &parse);
+        DISPLAY();
+        VERIFYINET6(&parse, unspecified4, unspecified6, eithertcp, eitherudp);
+
+        STATUS();
+    }
+
+    {
+        PREFACE;
+
+        TEST();
+
+        rc = diminuto_ipc_endpoint(endpoint = "[" IPV6UNSPECIFIEDSHORT "]:" EITHER, &parse);
+        DISPLAY();
+        VERIFYINET6(&parse, unspecified4, unspecified6, eithertcp, eitherudp);
+
+        STATUS();
+    }
+
+    /**/
 
     {
         PREFACE;
