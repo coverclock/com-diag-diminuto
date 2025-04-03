@@ -50,7 +50,9 @@ int diminuto_mux_register(diminuto_mux_t * muxp, diminuto_mux_set_t * setp, int 
         diminuto_perror("diminuto_mux_register: fd");
     } else if (FD_ISSET(fd, &setp->active)) {
         errno = EINVAL;
+#if 0
         diminuto_perror("diminuto_mux_register: FD_ISSET");
+#endif
     } else {
         FD_SET(fd, &setp->active);
         FD_CLR(fd, &setp->ready);
@@ -156,9 +158,11 @@ int diminuto_mux_unregister(diminuto_mux_t * muxp, diminuto_mux_set_t * setp, in
         rc = fd;
     } else if (!silent) {
         errno = EINVAL;
+#if 0
         diminuto_perror("diminuto_mux_unregister: !FD_ISSET");
+#endif
     } else {
-        /* Do nothing. */
+        rc = fd;
     }
 
     return rc;
