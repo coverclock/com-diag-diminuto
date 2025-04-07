@@ -63,6 +63,9 @@
 #define IPV6UNSPECIFIEDLONG "0:0:0:0:0:0:0:0"
 #define IPV6UNSPECIFIEDLONGER "0000:0000:0000:0000:0000:0000:0000:0000"
 #define IPV6UNSPECIFIEDSHORT "::"
+#define IPV4MAXIMUM "255.255.255.255"
+#define IPV6MAXIMUM "ffff:ffff:ffff:ffff:ffff:ffff:ffff:ffff"
+#define IPV6MAXIMUMUC "FFFF:FFFF:FFFF:FFFF:FFFF:FFFF:FFFF:FFFF"
 #define PORT "8888"
 #define COLONPORT ":8888"
 #define TCP "http"
@@ -196,10 +199,18 @@ static const char * type2string(diminuto_ipc_type_t type)
         EXPECT(parse.type == DIMINUTO_IPC_TYPE_UNSPECIFIED); \
     } while (0); \
 
+/*
+ * Not defined as part of the public API.
+ */
+static const diminuto_ipv4_t MAXIMUM4 = 0xffffffff;
+static const diminuto_ipv6_t MAXIMUM6 = { { 0xffff, 0xffff, 0xffff, 0xffff, 0xffff, 0xffff, 0xffff, 0xffff, } };
+
 int main(int argc, char * argv[])
 {
     diminuto_ipv4_t unspecified4;
+    diminuto_ipv4_t maximum4;
     diminuto_ipv6_t unspecified6;
+    diminuto_ipv6_t maximum6;
     diminuto_ipv4_t localhost4;
     diminuto_ipv6_t localhost6;
     diminuto_ipv4_t fqdn44;
@@ -246,6 +257,9 @@ int main(int argc, char * argv[])
     COMMENT("IPV6UNSPECIFIEDLONG=\"%s\"\n", IPV6UNSPECIFIEDLONG);
     COMMENT("IPV6UNSPECIFIEDLONGER=\"%s\"\n", IPV6UNSPECIFIEDLONGER);
     COMMENT("IPV6UNSPECIFIEDSHORT=\"%s\"\n", IPV6UNSPECIFIEDSHORT);
+    COMMENT("IPV4MAXIUM=\"%s\"\n", IPV4MAXIMUM);
+    COMMENT("IPV6MAXIUM=\"%s\"\n", IPV6MAXIMUM);
+    COMMENT("IPV6MAXIMUMUC=\"%s\"\n", IPV6MAXIMUMUC);
     COMMENT("PORT=\"%s\"\n", PORT);
     COMMENT("COLONPORT=\"%s\"\n", COLONPORT);
     COMMENT("TCP=\"%s\"\n", TCP);
@@ -260,6 +274,8 @@ int main(int argc, char * argv[])
 
     unspecified4 = DIMINUTO_IPC4_UNSPECIFIED;
     unspecified6 = DIMINUTO_IPC6_UNSPECIFIED;
+    maximum4 = MAXIMUM4;
+    maximum6 = MAXIMUM6;
     localhost4 = diminuto_ipc4_address("localhost");
     localhost6 = diminuto_ipc6_address("localhost");
     fqdn44 = diminuto_ipc4_address(FQDN4);
@@ -1194,8 +1210,6 @@ int main(int argc, char * argv[])
         STATUS();
     }
 
-    /**/
-
     {
         PREFACE;
 
@@ -1204,6 +1218,18 @@ int main(int argc, char * argv[])
         rc = diminuto_ipc_endpoint(endpoint = IPV4UNSPECIFIED ":" EITHER, &parse);
         DISPLAY();
         VERIFYINET4(&parse, unspecified4, unspecified6, eithertcp, eitherudp);
+
+        STATUS();
+    }
+
+    {
+        PREFACE;
+
+        TEST();
+
+        rc = diminuto_ipc_endpoint(endpoint = IPV4MAXIMUM ":" EITHER, &parse);
+        DISPLAY();
+        VERIFYINET4(&parse, maximum4, unspecified6, eithertcp, eitherudp);
 
         STATUS();
     }
@@ -1244,7 +1270,29 @@ int main(int argc, char * argv[])
         STATUS();
     }
 
-    /**/
+    {
+        PREFACE;
+
+        TEST();
+
+        rc = diminuto_ipc_endpoint(endpoint = "[" IPV6MAXIMUM "]:" EITHER, &parse);
+        DISPLAY();
+        VERIFYINET6(&parse, unspecified4, maximum6, eithertcp, eitherudp);
+
+        STATUS();
+    }
+
+    {
+        PREFACE;
+
+        TEST();
+
+        rc = diminuto_ipc_endpoint(endpoint = "[" IPV6MAXIMUMUC "]:" EITHER, &parse);
+        DISPLAY();
+        VERIFYINET6(&parse, unspecified4, maximum6, eithertcp, eitherudp);
+
+        STATUS();
+    }
 
     {
         PREFACE;
