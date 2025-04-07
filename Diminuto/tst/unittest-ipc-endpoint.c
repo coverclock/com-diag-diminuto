@@ -61,6 +61,7 @@
 #define IPV6 "2607:f8b0:400f:805::200e"
 #define IPV4UNSPECIFIED "0.0.0.0"
 #define IPV6UNSPECIFIEDLONG "0:0:0:0:0:0:0:0"
+#define IPV6UNSPECIFIEDLONGER "0000:0000:0000:0000:0000:0000:0000:0000"
 #define IPV6UNSPECIFIEDSHORT "::"
 #define PORT "8888"
 #define COLONPORT ":8888"
@@ -243,6 +244,7 @@ int main(int argc, char * argv[])
     COMMENT("IPV6=\"%s\"\n", IPV6);
     COMMENT("IPV4UNSPECIFIED=\"%s\"\n", IPV4UNSPECIFIED);
     COMMENT("IPV6UNSPECIFIEDLONG=\"%s\"\n", IPV6UNSPECIFIEDLONG);
+    COMMENT("IPV6UNSPECIFIEDLONGER=\"%s\"\n", IPV6UNSPECIFIEDLONGER);
     COMMENT("IPV6UNSPECIFIEDSHORT=\"%s\"\n", IPV6UNSPECIFIEDSHORT);
     COMMENT("PORT=\"%s\"\n", PORT);
     COMMENT("COLONPORT=\"%s\"\n", COLONPORT);
@@ -1212,6 +1214,18 @@ int main(int argc, char * argv[])
         TEST();
 
         rc = diminuto_ipc_endpoint(endpoint = "[" IPV6UNSPECIFIEDLONG "]:" EITHER, &parse);
+        DISPLAY();
+        VERIFYINET6(&parse, unspecified4, unspecified6, eithertcp, eitherudp);
+
+        STATUS();
+    }
+
+    {
+        PREFACE;
+
+        TEST();
+
+        rc = diminuto_ipc_endpoint(endpoint = "[" IPV6UNSPECIFIEDLONGER "]:" EITHER, &parse);
         DISPLAY();
         VERIFYINET6(&parse, unspecified4, unspecified6, eithertcp, eitherudp);
 
