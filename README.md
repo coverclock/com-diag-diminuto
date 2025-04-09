@@ -46,34 +46,34 @@ features that depend on hardware facilities like GPIO.
 Here are just a few examples of the capabilities, or "features", that
 Diminuto provides, in no particular order:
 
-* smart logging that automatically determines whether to write to standard error or to the system log, and to control log levels by extracting the log mask from the environment or from a file (```diminuto_log```);
-* simple unit test framework (```diminuto_unittest```) and programmatic enabling of core dumps (```diminuto_core```);
-* POSIX mutual exclusion semaphores (```diminuto_mutex```), condition variables (```diminuto_condition```), and threads (```diminuto_thread```);
-* POSIX timers (```diminuto_timer```);
-* socket interprocess communication (IPC) using IPv4 (```diminuto_ipc4```), IPv6 (```diminuto_ipc6```), or UNIX domain (local) paths (```diminuto_ipcl```), using streams, datagrams, or (for local sockets) packets (messages).
-* doubly-linked lists (```diminuto_list```), red-black trees (```diminuto_tree```), and keyword-value stores using red-black trees (```diminuto_store```);
-* traffic shaping (```diminuto_shaper```) using the Generic Cell Rate Algorithm (GCRA) (```diminuto_throttle```);
-* monitoring applications that run on a headless host (```diminuto_observation```);
-* programmatic management of lock files (```diminuto_lock```);
-* expanding and collapsing C-style escape sequences in strings (```diminuto_escape```) and generating expanded output in real-time (```diminuto_phex```);
-* displaying hexadecimal dumps of data structures to the console (```diminuto_dump```);
-* display stack traces to the console (```diminuto_stacktrace```);
-* daemonizing applications (```diminuto_daemon```);
-* helper functions for the dynamic run-time linker for user-space loadable modules (```diminuto_modules```);
-* using General Purpose Input/Output (GPIO) pins via the standard /sysfs interface (```diminuto_pin```) (DEPRECATED);
-* using General Purpose Input/Output (GPIO) lines via the standard ioctl interface (```diminuto_line```);
-* debouncing digital inputs and detecting edges in software (```diminuto_cue```);
-* time keeping (```diminuto_time```) and delays (```diminuto_delay```) with a consistent unit of tick;
-* a fair first-come-first-served readers-writers synchronization solution (```diminuto_readerwriter```);
-* Proportional, Integral, Derivative (PID) controller (```diminuto_controller```) in user space;
-* Pulse Width Modulation (PWM) (```diminuto_modulator```) in user space.
-* programmatic ping for IPv4 (```diminuto_ping4```) and IPv6 (```diminuto_ping6```) when run as root;
-* vector I/O and IPC using scatter/gather (```diminuto_scattergather```);
-* serial stream framing using HDLC-like byte stuffing (```diminuto_framer```);
-* macros to create thread-safe critical sections (```diminuto_criticalsection```) or sections uninterruptible by selected signals (```diminuto_uninterruptiblesection```);
-* macros to compute array dimensions (```diminuto_countof```), address of an object from a pointer to a field (```diminuto_containerof```), and minimum and maximum of any integral type (```diminuto_minmaxof```);
-* macros to support typed object constructors and destructors and to implement the operations (```diminuto_new``` and ```diminuto_delete```) that call them;
-* support for integrating C into a C++ code base (```diminuto_cxxcapi``` pronounced "sexy API");
+* smart logging that automatically determines whether to write to standard error or to the system log, and to control log levels by extracting the log mask from the environment or from a file (`diminuto_log`);
+* simple unit test framework (`diminuto_unittest`) and programmatic enabling of core dumps (`diminuto_core`);
+* POSIX mutual exclusion semaphores (`diminuto_mutex`), condition variables (`diminuto_condition`), and threads (`diminuto_thread`);
+* POSIX timers (`diminuto_timer`);
+* socket interprocess communication (IPC) using IPv4 (`diminuto_ipc4`), IPv6 (`diminuto_ipc6`), or UNIX domain (local) paths (`diminuto_ipcl`), using streams, datagrams, or (for local sockets) packets (messages).
+* doubly-linked lists (`diminuto_list`), red-black trees (`diminuto_tree`), and keyword-value stores using red-black trees (`diminuto_store`);
+* traffic shaping (`diminuto_shaper`) using the Generic Cell Rate Algorithm (GCRA) (`diminuto_throttle`);
+* monitoring applications that run on a headless host (`diminuto_observation`);
+* programmatic management of lock files (`diminuto_lock`);
+* expanding and collapsing C-style escape sequences in strings (`diminuto_escape`) and generating expanded output in real-time (`diminuto_phex`);
+* displaying hexadecimal dumps of data structures to the console (`diminuto_dump`);
+* display stack traces to the console (`diminuto_stacktrace`);
+* daemonizing applications (`diminuto_daemon`);
+* helper functions for the dynamic run-time linker for user-space loadable modules (`diminuto_modules`);
+* using General Purpose Input/Output (GPIO) pins via the standard /sysfs interface (`diminuto_pin`) (DEPRECATED);
+* using General Purpose Input/Output (GPIO) lines via the standard ioctl interface (`diminuto_line`);
+* debouncing digital inputs and detecting edges in software (`diminuto_cue`);
+* time keeping (`diminuto_time`) and delays (`diminuto_delay`) with a consistent unit of tick;
+* a fair first-come-first-served readers-writers synchronization solution (`diminuto_readerwriter`);
+* Proportional, Integral, Derivative (PID) controller (`diminuto_controller`) in user space;
+* Pulse Width Modulation (PWM) (`diminuto_modulator`) in user space.
+* programmatic ping for IPv4 (`diminuto_ping4`) and IPv6 (`diminuto_ping6`) when run as root;
+* vector I/O and IPC using scatter/gather (`diminuto_scattergather`);
+* serial stream framing using HDLC-like byte stuffing (`diminuto_framer`);
+* macros to create thread-safe critical sections (`diminuto_criticalsection`) or sections uninterruptible by selected signals (`diminuto_uninterruptiblesection`);
+* macros to compute array dimensions (`diminuto_countof`), address of an object from a pointer to a field (`diminuto_containerof`), and minimum and maximum of any integral type (`diminuto_minmaxof`);
+* macros to support typed object constructors and destructors and to implement the operations (`diminuto_new` and `diminuto_delete`) that call them;
+* support for integrating C into a C++ code base (`diminuto_cxxcapi` pronounced "sexy API");
 * an extensive collection of unit tests and functional tests that provide working examples of using the library features;
 * an architecture and design that simplifies using Diminuto in an existing code base, and for using multiple Digital Aggregates repositories in the same project.
 
@@ -89,22 +89,22 @@ that are artifacts of the build process, the linker and the shell have
 to know where to find those artifacts. Furthermore, some of the binaries
 or scripts may depend upon values in your environment to work correctly.
 
-You need to set the ```LANG``` (Language) environmental variable to
+You need to set the `LANG` (Language) environmental variable to
 set your locale to use the U.S. version of UTF-8. This allows applications
 to correctly display Unicode symbols like the degree symbol and the
-plus/minus symbol. If you use the ```bash``` shell (as I do), you can put
-the following line in your ```.profile``` in your home directory so that
+plus/minus symbol. If you use the `bash` shell (as I do), you can put
+the following line in your `.profile` in your home directory so that
 it is set everytime you log in (as I do). Or you can just set it when you
 need to.
 
     export LANG=en_US.UTF-8
 
 If you don't install libraries, binaries, and scripts in one of the usual
-system locations like ```/usr/local/lib``` and ```/usr/local/bin```
+system locations like `/usr/local/lib` and `/usr/local/bin`
 (I typically don't), you can temporarily modify your environment
 so that the linker and your shell can find them. This bash sourcing
-script is an artifact of the build process and sets the ```PATH``` and
-```LD_LIBRARY_PATH``` environmental variables and exports them.
+script is an artifact of the build process and sets the `PATH` and
+`LD_LIBRARY_PATH` environmental variables and exports them.
 
     . ~/src/com-diag-diminuto/Diminuto/out/host/bin/setup
 
@@ -119,12 +119,12 @@ does not). One way to control this is to set the log mask in your environment
 
     export COM_DIAG_DIMINUTO_LOG_MASK=0xfe
 
-and have your applications call ```diminuto_log_setmask(void)``` to import
+and have your applications call `diminuto_log_setmask(void)` to import
 this value into the logging system. A log mask can also be imported from
-a file using ```diminuto_log_importmask(const char * path)```.  The log mask value is
+a file using `diminuto_log_importmask(const char * path)`.  The log mask value is
 an eight-bit number in decimal, hexadecimal, or even octal. In addition,
-the string ```~0``` can be used to enable all log levels, equivalent
-to ```255```, ```0xff```, or ```0377```. (Generally I find ```0xfe```
+the string `~0` can be used to enable all log levels, equivalent
+to `255`, `0xff`, or `0377`. (Generally I find `0xfe`
 to be a good starting point.)
 
 # Disclaimer
@@ -133,8 +133,8 @@ Diminuto isn't intended to be portable. It is specifically designed
 to support the kind of systems programming efforts in the Linux/GNU
 environment that I am routinely called upon to do. It depends on
 specific features of the Linux kernel, the GNU libraries, and even
-the GNU compiler. In addition, it assumes a ```char``` is one octet so
-that ```sizeof()``` returns a ```size_t``` in octets, and that integer
+the GNU compiler. In addition, it assumes a `char` is one octet so
+that `sizeof()` returns a `size_t` in octets, and that integer
 operations are performed using two's complement arithmetic; none of
 these is a given in C. It also assumes that character encoding is
 ASCII (applications may use other encodings, such as Unicode, as long
@@ -294,20 +294,20 @@ little-endian
 
 Given a feature I call Foo (or sometimes foo),
 * its public API will be defined in
-```inc/com/diag/diminuto/diminuto_foo.h```;
+`inc/com/diag/diminuto/diminuto_foo.h`;
 * its private (internal) API, if one exists, will be defined in
-```src/diminuto_foo.h```;
+`src/diminuto_foo.h`;
 * its implemention (if it's not purely in the header file) will be in
-```src/diminuto_foo.c``` (very occasionally there will be
+`src/diminuto_foo.c` (very occasionally there will be
 multiple implementation files, with minor variations on this name);
 * and its unit test will be in
-```tst/unittest-foo.c``` (there may be more than one, with
+`tst/unittest-foo.c` (there may be more than one, with
 minor variations on this name).
 
 The long qualified path name for the header file directory facilitates
 combining multiple Digital Aggregates projects into one application,
-e.g.  ```inc/com/diag/diminuto```, ```inc/com/diag/codex```, and
-```inc/com/diag/hazer```, with no danger of header file ambiguity even
+e.g.  `inc/com/diag/diminuto`, `inc/com/diag/codex`, and
+`inc/com/diag/hazer`, with no danger of header file ambiguity even
 if the file name doesn't have a prefix unique to the project. (My C++
 projects, like Grandote, don't follow this prefix convention, and
 instead depend upon C++ namespaces to avoid symbol conflicts.)
@@ -323,22 +323,22 @@ C/C++ include statements will look like this
 
 in the event that different projects each have a feature named Foo.
 
-The prefix ```diminuto_``` on the name of each header file,
-as in ```diminuto_foo.h```, along with the qualified path name,
-```com/diag/diminuto/```, may seem redundant. But it facilitates the
+The prefix `diminuto_` on the name of each header file,
+as in `diminuto_foo.h`, along with the qualified path name,
+`com/diag/diminuto/`, may seem redundant. But it facilitates the
 integration of the library into existing code bases in those cases where
 the developers choose instead to use the full Diminuto include path at
-the command-line level, ```-Iinc/com/diag/diminuto``` (for their
-own code), in addition to ```-Iinc``` (for Diminuto's own header files),
+the command-line level, `-Iinc/com/diag/diminuto` (for their
+own code), in addition to `-Iinc` (for Diminuto's own header files),
 in their own build system.
 
 Preprocessor symbols that are not strictly speaking part of the public API being
 defined, or which may conflict with the names of related static constants that
-are part of the public API,  may have qualified names like ```COM_DIAG_DIMINUTO_TIMER_FREQUENCY```
+are part of the public API,  may have qualified names like `COM_DIAG_DIMINUTO_TIMER_FREQUENCY`
 to prevent symbol conflicts.
 
 Similarly, environmental variables have qualified names like
-```COM_DIAG_DIMINUTO_LOG_MASK``` to prevent name conflicts in the environment.
+`COM_DIAG_DIMINUTO_LOG_MASK` to prevent name conflicts in the environment.
 
 ## Basics
 
@@ -597,7 +597,7 @@ look mysterious later when you log back in to check the progress of
 the unit test and find your output file(s) strangely truncated. This
 is a feature, not a bug. Also note, on systemd platforms like Fedora,
 the system log is saved in a database format, not in a flat text file;
-see ```man journalctl``` on how to access it.
+see `man journalctl` on how to access it.
 
 # Directories
  
@@ -636,9 +636,9 @@ see ```man journalctl``` on how to access it.
 # Dependencies
 
 Most of my Intel, ARM, and RISC-V development systems are Debian-based, so the
-command line examples I show below use the ```apt```  package manager. A
+command line examples I show below use the `apt`  package manager. A
 few, like one of my RISC-V development systems, are Fedora-based, so on those
-I use the ```dnf``` package manager.
+I use the `dnf` package manager.
 
 ## Libraries
 
@@ -656,7 +656,7 @@ versions of Ubuntu and Raspbian that I've been using).
 Diminuto's ipc6 feature requires IPv6 support. IPv6 is not enabled by
 default on all platforms (in particular the Raspberry Pi). Under
 Raspbian 10, I added a line "ipv6" to /etc/modules and rebooted.
-The command ```modprobe ipv6``` also worked albeit non-persistently.
+The command `modprobe ipv6` also worked albeit non-persistently.
 
     sudo modprobe ipv6
     sudo su
@@ -841,9 +841,9 @@ is just my own convention.
     make scratch
     . out/host/bin/setup
 
-The ```scratch``` target is a combination of ```pristine``` which recursively
-removes the output directory,```depend``` which generates the header file
-dependencies file used by the build, and ```all``` which builds everything
+The `scratch` target is a combination of `pristine` which recursively
+removes the output directory,`depend` which generates the header file
+dependencies file used by the build, and `all` which builds everything
 that needs to be built. These targets can be use separately as well.
 
 ## Build Parameters
@@ -854,15 +854,15 @@ requires two successive backslashes. But typically (and mysteriously)
 on Fedora-based distros, only one successive backslash is necessary,
 and two will cause an error. Since I mostly develop under Debian-based
 distros, two backslashes is the default. But one backslash can be selected
-by specifying the ```BACKSLASHES``` parameter on the command line.
+by specifying the `BACKSLASHES` parameter on the command line.
 
     make scratch BACKSLASHES=1
 
-For more complex parameterization needs, the parameter ```TARGET``` can be set
-to select a specific Make configuration file in the directory ```cfg```. This
+For more complex parameterization needs, the parameter `TARGET` can be set
+to select a specific Make configuration file in the directory `cfg`. This
 file will be included early in the Makefile during the build process. The default
-value for the parameter is ```host```, which includes the default configuration file
-```cfg/host.mk```. This technique can be used, for example, when cross-compiling
+value for the parameter is `host`, which includes the default configuration file
+`cfg/host.mk`. This technique can be used, for example, when cross-compiling
 on a build host architecture different from that of the target architecture.
 
     make scratch TARGET=mytarget
@@ -873,18 +873,18 @@ There are some make targets that are useful when you have dig into the
 code in a lot more detail.
 
 If you want to look at the preprocessor output without further compiling it,
-you can use a ```.i``` target to the output directory (replacing ```host```
-if necessary). This invokes the C compiler with the ```-E``` option.
+you can use a `.i` target to the output directory (replacing `host`
+if necessary). This invokes the C compiler with the `-E` option.
 
     make out/host/obc/tst/unittest-barrier.i
 
 If you want to look at the assembler output without further assembling it,
-you can use a ```.s``` target to the output directory (replacing ```host```
-if necessary). This invokes the C compiler with the ```-S``` option.
+you can use a `.s` target to the output directory (replacing `host`
+if necessary). This invokes the C compiler with the `-S` option.
 
     make out/host/obc/tst/unittest-barrier.s
 
-The ```.l``` target causes the assembler to produce a listing that includes
+The `.l` target causes the assembler to produce a listing that includes
 useful stuff like the machine code and offsets.
 
     make out/host/obc/tst/unittest-barrier.l
@@ -905,20 +905,20 @@ Run long term tests that may take overnight to complete.
 
 ## Installing
 
-Optionally install Diminuto headers, library, and utilities in ```/usr/local```
-subdirectories. You can override the make variable ```INSTALL_DIR``` to change
-```/usr/local``` to something else (like ```/opt``` or whatnot).
+Optionally install Diminuto headers, library, and utilities in `/usr/local`
+subdirectories. You can override the make variable `INSTALL_DIR` to change
+`/usr/local` to something else (like `/opt` or whatnot).
 
     sudo make install
 
 I typically never bother with this for development and instead let the
-```out/host/bin/setup``` bash source script set my environmental variables
-like ```PATH``` and ```LD_LIBRARY_PATH```. Your mileage may vary. This script is
+`out/host/bin/setup` bash source script set my environmental variables
+like `PATH` and `LD_LIBRARY_PATH`. Your mileage may vary. This script is
 generated by the build process.
 
     . out/host/bin/setup
 
-You can change ```host``` above to some other name if you are
+You can change `host` above to some other name if you are
 cross-compiling for a different target.
 
 ## Speed Make
@@ -927,9 +927,9 @@ Diminuto user "the-real-neil" suggested some minor fixes to the Diminuto
 Makefile to allow make to be run in a highly parallelized fashion. This
 improved my build times significantly on multi-core development systems.
 But it does require a careful review of the resulting captured log file to
-look for errors, since the final exit code is that of the ```script```
+look for errors, since the final exit code is that of the `script`
 command and not of the build process itself. Your mileage may vary. I liked
-this approach enough that I made it a shell alias called ```speedmake```.
+this approach enough that I made it a shell alias called `speedmake`.
 (Thanks, Real Neil!)
 
     script --command='set -euvx && git clean -ffxd && make --jobs=16 --output-sync=recurse' /tmp/diminuto.log
@@ -943,16 +943,15 @@ to the log mask are protected by a thread mutex.
 
 Most Diminuto utilities and tests using the Log feature
 extract the log mask from the environment using the function
-```diminuto_log_setmask()```. The default name of the environmental
-variable is ```COM_DIAG_DIMINUTO_LOG_MASK```. The log mask can also be
+`diminuto_log_setmask()`. The default name of the environmental
+variable is `COM_DIAG_DIMINUTO_LOG_MASK`. The log mask can also be
 imported from a text file (which can be done dynamically at run-time)
-using the function ```diminuto_log_importmask()```. The default path
-of the file is ```${HOME}/.com_diag_diminuto_log_mask```. For either
+using the function `diminuto_log_importmask()`. The default path
+of the file is `${HOME}/.com_diag_diminuto_log_mask`. For either
 mechanism, the mask value is coded as an octal, decimal, or hexadecimal
-numeric string in C-style format, e.g.  ```0377```, ```255```, or ```0xff```. As
-a special case, the value ```~0``` generates a mask that enables all
-log levels. A good example of setting and importing a log mask can be
-found in the ```stagecoach``` application found in the Codex repository.
+numeric string in C-style format, e.g.  `0377`, `255`, or `0xff`. As
+a special case, the value `~0` generates a mask that enables all
+log levels.
 
 The log mask bits, as defined in the feature's header file, are these,
 patterned after the syslog(3) log levels.
@@ -986,9 +985,9 @@ For every log output line, the Diminuto Log features determines whether
 the issuing process is being run interactively or not, or is a daemon,
 and directs the output appropriately to either standard error or to the
 system log. The system log on various verisons of Linux may be stored
-in the file ```/var/log/syslog``` (earlier versions of Debian) or it may
-be accessed using the ```journalctl -f``` system command (Fedora or later
-versions of Debian that use ```systemd```).
+in the file `/var/log/syslog` (earlier versions of Debian) or it may
+be accessed using the `journalctl -f` system command (Fedora or later
+versions of Debian that use `systemd`).
 
 # Documentation
 
@@ -1028,11 +1027,11 @@ and associated
 were built from Diminuto's embedded Doxygen comments on
 2024-03-25
 using version
-```102.0.2```
+`102.0.2`
 . They will not reflect changes made since then.
 
-The unit tests (```Diminuto/tst```),  functional tests
-(```Diminuto/fun```), and command line utilities (```Diminuto/bin```)
+The unit tests (`Diminuto/tst`),  functional tests
+(`Diminuto/fun`), and command line utilities (`Diminuto/bin`)
 have a wealth of non-trivial examples of how to use the public APIs.
 The private APIs mostly exist to expose internal details so that they can
 be unit tested.
@@ -1153,8 +1152,8 @@ not use GPIO hardware or the actual Linux ABI), but not work in later
 Linux-based platforms. The Line feature replaces Pin, uses the newer ioctl
 ABI, and necessarily has a different API (and similarly its unit test
 does not use any actual GPIO hardware, although it does require that
-the ```/dev/gpiochip0``` device exist). The Line feature may not build
-on older Linux platforms if the required header file ```linux/gpio.h```
+the `/dev/gpiochip0` device exist). The Line feature may not build
+on older Linux platforms if the required header file `linux/gpio.h`
 is missing. (The header file is present even on my Intel platforms that
 do not have any GPIO pins, it just doesn't work.) On the Raspberry Pi OS
 image I used on my Raspberry Pi 5, based on Debian "bookworm" and Linux
@@ -1173,7 +1172,7 @@ is the case at compile time.
 
     src/diminuto_renameat2.c:40:5: warning: #warning renameat2(2) not available on this platform so using SYS_renameat2 instead! [-Wcpp]
 
-If you define the C preprocessor symbol ```COM_DIAG_DIMINUTO_DEPRECATED```,
+If you define the C preprocessor symbol `COM_DIAG_DIMINUTO_DEPRECATED`,
 deprecated code segments (that is, code that you can expect to be removed
 in the near future) will be defined and built. Compiling these segments
 will generate a warning.
@@ -1212,7 +1211,7 @@ intended purpose.)
 I have had unittest-ipc-endpoint fail because I had misconfigured the
 DNS resolver on an Ubuntu-based test system to search "diag.com", and
 my web server configured to respond go "http.diag.com" in addition to
-"www.diag.com". This caused ```diminuto_ipc_endpoint()``` to resolve "http"
+"www.diag.com". This caused `diminuto_ipc_endpoint()` to resolve "http"
 (without the colon) to the IP address of my web server instead of the
 HTTP port number (80), because it searched for "http.diag.com" instead
 of "http".
@@ -1238,21 +1237,21 @@ configuring a non-working search domain), but this configuration
 change did not persist across reboots.
 
 I initially fixed this by removing the soft link to
-```/etc/resolv.conf``` and hand coding ```/etc/resolv.conf```,
+`/etc/resolv.conf` and hand coding `/etc/resolv.conf`,
 removing the line "search diag.com". This was not the preferred fix.
 
 Eventually (almost by accident) I re-discovered the configuration
-file I had added, a YAML file in ```/etc/netplan```, and removed the
+file I had added, a YAML file in `/etc/netplan`, and removed the
 "search" line from it. After rebooting, this permanently (and
 correctly) fixed the problem. I also restored the original soft
-link from ```/etc/resolv.conf``` to ```/run/systemd/resolve/stub-resolv.conf```.
+link from `/etc/resolv.conf` to `/run/systemd/resolve/stub-resolv.conf`.
 
 ## Build Running Out Of Memory
 
 On a recent Raspberry Pi I have run out of memory compiling the unit
 tests. I admit I was completely taken by surprise by this. This was on
 a Raspberry Pi 4, running Raspbian 10 "buster" (Linux 5.4.51, GNU 8.3.0),
-compiling ```tst/unitttest-ipc-ancillary.c```.
+compiling `tst/unitttest-ipc-ancillary.c`.
 
     cc1: out of memory allocating 65536 bytes after a total of 1487814656 bytes
 
