@@ -50,9 +50,6 @@ int diminuto_mux_register(diminuto_mux_t * muxp, diminuto_mux_set_t * setp, int 
         diminuto_perror("diminuto_mux_register: fd");
     } else if (FD_ISSET(fd, &setp->active)) {
         errno = EINVAL;
-#if 0
-        diminuto_perror("diminuto_mux_register: FD_ISSET");
-#endif
     } else {
         FD_SET(fd, &setp->active);
         FD_CLR(fd, &setp->ready);
@@ -126,7 +123,7 @@ void diminuto_mux_set_normalize(diminuto_mux_set_t * setp)
     }
 }
 
-int diminuto_mux_unregister(diminuto_mux_t * muxp, diminuto_mux_set_t * setp, int fd, int silent)
+int diminuto_mux_unregister(diminuto_mux_t * muxp, diminuto_mux_set_t * setp, int fd)
 {
     int rc = -1;
 
@@ -146,7 +143,9 @@ int diminuto_mux_unregister(diminuto_mux_t * muxp, diminuto_mux_set_t * setp, in
     if (!((0 <= fd) && (fd < FD_SETSIZE))) {
         errno = ERANGE;
         diminuto_perror("diminuto_mux_unregister: fd");
-    } else if (FD_ISSET(fd, &setp->active)) {
+    } else if (!FD_ISSET(fd, &setp->active)) {
+        errno = EINVAL;
+    } else {
         FD_CLR(fd, &setp->active);
         FD_CLR(fd, &setp->ready);
         if (setp == &muxp->read) { FD_CLR(fd, &muxp->read_or_accept); }
@@ -156,13 +155,6 @@ int diminuto_mux_unregister(diminuto_mux_t * muxp, diminuto_mux_set_t * setp, in
         diminuto_mux_set_bound(setp);
         diminuto_mux_set_normalize(setp);
         rc = fd;
-    } else if (!silent) {
-        errno = EINVAL;
-#if 0
-        diminuto_perror("diminuto_mux_unregister: !FD_ISSET");
-#endif
-    } else {
-        rc = fd;
     }
 
     return rc;
@@ -170,27 +162,27 @@ int diminuto_mux_unregister(diminuto_mux_t * muxp, diminuto_mux_set_t * setp, in
 
 int diminuto_mux_unregister_read(diminuto_mux_t * muxp, int fd)
 {
-    return diminuto_mux_unregister(muxp, &muxp->read, fd, 0);
+    return diminuto_mux_unregister(muxp, &muxp->read, fd);
 }
 
 int diminuto_mux_unregister_write(diminuto_mux_t * muxp, int fd)
 {
-    return diminuto_mux_unregister(muxp, &muxp->write, fd, 0);
+    return diminuto_mux_unregister(muxp, &muxp->write, fd);
 }
 
 int diminuto_mux_unregister_accept(diminuto_mux_t * muxp, int fd)
 {
-    return diminuto_mux_unregister(muxp, &muxp->accept, fd, 0);
+    return diminuto_mux_unregister(muxp, &muxp->accept, fd);
 }
 
 int diminuto_mux_unregister_urgent(diminuto_mux_t * muxp, int fd)
 {
-    return diminuto_mux_unregister(muxp, &muxp->urgent, fd, 0);
+    return diminuto_mux_unregister(muxp, &muxp->urgent, fd);
 }
 
 int diminuto_mux_unregister_interrupt(diminuto_mux_t * muxp, int fd)
 {
-    return diminuto_mux_unregister(muxp, &muxp->interrupt, fd, 0);
+    return diminuto_mux_unregister(muxp, &muxp->interrupt, fd);
 }
 
 int diminuto_mux_register_signal(diminuto_mux_t * muxp, int signum)
@@ -385,11 +377,11 @@ int diminuto_mux_close(diminuto_mux_t * muxp, int fd)
      * of any later terms.
      */
 
-    accepting = diminuto_mux_unregister(muxp, &muxp->accept, fd, !0);
-    reading = diminuto_mux_unregister(muxp, &muxp->read, fd, !0);
-    writing = diminuto_mux_unregister(muxp, &muxp->write, fd, !0);
-    urgenting = diminuto_mux_unregister(muxp, &muxp->urgent, fd, !0);
-    interrupting = diminuto_mux_unregister(muxp, &muxp->interrupt, fd, !0);
+    accepting = diminuto_mux_unregister(muxp, &muxp->accept, fd);
+    reading = diminuto_mux_unregister(muxp, &muxp->read, fd);
+    writing = diminuto_mux_unregister(muxp, &muxp->write, fd);
+    urgenting = diminuto_mux_unregister(muxp, &muxp->urgent, fd);
+    interrupting = diminuto_mux_unregister(muxp, &muxp->interrupt, fd);
 
     if ((accepting < 0) && (reading < 0) && (writing < 0) && (urgenting < 0) && (interrupting < 0)) {
         rc = -2;

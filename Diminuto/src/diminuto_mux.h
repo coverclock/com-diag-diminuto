@@ -125,10 +125,9 @@ extern int diminuto_mux_register(diminuto_mux_t * muxp, diminuto_mux_set_t * set
  * @param muxp points to the multiplexer.
  * @param setp points to a multiplexer set in the multiplexer.
  * @param fd is the file descriptor to be unregistered.
- * @param silent if true suppresses the error message if the fd is not registered.
  * @return 0 for success or <0 for failure (e.g. the fd was not registered).
  */
-extern int diminuto_mux_unregister(diminuto_mux_t * muxp, diminuto_mux_set_t * setp, int fd, int silent);
+extern int diminuto_mux_unregister(diminuto_mux_t * muxp, diminuto_mux_set_t * setp, int fd);
 
 /**
  * Return the name of a multiplexer set.
