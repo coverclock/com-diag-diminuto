@@ -1,7 +1,7 @@
 /* vi: set ts=4 expandtab shiftwidth=4: */
 /**
  * @file
- * @copyright Copyright 2014-2022 Digital Aggregates Corporation, Colorado, USA.
+ * @copyright Copyright 2014-2025 Digital Aggregates Corporation, Colorado, USA.
  * @note Licensed under the terms in LICENSE.txt.
  * @brief Print on stdout the sizeof various useful things.
  * @author Chip Overclock <mailto:coverclock@diag.com>
@@ -36,6 +36,7 @@
 #include <linux/un.h>        /* UNIX_PATH_MAX */
 #include <sys/param.h>       /* MAXPATHLEN */
 #include <limits.h>          /* _POSIX_PATH_MAX */
+#include <complex.h>
 
 #define printsizeofnoninteger(_TYPE_) \
     do { \
@@ -114,7 +115,9 @@ int main(void)
     printissigned(signed long long);
     printisunsigned(unsigned long long);
     printsizeofnoninteger(float);
+    printsizeofnoninteger(complex float);
     printsizeofnoninteger(double);
+    printsizeofnoninteger(complex double);
 #if PROBLEMATIC
     printsizeofnoninteger(void);
 #endif
