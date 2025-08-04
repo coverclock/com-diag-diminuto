@@ -278,17 +278,17 @@ aarch64-linux-gnu-gcc-12
 aarch64-linux-gnu    
 little-endian    
 
-Raspberry Pi 5 Model B Rev 1.0 d04170
-aarch64 x4
-Ubuntu 24.04.1 LTS (Noble Numbat)
-Linux 6.8.0-2011-raspi-realtime
-gcc (Ubuntu 13.2.0-23ubuntu4) 13.2.0
-ldd (Ubuntu GLIBC 2.39-0ubuntu8.3) 2.39
-GNU ld (GNU Binutils for Ubuntu) 2.42
-GNU Make 4.3
-aarch64-linux-gnu-gcc-13
-aarch64-linux-gnu
-little-endian
+Raspberry Pi 5 Model B Rev 1.0 d04170    
+aarch64 x4    
+Ubuntu 24.04.1 LTS (Noble Numbat)    
+Linux 6.8.0-2011-raspi-realtime    
+gcc (Ubuntu 13.2.0-23ubuntu4) 13.2.0    
+ldd (Ubuntu GLIBC 2.39-0ubuntu8.3) 2.39    
+GNU ld (GNU Binutils for Ubuntu) 2.42    
+GNU Make 4.3    
+aarch64-linux-gnu-gcc-13    
+aarch64-linux-gnu    
+little-endian    
 
 # Features
 
