@@ -1363,6 +1363,8 @@ P. Bieringer, LINUX IPv6 HOWTO, 2015-10-16
 
 R. Braden, D. Borman, C. Partridge, "Computing the Internet Checksum", RFC 1071, 1988-09
 
+M. Brooker, "It's always TCP_NODELAY. Every damn time", Marc's Blog, 2024-05-09, <https://brooker.co.za/blog/2024/05/09/nagle.html>
+
 M. Cline et al., "C++ FAQs", 2nd edition, Addision-Wessley, 1999, pp. 538, "FAQ 36.05 How can an object of a C++ class be passed to or from a C function?"
 
 M. Cline, "C++ FAQ Lite", 2001-08-15, 29.8

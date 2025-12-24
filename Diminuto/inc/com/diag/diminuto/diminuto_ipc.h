@@ -73,6 +73,9 @@
  * B. Hubert, "The ultimate SO_LINGER page, or: why is my tcp not
  * reliable", 2009-01-18,
  * <https://blog.netherlabs.nl/articles/2009/01/18/the-ultimate-so_linger-page-or-why-is-my-tcp-not-reliable>
+ *
+ * M. Brooker, "It's always TCP_NODELAY. Every damn time", Marc's Blog,
+ * 2024-05-09, <https://brooker.co.za/blog/2024/05/09/nagle.html>
  */
 
 #include "com/diag/diminuto/diminuto_types.h"
