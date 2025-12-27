@@ -146,22 +146,24 @@ int diminuto_ipc_set_status(int fd, int enable, int mask)
 
 int diminuto_ipc_set_socket(int fd, int level, int option, int value)
 {
+    int rc = -1;
+
     if (setsockopt(fd, level, option, &value, sizeof(value)) >= 0) {
-        /* Do nothing. */
+        rc = fd;
     } else if (errno == EPERM) {
         diminuto_perror("diminuto_ipc_set_socket: setsockopt: must be root");
-        fd = -8;
+        rc = -8;
     } else {
         diminuto_perror("diminuto_ipc_set_socket: setsockopt");
-        fd = -9;
+        rc = -9;
     }
 
-    return fd;
+    return rc;
 }
 
 int diminuto_ipc_get_control(int fd, int option)
 {
-    int value = 0;
+    int value = -1;
 
     if (ioctl(fd, option, &value) < 0) {
         diminuto_perror("diminuto_ipc_get_control: ioctl");
@@ -173,8 +175,8 @@ int diminuto_ipc_get_control(int fd, int option)
 
 diminuto_sticks_t diminuto_ipc_get_timestamp(int fd)
 {
-    struct timeval value = { 0, };
     diminuto_sticks_t ticks = -1;
+    struct timeval value = { 0, };
 
     if (ioctl(fd, SIOCGSTAMP, &value) < 0) {
         diminuto_perror("diminuto_ipc_get_timestamp: ioctl");
@@ -191,27 +193,30 @@ diminuto_sticks_t diminuto_ipc_get_timestamp(int fd)
 
 int diminuto_ipc_set_interface(int fd, const char * interface)
 {
+    int rc = 0;
     struct ifreq intf = { 0 };
     socklen_t length = 0;
 
-    if (interface != (const char *)0) {
+    if (interface == (const char *)0) {
+        rc = fd;
+    } else {
         if (interface[0] != '\0') {
             strncpy(intf.ifr_name, interface, sizeof(intf.ifr_name));
             intf.ifr_name[sizeof(intf.ifr_name) - 1] = '\0';
             length = sizeof(intf);
         }
         if (setsockopt(fd, SOL_SOCKET, SO_BINDTODEVICE, (void *)&intf, length) >= 0) {
-            /* Do nothing. */
+            rc = fd;
         } else if (errno == EPERM) {
             diminuto_perror("diminuto_ipc_set_interface: setsockopt: must be root");
-            fd = -4;
+            rc = -4;
         } else {
             diminuto_perror("diminuto_ipc_set_interface: setsockopt");
-            fd = -5;
+            rc = -5;
         }
     }
 
-    return fd;
+    return rc;
 }
 
 int diminuto_ipc_set_send(int fd, ssize_t size)
