@@ -193,7 +193,7 @@ diminuto_sticks_t diminuto_ipc_get_timestamp(int fd)
 
 int diminuto_ipc_set_interface(int fd, const char * interface)
 {
-    int rc = 0;
+    int rc = -1;
     struct ifreq intf = { 0 };
     socklen_t length = 0;
 
@@ -221,38 +221,39 @@ int diminuto_ipc_set_interface(int fd, const char * interface)
 
 int diminuto_ipc_set_send(int fd, ssize_t size)
 {
+    int rc = -1;
     static const int MAXIMUM = diminuto_maximumof(int);
+    int value = 0;
 
     if (size < 0) {
-        /* Do nothing. */
-    } else if (size > MAXIMUM) {
-        fd = diminuto_ipc_set_socket(fd, SOL_SOCKET, SO_SNDBUF, MAXIMUM);
+        rc = fd;
     } else {
-        int value;
-        fd = diminuto_ipc_set_socket(fd, SOL_SOCKET, SO_SNDBUF, value = size);
+        value = (size < MAXIMUM) ? size : MAXIMUM;
+        rc = diminuto_ipc_set_socket(fd, SOL_SOCKET, SO_SNDBUF, value);
     }
 
-    return fd;
+    return rc;
 }
 
 int diminuto_ipc_set_receive(int fd, ssize_t size)
 {
+    int rc = -1;
     static const int MAXIMUM = diminuto_maximumof(int);
+    int value = 0;
 
     if (size < 0) {
-        /* Do nothing. */
-    } else if (size > MAXIMUM) {
-        fd = diminuto_ipc_set_socket(fd, SOL_SOCKET, SO_RCVBUF, MAXIMUM);
+        rc = fd;
     } else {
-        int value;
-        fd = diminuto_ipc_set_socket(fd, SOL_SOCKET, SO_RCVBUF, value = size);
+        value = (size < MAXIMUM) ? size : MAXIMUM;
+        rc = diminuto_ipc_set_socket(fd, SOL_SOCKET, SO_RCVBUF, value);
     }
 
-    return fd;
+    return rc;
 }
 
 int diminuto_ipc_set_linger(int fd, diminuto_ticks_t ticks)
 {
+    int rc = -1;
     struct linger opt = { 0, };
     static const int MAXIMUM = diminuto_maximumof(int);
 
@@ -280,10 +281,12 @@ int diminuto_ipc_set_linger(int fd, diminuto_ticks_t ticks)
 
     if (setsockopt(fd, SOL_SOCKET, SO_LINGER, &opt, sizeof(opt)) < 0) {
         diminuto_perror("diminuto_ipc_set_linger: setsockopt");
-        fd = -10;
+        rc = -10;
+    } else {
+        rc = fd;
     }
 
-    return fd;
+    return rc;
 }
 
 /*******************************************************************************
