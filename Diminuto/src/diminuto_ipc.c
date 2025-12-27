@@ -1,7 +1,7 @@
 /* vi: set ts=4 expandtab shiftwidth=4: */
 /**
  * @file
- * @copyright Copyright 2010-2023 Digital Aggregates Corporation, Colorado, USA.
+ * @copyright Copyright 2010-2025 Digital Aggregates Corporation, Colorado, USA.
  * @note Licensed under the terms in LICENSE.txt.
  * @brief This is the implementation of the IPC feature.
  * @author Chip Overclock <mailto:coverclock@diag.com>
@@ -126,21 +126,22 @@ int diminuto_ipc_type(int fd)
  * HELPERS
  ******************************************************************************/
 
-int diminuto_ipc_set_status(int fd, int enable, long mask)
+int diminuto_ipc_set_status(int fd, int enable, int mask)
 {
-    long flags = 0;
+    int rc = -1;
+    int flags = 0;
 
     if ((flags = fcntl(fd, F_GETFL, 0)) == -1) {
         diminuto_perror("diminuto_ipc_set_status: fcntl(F_GETFL)");
-        fd = -6;
-    } else if (fcntl(fd, F_SETFL, enable ? (flags|mask) : (flags&(~mask))) <0) {
+        rc = -6;
+    } else if (fcntl(fd, F_SETFL, enable ? (flags | mask) : (flags & (~mask))) == -1) {
         diminuto_perror("diminuto_ipc_set_status: fcntl(F_SETFL)");
-        fd = -7;
+        rc = -7;
     } else {
-        /* Do nothing: success. */
+        rc = fd;
     }
 
-    return fd;
+    return rc;
 }
 
 int diminuto_ipc_set_socket(int fd, int level, int option, int value)

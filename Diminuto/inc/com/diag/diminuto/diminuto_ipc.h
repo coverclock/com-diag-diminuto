@@ -4,7 +4,7 @@
 
 /**
  * @file
- * @copyright Copyright 2010-2024 Digital Aggregates Corporation, Colorado, USA.
+ * @copyright Copyright 2010-2025 Digital Aggregates Corporation, Colorado, USA.
  * @note Licensed under the terms in LICENSE.txt.
  * @brief Provides capabilities common to IPv4, IPv6, and local sockets.
  * @author Chip Overclock <mailto:coverclock@diag.com>
@@ -177,7 +177,7 @@ extern int diminuto_ipc_set_interface(int fd, const char * interface);
  * @param mask is a bit mask indication the option to enable or disable.
  * @return >=0 for success, <0 for error.
  */
-extern int diminuto_ipc_set_status(int fd, int enable, long mask);
+extern int diminuto_ipc_set_status(int fd, int enable, int mask);
 
 /**
  * Set a socket option (setsockopt(2)) on a socket.
