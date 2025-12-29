@@ -133,11 +133,24 @@ int diminuto_ipc_set_status(int fd, int enable, int mask)
 
     if ((flags = fcntl(fd, F_GETFL, 0)) == -1) {
         diminuto_perror("diminuto_ipc_set_status: fcntl(F_GETFL)");
-        rc = -6;
     } else if (fcntl(fd, F_SETFL, enable ? (flags | mask) : (flags & (~mask))) == -1) {
         diminuto_perror("diminuto_ipc_set_status: fcntl(F_SETFL)");
-        rc = -7;
     } else {
+        rc = fd;
+    }
+
+    return rc;
+}
+
+int diminuto_ipc_get_status(int fd, int * buffer)
+{
+    int rc = -1;
+    int flags = 0;
+
+    if ((flags = fcntl(fd, F_GETFL, 0)) == -1) {
+        diminuto_perror("diminuto_ipc_get_status: fcntl(F_GETFL)");
+    } else {
+        *buffer = flags;
         rc = fd;
     }
 
@@ -152,25 +165,45 @@ int diminuto_ipc_set_socket(int fd, int level, int option, int value)
         rc = fd;
     } else if (errno == EPERM) {
         diminuto_perror("diminuto_ipc_set_socket: setsockopt: must be root");
-        rc = -8;
     } else {
         diminuto_perror("diminuto_ipc_set_socket: setsockopt");
-        rc = -9;
     }
 
     return rc;
 }
 
-int diminuto_ipc_get_control(int fd, int option)
+int diminuto_ipc_get_socket(int fd, int level, int option, int * buffer)
 {
+    int rc = -1;
+    int value = -1;
+    socklen_t length = sizeof(value);
+
+    if (getsockopt(fd, level, option, &value, &length) < 0) {
+        diminuto_perror("diminuto_ipc_get_socket: getsockopt");
+    } else if (length != sizeof(value)) {
+        errno = E2BIG;
+        diminuto_perror("diminuto_ipc_get_socket: getsockopt");
+    } else {
+        *buffer = value;
+        rc = fd;
+    }
+
+    return rc;
+}
+
+int diminuto_ipc_get_control(int fd, int option, int * buffer)
+{
+    int rc = -1;
     int value = -1;
 
     if (ioctl(fd, option, &value) < 0) {
         diminuto_perror("diminuto_ipc_get_control: ioctl");
-        value = -1;
+    } else {
+        *buffer = value;
+        rc = fd;
     }
 
-    return value;
+    return rc;
 }
 
 diminuto_sticks_t diminuto_ipc_get_timestamp(int fd)
@@ -209,10 +242,8 @@ int diminuto_ipc_set_interface(int fd, const char * interface)
             rc = fd;
         } else if (errno == EPERM) {
             diminuto_perror("diminuto_ipc_set_interface: setsockopt: must be root");
-            rc = -4;
         } else {
             diminuto_perror("diminuto_ipc_set_interface: setsockopt");
-            rc = -5;
         }
     }
 
@@ -235,6 +266,15 @@ int diminuto_ipc_set_send(int fd, ssize_t size)
     return rc;
 }
 
+ssize_t diminuto_ipc_get_send(int fd)
+{
+    int value = -1;
+
+    (void)diminuto_ipc_get_socket(fd, SOL_SOCKET, SO_SNDBUF, &value);
+
+    return (ssize_t)value;
+}
+
 int diminuto_ipc_set_receive(int fd, ssize_t size)
 {
     int rc = -1;
@@ -249,6 +289,15 @@ int diminuto_ipc_set_receive(int fd, ssize_t size)
     }
 
     return rc;
+}
+
+ssize_t diminuto_ipc_get_receive(int fd)
+{
+    int value = -1;
+
+    (void)diminuto_ipc_get_socket(fd, SOL_SOCKET, SO_RCVBUF, &value);
+
+    return (ssize_t)value;
 }
 
 int diminuto_ipc_set_linger(int fd, diminuto_ticks_t ticks)
@@ -281,7 +330,6 @@ int diminuto_ipc_set_linger(int fd, diminuto_ticks_t ticks)
 
     if (setsockopt(fd, SOL_SOCKET, SO_LINGER, &opt, sizeof(opt)) < 0) {
         diminuto_perror("diminuto_ipc_set_linger: setsockopt");
-        rc = -10;
     } else {
         rc = fd;
     }

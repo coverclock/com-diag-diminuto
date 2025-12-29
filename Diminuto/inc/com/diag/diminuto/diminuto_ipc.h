@@ -179,6 +179,8 @@ extern int diminuto_ipc_set_interface(int fd, const char * interface);
  */
 extern int diminuto_ipc_set_status(int fd, int enable, int mask);
 
+extern int diminuto_ipc_get_status(int fd, int * buffer);
+
 /**
  * Set a socket option (setsockopt(2)) on a socket.
  * @param fd is an open socket file descriptor.
@@ -188,6 +190,8 @@ extern int diminuto_ipc_set_status(int fd, int enable, int mask);
  * @return >=0 for success, <0 for error.
  */
 extern int diminuto_ipc_set_socket(int fd, int level, int option, int value);
+
+extern int diminuto_ipc_get_socket(int fd, int level, int option, int * buffer);
 
 /**
  * Enable or disable the non-blocking status.
@@ -296,6 +300,8 @@ static inline int diminuto_ipc_set_quickack(int fd, int enable) {
  */
 extern int diminuto_ipc_set_send(int fd, ssize_t size);
 
+extern ssize_t diminuto_ipc_get_send(int fd);
+
 /**
  * Change the receive TCP buffer size. (Useful for settig to the bandwidth-
  * delay product for long latency paths to achieve more throughput.)
@@ -304,6 +310,8 @@ extern int diminuto_ipc_set_send(int fd, ssize_t size);
  * @return >=0 for success or <0 if an error occurred.
  */
 extern int diminuto_ipc_set_receive(int fd, ssize_t size);
+
+extern ssize_t diminuto_ipc_get_receive(int fd);
 
 /**
  * Enable or disable the ability to handle IPv4 packets on an ipc6 socket
@@ -378,7 +386,7 @@ extern int diminuto_ipc_type(int fd);
  * @param option is the option to get.
  * @return the value of the option, or <0 for error.
  */
-extern int diminuto_ipc_get_control(int fd, int option);
+extern int diminuto_ipc_get_control(int fd, int option, int * buffer);
 
 /**
  * Get a timestamp in ticks indicating when the last packet was received.
@@ -398,7 +406,9 @@ extern diminuto_sticks_t diminuto_ipc_get_timestamp(int fd);
  * @return >=0 for success or <0 if an error occurred.
  */
 static inline ssize_t diminuto_ipc_stream_get_available(int fd) {
-    return diminuto_ipc_get_control(fd, SIOCINQ);
+    int buffer = -1;
+    (void)diminuto_ipc_get_control(fd, SIOCINQ, &buffer);
+    return (ssize_t)buffer;
 }
 
 /**
@@ -410,7 +420,9 @@ static inline ssize_t diminuto_ipc_stream_get_available(int fd) {
  * @return >=0 for success or <0 if an error occurred.
  */
 static inline ssize_t diminuto_ipc_stream_get_pending(int fd) {
-    return diminuto_ipc_get_control(fd, SIOCOUTQ);
+    int buffer = -1;
+    (void)diminuto_ipc_get_control(fd, SIOCOUTQ, &buffer);
+    return (ssize_t)buffer;
 }
 
 /**
