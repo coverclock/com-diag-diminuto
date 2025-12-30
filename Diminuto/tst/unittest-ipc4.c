@@ -529,7 +529,8 @@ int main(int argc, char * argv[])
         EXPECT(port == port1);
         EXPECT(strcmp(buffer, MSG1) == 0);
 
-        EXPECT((timestamp2 = diminuto_ipc_get_timestamp(fd2)) >= 0);
+        EXPECT(diminuto_ipc_get_timestamp(fd2, &timestamp2) >= 0);
+        EXPECT(timestamp2 >= 0);
         CHECKPOINT("timestamp2=%lld\n", (diminuto_lld_t)timestamp2);
         EXPECT(diminuto_time_zulu(timestamp2, &year, &month, &day, &hour, &minute, &second, &ticks) == 0);
         CHECKPOINT("timestamp2=%04d-%02d-%02dT%02d:%02d:%02d.%09lld\n", year, month, day, hour, minute, second, (diminuto_lld_t)diminuto_frequency_ticks2fractionalseconds(ticks, 1000000000LL));
@@ -540,7 +541,8 @@ int main(int argc, char * argv[])
         EXPECT(port == port2);
         EXPECT(strcmp(buffer, MSG2) == 0);
 
-        EXPECT((timestamp1 = diminuto_ipc_get_timestamp(fd1)) >= 0);
+        EXPECT(diminuto_ipc_get_timestamp(fd1, &timestamp1) >= 0);
+        EXPECT(timestamp1 >= 0);
         CHECKPOINT("timestamp1=%lld\n", (diminuto_lld_t)timestamp1);
         EXPECT(diminuto_time_zulu(timestamp1, &year, &month, &day, &hour, &minute, &second, &ticks) == 0);
         CHECKPOINT("timestamp1=%04d-%02d-%02dT%02d:%02d:%02d.%09lld\n", year, month, day, hour, minute, second, (diminuto_lld_t)diminuto_frequency_ticks2fractionalseconds(ticks, 1000000000LL));

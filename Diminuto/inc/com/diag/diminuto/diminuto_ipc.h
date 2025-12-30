@@ -300,7 +300,7 @@ static inline int diminuto_ipc_set_quickack(int fd, int enable) {
  */
 extern int diminuto_ipc_set_send(int fd, ssize_t size);
 
-extern ssize_t diminuto_ipc_get_send(int fd);
+extern int diminuto_ipc_get_send(int fd, ssize_t * buffer);
 
 /**
  * Change the receive TCP buffer size. (Useful for settig to the bandwidth-
@@ -311,7 +311,7 @@ extern ssize_t diminuto_ipc_get_send(int fd);
  */
 extern int diminuto_ipc_set_receive(int fd, ssize_t size);
 
-extern ssize_t diminuto_ipc_get_receive(int fd);
+extern int diminuto_ipc_get_receive(int fd, ssize_t * buffer);
 
 /**
  * Enable or disable the ability to handle IPv4 packets on an ipc6 socket
@@ -395,9 +395,10 @@ extern int diminuto_ipc_get_control(int fd, int option, int * buffer);
  * diminuto_ipc_set_timestamp() socket option.
  * N.B. This mechanism only works with datagrams (or raw sockets).
  * @param fd is an open socket file descriptor.
+ * @param buffer points to the buffer into which the result is placed.
  * @return the timestamp in ticks, or <0 for error.
  */
-extern diminuto_sticks_t diminuto_ipc_get_timestamp(int fd);
+extern int diminuto_ipc_get_timestamp(int fd, diminuto_sticks_t * buffer);
 
 /**
  * Return the number of bytes available on the input queue waiting to be

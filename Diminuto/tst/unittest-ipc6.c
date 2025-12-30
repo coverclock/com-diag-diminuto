@@ -842,7 +842,8 @@ int main(int argc, char * argv[])
         ADVISE(diminuto_ipc6_compare(&address, &server) == 0);
         EXPECT(port == rendezvous);
 
-        EXPECT((timestamp = diminuto_ipc_get_timestamp(fd)) >= 0);
+        EXPECT(diminuto_ipc_get_timestamp(fd, &timestamp) >= 0);
+        EXPECT(timestamp >= 0);
         CHECKPOINT("timestamp=%lld\n", (diminuto_lld_t)timestamp);
         EXPECT(diminuto_time_zulu(timestamp, &year, &month, &day, &hour, &minute, &second, &ticks) == 0);
         CHECKPOINT("timestamp=%04d-%02d-%02dT%02d:%02d:%02d.%09lld\n", year, month, day, hour, minute, second, (diminuto_lld_t)diminuto_frequency_ticks2fractionalseconds(ticks, 1000000000LL));

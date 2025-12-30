@@ -206,18 +206,19 @@ int diminuto_ipc_get_control(int fd, int option, int * buffer)
     return rc;
 }
 
-diminuto_sticks_t diminuto_ipc_get_timestamp(int fd)
+int diminuto_ipc_get_timestamp(int fd, diminuto_sticks_t * buffer)
 {
-    diminuto_sticks_t ticks = -1;
+    int rc = -1;
     struct timeval value = { 0, };
 
     if (ioctl(fd, SIOCGSTAMP, &value) < 0) {
         diminuto_perror("diminuto_ipc_get_timestamp: ioctl");
     } else {
-        ticks = diminuto_frequency_seconds2ticks(value.tv_sec, value.tv_usec, 1000000LL);
+        *buffer = diminuto_frequency_seconds2ticks(value.tv_sec, value.tv_usec, 1000000LL);
+        rc = fd;
     }
 
-    return ticks;
+    return rc;
 }
 
 /*******************************************************************************
@@ -266,13 +267,18 @@ int diminuto_ipc_set_send(int fd, ssize_t size)
     return rc;
 }
 
-ssize_t diminuto_ipc_get_send(int fd)
+int diminuto_ipc_get_send(int fd, ssize_t * buffer)
 {
+    int rc = -1;
     int value = -1;
 
-    (void)diminuto_ipc_get_socket(fd, SOL_SOCKET, SO_SNDBUF, &value);
+    rc = diminuto_ipc_get_socket(fd, SOL_SOCKET, SO_SNDBUF, &value);
+    if (rc >= 0) {
+        *buffer = value;
+        rc = fd;
+    }
 
-    return (ssize_t)value;
+    return rc;
 }
 
 int diminuto_ipc_set_receive(int fd, ssize_t size)
@@ -291,13 +297,18 @@ int diminuto_ipc_set_receive(int fd, ssize_t size)
     return rc;
 }
 
-ssize_t diminuto_ipc_get_receive(int fd)
+int diminuto_ipc_get_receive(int fd, ssize_t *  buffer)
 {
+    int rc = -1;
     int value = -1;
 
-    (void)diminuto_ipc_get_socket(fd, SOL_SOCKET, SO_RCVBUF, &value);
+    rc = diminuto_ipc_get_socket(fd, SOL_SOCKET, SO_RCVBUF, &value);
+    if (rc >= 0) {
+        *buffer = value;
+        rc = fd;
+    }
 
-    return (ssize_t)value;
+    return rc;
 }
 
 int diminuto_ipc_set_linger(int fd, diminuto_ticks_t ticks)
