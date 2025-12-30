@@ -179,7 +179,7 @@ extern int diminuto_ipc_set_interface(int fd, const char * interface);
  */
 extern int diminuto_ipc_set_status(int fd, int enable, int mask);
 
-extern int diminuto_ipc_get_status(int fd, int * buffer);
+extern int diminuto_ipc_get_status(int fd, int mask, int * buffer);
 
 /**
  * Set a socket option (setsockopt(2)) on a socket.
@@ -203,6 +203,12 @@ static inline int diminuto_ipc_set_nonblocking(int fd, int enable) {
     return diminuto_ipc_set_status(fd, enable, O_NONBLOCK);
 }
 
+static inline int diminuto_ipc_get_nonblocking(int fd) {
+    int buffer = -1;
+    (void)diminuto_ipc_get_status(fd, O_NONBLOCK, &buffer);
+    return buffer;
+}
+
 /**
  * Enable or disable the address reuse option.
  * @param fd is an open socket of any type.
@@ -211,6 +217,12 @@ static inline int diminuto_ipc_set_nonblocking(int fd, int enable) {
  */
 static inline int diminuto_ipc_set_reuseaddress(int fd, int enable) {
     return diminuto_ipc_set_socket(fd, SOL_SOCKET, SO_REUSEADDR, !!enable);
+}
+
+static inline int diminuto_ipc_get_reuseaddress(int fd) {
+    int buffer = -1;
+    (void)diminuto_ipc_get_socket(fd, SOL_SOCKET, SO_REUSEADDR, &buffer);
+    return buffer;
 }
 
 /**
@@ -223,6 +235,12 @@ static inline int diminuto_ipc_set_reuseport(int fd, int enable) {
     return diminuto_ipc_set_socket(fd, SOL_SOCKET, SO_REUSEPORT, !!enable);
 }
 
+static inline int diminuto_ipc_get_reuseport(int fd) {
+    int buffer = -1;
+    (void)diminuto_ipc_get_socket(fd, SOL_SOCKET, SO_REUSEPORT, &buffer);
+    return buffer;
+}
+
 /**
  * Enable or disable the keep alive option.
  * @param fd is an open socket of any type.
@@ -233,6 +251,12 @@ static inline int diminuto_ipc_set_keepalive(int fd, int enable) {
     return diminuto_ipc_set_socket(fd, SOL_SOCKET, SO_KEEPALIVE, !!enable);
 }
 
+static inline int diminuto_ipc_get_keepalive(int fd) {
+    int buffer = -1;
+    (void)diminuto_ipc_get_socket(fd, SOL_SOCKET, SO_KEEPALIVE, &buffer);
+    return buffer;
+}
+
 /**
  * Enable or disable the debug option (only available to root on most systems).
  * @param fd is an open socket of any type.
@@ -241,6 +265,12 @@ static inline int diminuto_ipc_set_keepalive(int fd, int enable) {
  */
 static inline int diminuto_ipc_set_debug(int fd, int enable) {
     return diminuto_ipc_set_socket(fd, SOL_SOCKET, SO_DEBUG, !!enable);
+}
+
+static inline int diminuto_ipc_get_debug(int fd) {
+    int buffer = -1;
+    (void)diminuto_ipc_get_socket(fd, SOL_SOCKET, SO_DEBUG, &buffer);
+    return buffer;
 }
 
 /**
@@ -257,6 +287,12 @@ static inline int diminuto_ipc_set_debug(int fd, int enable) {
  */
 static inline int diminuto_ipc_set_timestamp(int fd, int enable) {
     return diminuto_ipc_set_socket(fd, SOL_SOCKET, SO_TIMESTAMP, !!enable);
+}
+
+static inline int diminuto_ipc_get_timestamp(int fd) {
+    int buffer = -1;
+    (void)diminuto_ipc_get_socket(fd, SOL_SOCKET, SO_TIMESTAMP, &buffer);
+    return buffer;
 }
 
 /**
@@ -280,6 +316,12 @@ static inline int diminuto_ipc_set_nodelay(int fd, int enable) {
     return diminuto_ipc_set_socket(fd, IPPROTO_TCP, TCP_NODELAY, !!enable);
 }
 
+static inline int diminuto_ipc_get_nodelay(int fd) {
+    int buffer = -1;
+    (void)diminuto_ipc_get_socket(fd, IPPROTO_TCP, TCP_NODELAY, &buffer);
+    return buffer;
+}
+
 /**
  * Enable or disable the TCP Quick Acknowledgement option. (Useful for
  * reducing latency when using small packets.)
@@ -291,6 +333,12 @@ static inline int diminuto_ipc_set_quickack(int fd, int enable) {
     return diminuto_ipc_set_socket(fd, IPPROTO_TCP, TCP_QUICKACK, !!enable);
 }
 
+static inline int diminuto_ipc_get_quickack(int fd) {
+    int buffer = -1;
+    (void)diminuto_ipc_get_socket(fd, IPPROTO_TCP, TCP_QUICKACK, &buffer);
+    return buffer;
+}
+
 /**
  * Change the send TCP buffer size. (Useful for setting to the bandwidth-
  * delay product for long latency paths to achieve more throughput.)
@@ -299,8 +347,6 @@ static inline int diminuto_ipc_set_quickack(int fd, int enable) {
  * @return >=0 for success or <0 if an error occurred.
  */
 extern int diminuto_ipc_set_send(int fd, ssize_t size);
-
-extern int diminuto_ipc_get_send(int fd, ssize_t * buffer);
 
 /**
  * Change the receive TCP buffer size. (Useful for settig to the bandwidth-
@@ -311,7 +357,17 @@ extern int diminuto_ipc_get_send(int fd, ssize_t * buffer);
  */
 extern int diminuto_ipc_set_receive(int fd, ssize_t size);
 
-extern int diminuto_ipc_get_receive(int fd, ssize_t * buffer);
+static inline ssize_t diminuto_ipc_get_send(int fd) {
+    int buffer = -1;
+    (void)diminuto_ipc_get_socket(fd, SOL_SOCKET, SO_SNDBUF, &buffer);
+    return (ssize_t)buffer;
+}
+
+static inline ssize_t diminuto_ipc_get_receive(int fd) {
+    int buffer = -1;
+    (void)diminuto_ipc_get_socket(fd, SOL_SOCKET, SO_RCVBUF, &buffer);
+    return (ssize_t)buffer;
+}
 
 /**
  * Enable or disable the ability to handle IPv4 packets on an ipc6 socket
@@ -338,6 +394,12 @@ static inline int diminuto_ipc6_stream_set_ipv6toipv4(int fd) {
     return diminuto_ipc_set_socket(fd, IPPROTO_TCP, IPV6_ADDRFORM, AF_INET);
 }
 
+static inline int diminuto_ipc_stream_get_ipv6toipv4(int fd) {
+    int buffer = -1;
+    (void)diminuto_ipc_get_socket(fd, IPPROTO_TCP, IPV6_ADDRFORM, &buffer);
+    return buffer;
+}
+
 /**
  * Convert a IPv6 datagram socket into an IPv4 datagram socket.
  * DEPRECATED and SKETCHY in the kernel, NOT RECOMMENDED:
@@ -350,6 +412,12 @@ static inline int diminuto_ipc6_stream_set_ipv6toipv4(int fd) {
  */
 static inline int diminuto_ipc6_datagram_set_ipv6toipv4(int fd) {
     return diminuto_ipc_set_socket(fd, IPPROTO_UDP, IPV6_ADDRFORM, AF_INET);
+}
+
+static inline int diminuto_ipc_datagram_get_ipv6toipv4(int fd) {
+    int buffer = -1;
+    (void)diminuto_ipc_get_socket(fd, IPPROTO_UDP, IPV6_ADDRFORM, &buffer);
+    return buffer;
 }
 
 /*
@@ -398,7 +466,7 @@ extern int diminuto_ipc_get_control(int fd, int option, int * buffer);
  * @param buffer points to the buffer into which the result is placed.
  * @return the timestamp in ticks, or <0 for error.
  */
-extern int diminuto_ipc_get_timestamp(int fd, diminuto_sticks_t * buffer);
+extern int diminuto_ipc_get_datagram_timestamp(int fd, diminuto_sticks_t * buffer);
 
 /**
  * Return the number of bytes available on the input queue waiting to be

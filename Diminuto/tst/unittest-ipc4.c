@@ -529,7 +529,7 @@ int main(int argc, char * argv[])
         EXPECT(port == port1);
         EXPECT(strcmp(buffer, MSG1) == 0);
 
-        EXPECT(diminuto_ipc_get_timestamp(fd2, &timestamp2) >= 0);
+        EXPECT(diminuto_ipc_get_datagram_timestamp(fd2, &timestamp2) >= 0);
         EXPECT(timestamp2 >= 0);
         CHECKPOINT("timestamp2=%lld\n", (diminuto_lld_t)timestamp2);
         EXPECT(diminuto_time_zulu(timestamp2, &year, &month, &day, &hour, &minute, &second, &ticks) == 0);
@@ -541,7 +541,7 @@ int main(int argc, char * argv[])
         EXPECT(port == port2);
         EXPECT(strcmp(buffer, MSG2) == 0);
 
-        EXPECT(diminuto_ipc_get_timestamp(fd1, &timestamp1) >= 0);
+        EXPECT(diminuto_ipc_get_datagram_timestamp(fd1, &timestamp1) >= 0);
         EXPECT(timestamp1 >= 0);
         CHECKPOINT("timestamp1=%lld\n", (diminuto_lld_t)timestamp1);
         EXPECT(diminuto_time_zulu(timestamp1, &year, &month, &day, &hour, &minute, &second, &ticks) == 0);

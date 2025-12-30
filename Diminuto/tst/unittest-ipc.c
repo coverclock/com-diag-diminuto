@@ -61,42 +61,79 @@ int main(int argc, char * argv[])
     {
         int sock;
         int rc;
+        ssize_t value;
 
         TEST();
 
         sock = socket(AF_INET, SOCK_STREAM, 0);
         ASSERT(sock >= 0);
 
+        rc = diminuto_ipc_get_nonblocking(sock);
+        EXPECT(rc == 0);
         rc = diminuto_ipc_set_nonblocking(sock, !0);
-        EXPECT(rc >= 0);
+        EXPECT(rc > 0);
+        rc = diminuto_ipc_get_nonblocking(sock);
+        EXPECT(rc > 0);
         rc = diminuto_ipc_set_nonblocking(sock, 0);
-        EXPECT(rc >= 0);
+        EXPECT(rc > 0);
+        rc = diminuto_ipc_get_nonblocking(sock);
+        EXPECT(rc == 0);
 
+        rc = diminuto_ipc_get_reuseaddress(sock);
+        EXPECT(rc == 0);
         rc = diminuto_ipc_set_reuseaddress(sock, !0);
         EXPECT(rc >= 0);
+        rc = diminuto_ipc_get_reuseaddress(sock);
+        EXPECT(rc > 0);
         rc = diminuto_ipc_set_reuseaddress(sock, 0);
         EXPECT(rc >= 0);
+        rc = diminuto_ipc_get_reuseaddress(sock);
+        EXPECT(rc == 0);
 
+        rc = diminuto_ipc_get_reuseport(sock);
+        EXPECT(rc == 0);
         rc = diminuto_ipc_set_reuseport(sock, !0);
         EXPECT(rc >= 0);
+        rc = diminuto_ipc_get_reuseport(sock);
+        EXPECT(rc > 0);
         rc = diminuto_ipc_set_reuseport(sock, 0);
         EXPECT(rc >= 0);
+        rc = diminuto_ipc_get_reuseport(sock);
+        EXPECT(rc == 0);
 
+        rc = diminuto_ipc_get_keepalive(sock);
+        EXPECT(rc == 0);
         rc = diminuto_ipc_set_keepalive(sock, !0);
         EXPECT(rc >= 0);
+        rc = diminuto_ipc_get_keepalive(sock);
+        EXPECT(rc > 0);
         rc = diminuto_ipc_set_keepalive(sock, 0);
         EXPECT(rc >= 0);
+        rc = diminuto_ipc_get_keepalive(sock);
+        EXPECT(rc == 0);
 
+        rc = diminuto_ipc_get_timestamp(sock);
+        EXPECT(rc == 0);
         rc = diminuto_ipc_set_timestamp(sock, !0);
         EXPECT(rc >= 0);
+        rc = diminuto_ipc_get_timestamp(sock);
+        EXPECT(rc > 0);
         rc = diminuto_ipc_set_timestamp(sock, 0);
         EXPECT(rc >= 0);
+        rc = diminuto_ipc_get_timestamp(sock);
+        EXPECT(rc == 0);
 
         if (geteuid() == 0) {
+            rc = diminuto_ipc_get_debug(sock);
+            EXPECT(rc == 0);
             rc = diminuto_ipc_set_debug(sock, !0);
             EXPECT(rc >= 0);
+            rc = diminuto_ipc_get_debug(sock);
+            EXPECT(rc > 0);
             rc = diminuto_ipc_set_debug(sock, 0);
             EXPECT(rc >= 0);
+            rc = diminuto_ipc_get_debug(sock);
+            EXPECT(rc == 0);
         }
 
         {
@@ -132,22 +169,57 @@ int main(int argc, char * argv[])
 
         rc = diminuto_ipc_set_debug(sock, 0);
         EXPECT(rc >= 0);
+        rc = diminuto_ipc_get_debug(sock);
+        EXPECT(rc == 0);
 
+        rc = diminuto_ipc_get_nodelay(sock);
+        EXPECT(rc == 0);
         rc = diminuto_ipc_set_nodelay(sock, !0);
         EXPECT(rc >= 0);
+        rc = diminuto_ipc_get_nodelay(sock);
+        EXPECT(rc > 0);
         rc = diminuto_ipc_set_nodelay(sock, 0);
         EXPECT(rc >= 0);
+        rc = diminuto_ipc_get_nodelay(sock);
+        EXPECT(rc == 0);
 
-        rc = diminuto_ipc_set_quickack(sock, !0);
+        /* N.B. on by default on some systems. */
+        rc = diminuto_ipc_get_quickack(sock);
         EXPECT(rc >= 0);
         rc = diminuto_ipc_set_quickack(sock, 0);
         EXPECT(rc >= 0);
-
-        rc = diminuto_ipc_set_send(sock, 512);
+        rc = diminuto_ipc_get_quickack(sock);
+        EXPECT(rc == 0);
+        rc = diminuto_ipc_set_quickack(sock, !0);
         EXPECT(rc >= 0);
+        rc = diminuto_ipc_get_quickack(sock);
+        EXPECT(rc > 0);
 
-        rc = diminuto_ipc_set_receive(sock, 512);
+        /* N.B. varies greatly on different systems. */
+        value = diminuto_ipc_get_send(sock);
+        EXPECT(value > 0);
+        rc = diminuto_ipc_set_send(sock, value);
         EXPECT(rc >= 0);
+        rc = diminuto_ipc_get_send(sock);
+        /* N.B as per documentation. */
+        EXPECT(rc == (value * 2));
+        rc = diminuto_ipc_set_send(sock, value / 2);
+        EXPECT(rc >= 0);
+        rc = diminuto_ipc_get_send(sock);
+        EXPECT(rc == value);
+
+        /* N.B. varies greatly on different systems. */
+        value = diminuto_ipc_get_receive(sock);
+        EXPECT(value > 0);
+        rc = diminuto_ipc_set_receive(sock, value);
+        EXPECT(rc >= 0);
+        rc = diminuto_ipc_get_receive(sock);
+        /* N.B as per documentation. */
+        EXPECT(rc == (value * 2));
+        rc = diminuto_ipc_set_receive(sock, value / 2);
+        EXPECT(rc >= 0);
+        rc = diminuto_ipc_get_receive(sock);
+        EXPECT(rc == value);
 
         rc = diminuto_ipc_stream_get_available(sock);
         EXPECT(rc == 0);

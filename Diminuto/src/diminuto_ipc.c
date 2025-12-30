@@ -142,7 +142,7 @@ int diminuto_ipc_set_status(int fd, int enable, int mask)
     return rc;
 }
 
-int diminuto_ipc_get_status(int fd, int * buffer)
+int diminuto_ipc_get_status(int fd, int mask, int * buffer)
 {
     int rc = -1;
     int flags = 0;
@@ -150,7 +150,7 @@ int diminuto_ipc_get_status(int fd, int * buffer)
     if ((flags = fcntl(fd, F_GETFL, 0)) == -1) {
         diminuto_perror("diminuto_ipc_get_status: fcntl(F_GETFL)");
     } else {
-        *buffer = flags;
+        *buffer = flags & mask;
         rc = fd;
     }
 
@@ -206,13 +206,13 @@ int diminuto_ipc_get_control(int fd, int option, int * buffer)
     return rc;
 }
 
-int diminuto_ipc_get_timestamp(int fd, diminuto_sticks_t * buffer)
+int diminuto_ipc_get_datagram_timestamp(int fd, diminuto_sticks_t * buffer)
 {
     int rc = -1;
     struct timeval value = { 0, };
 
     if (ioctl(fd, SIOCGSTAMP, &value) < 0) {
-        diminuto_perror("diminuto_ipc_get_timestamp: ioctl");
+        diminuto_perror("diminuto_ipc_get_datagram_timestamp: ioctl");
     } else {
         *buffer = diminuto_frequency_seconds2ticks(value.tv_sec, value.tv_usec, 1000000LL);
         rc = fd;
@@ -267,20 +267,6 @@ int diminuto_ipc_set_send(int fd, ssize_t size)
     return rc;
 }
 
-int diminuto_ipc_get_send(int fd, ssize_t * buffer)
-{
-    int rc = -1;
-    int value = -1;
-
-    rc = diminuto_ipc_get_socket(fd, SOL_SOCKET, SO_SNDBUF, &value);
-    if (rc >= 0) {
-        *buffer = value;
-        rc = fd;
-    }
-
-    return rc;
-}
-
 int diminuto_ipc_set_receive(int fd, ssize_t size)
 {
     int rc = -1;
@@ -292,20 +278,6 @@ int diminuto_ipc_set_receive(int fd, ssize_t size)
     } else {
         value = (size < MAXIMUM) ? size : MAXIMUM;
         rc = diminuto_ipc_set_socket(fd, SOL_SOCKET, SO_RCVBUF, value);
-    }
-
-    return rc;
-}
-
-int diminuto_ipc_get_receive(int fd, ssize_t *  buffer)
-{
-    int rc = -1;
-    int value = -1;
-
-    rc = diminuto_ipc_get_socket(fd, SOL_SOCKET, SO_RCVBUF, &value);
-    if (rc >= 0) {
-        *buffer = value;
-        rc = fd;
     }
 
     return rc;
