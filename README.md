@@ -828,6 +828,16 @@ modules in the Diminuto library. Those modules can be linked into
 an application. The project has a binary executable named vintage that
 displays this information.
 
+## Versioning 2.0
+
+I expressed an alternate viewpoint to a friend's social media post.
+You may find it more accurate.
+
+X.Y.Z:   
+X changes: Will break your shit. Why? It was more convenient for me. Sucks to be you.   
+Y changes: New feature. Probably won’t break your shit. But do I care? No.   
+Z changes: Bug fix. Code now matches my documentation. My bad. Will break your shit if it depended on the prior incorrect behavior.   
+
 # Building
 
 Clone, build, and sanity test Diminuto. The use of the src directory
