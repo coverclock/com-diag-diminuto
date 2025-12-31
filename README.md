@@ -830,7 +830,7 @@ displays this information.
 
 ## Versioning 2.0
 
-I expressed an alternate viewpoint to a friend's social media post.
+I expressed an alternate viewpoint on a friend's social media post.
 You may find it more accurate.
 
 X.Y.Z:   
