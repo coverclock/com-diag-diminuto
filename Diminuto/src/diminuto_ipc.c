@@ -149,6 +149,8 @@ int diminuto_ipc_get_status(int fd, int mask, int * buffer)
 
     if ((flags = fcntl(fd, F_GETFL, 0)) == -1) {
         diminuto_perror("diminuto_ipc_get_status: fcntl(F_GETFL)");
+    } else if (buffer == (int *)0) {
+        rc = fd;
     } else {
         *buffer = flags & mask;
         rc = fd;
@@ -183,6 +185,8 @@ int diminuto_ipc_get_socket(int fd, int level, int option, int * buffer)
     } else if (length != sizeof(value)) {
         errno = E2BIG;
         diminuto_perror("diminuto_ipc_get_socket: getsockopt");
+    } else if (buffer == (int *)0) {
+        rc = fd;
     } else {
         *buffer = value;
         rc = fd;
@@ -198,6 +202,8 @@ int diminuto_ipc_get_control(int fd, int option, int * buffer)
 
     if (ioctl(fd, option, &value) < 0) {
         diminuto_perror("diminuto_ipc_get_control: ioctl");
+    } else if (buffer == (int *)0) {
+        rc = fd;
     } else {
         *buffer = value;
         rc = fd;
@@ -213,6 +219,8 @@ int diminuto_ipc_get_datagram_timestamp(int fd, diminuto_sticks_t * buffer)
 
     if (ioctl(fd, SIOCGSTAMP, &value) < 0) {
         diminuto_perror("diminuto_ipc_get_datagram_timestamp: ioctl");
+    } else if (buffer == (diminuto_sticks_t *)0) {
+        rc = fd;
     } else {
         *buffer = diminuto_frequency_seconds2ticks(value.tv_sec, value.tv_usec, 1000000LL);
         rc = fd;
@@ -315,6 +323,30 @@ int diminuto_ipc_set_linger(int fd, diminuto_ticks_t ticks)
         diminuto_perror("diminuto_ipc_set_linger: setsockopt");
     } else {
         rc = fd;
+    }
+
+    return rc;
+}
+
+int diminuto_ipc_get_linger(int fd, diminuto_sticks_t * buffer)
+{
+    int rc = -1;
+    struct linger opt = { 0, };
+    socklen_t length = sizeof(opt);
+
+    if (getsockopt(fd, SOL_SOCKET, SO_LINGER, &opt, &length) < 0) {
+        diminuto_perror("diminuto_ipc_set_linger: getsockopt");
+    } else if (length != sizeof(opt)) {
+        errno = E2BIG;
+        diminuto_perror("diminuto_ipc_set_linger: getsockopt");
+    } else if (opt.l_onoff == 0) {
+        rc = 0;
+    } else if (buffer == (diminuto_sticks_t *)0) {
+        rc = !0;
+    } else {
+        *buffer = opt.l_linger;
+        *buffer *= diminuto_frequency();
+        rc = !0;
     }
 
     return rc;

@@ -179,6 +179,13 @@ extern int diminuto_ipc_set_interface(int fd, const char * interface);
  */
 extern int diminuto_ipc_set_status(int fd, int enable, int mask);
 
+/**
+ * Return the status of a file control option (fcntl(2)) on a socket.
+ * @param fd is an open socket file descriptor.
+ * @param mask is a bit mask indication of the options being requested.
+ * @param buffer points to where the and-ed result is stored.
+ * @return >=0 for success, <0 for error.
+ */
 extern int diminuto_ipc_get_status(int fd, int mask, int * buffer);
 
 /**
@@ -191,11 +198,19 @@ extern int diminuto_ipc_get_status(int fd, int mask, int * buffer);
  */
 extern int diminuto_ipc_set_socket(int fd, int level, int option, int value);
 
+/**
+ * Get a socket option (getsockopt(2)) on a socket.
+ * @param fd is an open socket file descriptor.
+ * @param level is the level in the protocol stack at which to set.
+ * @param option is the option to get.
+ * @param buffer points to where the option is stored.
+ * @return >=0 for success, <0 for error.
+ */
 extern int diminuto_ipc_get_socket(int fd, int level, int option, int * buffer);
 
 /**
- * Enable or disable the non-blocking status.
- * @param fd is an open socket of any type.
+ * Enable or disable the non-blocking file descriptor status.
+ * @param fd is an open socket file decriptor.
  * @param enable is !0 to enable, 0 to disable.
  * @return >=0 for success or <0 if an error occurred.
  */
@@ -203,6 +218,11 @@ static inline int diminuto_ipc_set_nonblocking(int fd, int enable) {
     return diminuto_ipc_set_status(fd, enable, O_NONBLOCK);
 }
 
+/**
+ * Return the value of the non-blocking file descriptor status.
+ * @param fd is an open socket file descriptor.
+ * @return the value of the socket option or -1 for error.
+ */
 static inline int diminuto_ipc_get_nonblocking(int fd) {
     int buffer = -1;
     (void)diminuto_ipc_get_status(fd, O_NONBLOCK, &buffer);
@@ -210,8 +230,8 @@ static inline int diminuto_ipc_get_nonblocking(int fd) {
 }
 
 /**
- * Enable or disable the address reuse option.
- * @param fd is an open socket of any type.
+ * Enable or disable the address reuse socket option.
+ * @param fd is an open socket file descriptor.
  * @param enable is !0 to enable, 0 to disable.
  * @return >=0 for success or <0 if an error occurred.
  */
@@ -219,6 +239,11 @@ static inline int diminuto_ipc_set_reuseaddress(int fd, int enable) {
     return diminuto_ipc_set_socket(fd, SOL_SOCKET, SO_REUSEADDR, !!enable);
 }
 
+/**
+ * Return the value of the address reuse socket option.
+ * @param fd is an open socket file descriptor.
+ * @return 0 for unset, >0 for set, or -1 for error.
+ */
 static inline int diminuto_ipc_get_reuseaddress(int fd) {
     int buffer = -1;
     (void)diminuto_ipc_get_socket(fd, SOL_SOCKET, SO_REUSEADDR, &buffer);
@@ -226,7 +251,7 @@ static inline int diminuto_ipc_get_reuseaddress(int fd) {
 }
 
 /**
- * Enable or disable the port reuse option.
+ * Enable or disable the port reuse socket option.
  * @param fd is an open socket of any type.
  * @param enable is !0 to enable, 0 to disable.
  * @return >=0 for success or <0 if an error occurred.
@@ -235,6 +260,11 @@ static inline int diminuto_ipc_set_reuseport(int fd, int enable) {
     return diminuto_ipc_set_socket(fd, SOL_SOCKET, SO_REUSEPORT, !!enable);
 }
 
+/**
+ * Return the value of the port reuse socket option.
+ * @param fd is an open socket file descriptor.
+ * @return 0 for unset, >0 for set, or -1 for error.
+ */
 static inline int diminuto_ipc_get_reuseport(int fd) {
     int buffer = -1;
     (void)diminuto_ipc_get_socket(fd, SOL_SOCKET, SO_REUSEPORT, &buffer);
@@ -242,7 +272,7 @@ static inline int diminuto_ipc_get_reuseport(int fd) {
 }
 
 /**
- * Enable or disable the keep alive option.
+ * Enable or disable the keep alive socket option.
  * @param fd is an open socket of any type.
  * @param enable is !0 to enable, 0 to disable.
  * @return >=0 for success or <0 if an error occurred.
@@ -251,6 +281,11 @@ static inline int diminuto_ipc_set_keepalive(int fd, int enable) {
     return diminuto_ipc_set_socket(fd, SOL_SOCKET, SO_KEEPALIVE, !!enable);
 }
 
+/**
+ * Return the value of the keepalive socket option.
+ * @param fd is an open socket file descriptor.
+ * @return 0 for unset, >0 for set, or -1 for error.
+ */
 static inline int diminuto_ipc_get_keepalive(int fd) {
     int buffer = -1;
     (void)diminuto_ipc_get_socket(fd, SOL_SOCKET, SO_KEEPALIVE, &buffer);
@@ -258,7 +293,8 @@ static inline int diminuto_ipc_get_keepalive(int fd) {
 }
 
 /**
- * Enable or disable the debug option (only available to root on most systems).
+ * Enable or disable the debug socket option (only available to root on
+ * most systems).
  * @param fd is an open socket of any type.
  * @param enable is !0 to enable, 0 to disable.
  * @return >=0 for success or <0 if an error occurred.
@@ -267,6 +303,11 @@ static inline int diminuto_ipc_set_debug(int fd, int enable) {
     return diminuto_ipc_set_socket(fd, SOL_SOCKET, SO_DEBUG, !!enable);
 }
 
+/**
+ * Return the value of the debug socket option.
+ * @param fd is an open socket file descriptor.
+ * @return 0 for unset, >0 for set, or -1 for error.
+ */
 static inline int diminuto_ipc_get_debug(int fd) {
     int buffer = -1;
     (void)diminuto_ipc_get_socket(fd, SOL_SOCKET, SO_DEBUG, &buffer);
@@ -274,7 +315,8 @@ static inline int diminuto_ipc_get_debug(int fd) {
 }
 
 /**
- * Enable or disable the receiving of the timestamp control message.
+ * Enable or disable the receiving of the timestamp control message socket
+ * option.
  * N.B. This option can only be used on sockets which can receive control
  * messages, done via recvmsg(2).
  * N.B. Counterintuitively, this option should DISABLED is you are going to
@@ -289,6 +331,11 @@ static inline int diminuto_ipc_set_timestamp(int fd, int enable) {
     return diminuto_ipc_set_socket(fd, SOL_SOCKET, SO_TIMESTAMP, !!enable);
 }
 
+/**
+ * Return the value of the timestamp control message socket option.
+ * @param fd is an open socket file descriptor.
+ * @return 0 for unset, >0 for set, or -1 for error.
+ */
 static inline int diminuto_ipc_get_timestamp(int fd) {
     int buffer = -1;
     (void)diminuto_ipc_get_socket(fd, SOL_SOCKET, SO_TIMESTAMP, &buffer);
@@ -297,7 +344,7 @@ static inline int diminuto_ipc_get_timestamp(int fd) {
 
 /**
  * Enable or disable the linger option.
- * @param fd is an open socket of any type.
+ * @param fd is an open socket file descriptor.
  * @param ticks is the number of ticks to linger (although
  * the underlying socket option has granularity of seconds),
  * 0 for no lingering, or ~0 for maximum lingering.
@@ -306,8 +353,16 @@ static inline int diminuto_ipc_get_timestamp(int fd) {
 extern int diminuto_ipc_set_linger(int fd, diminuto_ticks_t ticks);
 
 /**
- * Enable or disable the TCP No Delay option. (Useful for reducing latency
- * when using small packets.)
+ * Get the value of the linger option.
+ * @param fd is an open socket file descriptor.
+ * @param buffer points to where the value of the linger timeout is stored.
+ * @return >0 if linger is enabled, ==0 if it is disabled, <0 for error.
+ */
+extern int diminuto_ipc_get_linger(int fd, diminuto_sticks_t * buffer);
+
+/**
+ * Enable or disable the TCP no delay socket option. (Useful for reducing
+ * latency when using small packets.)
  * @param fd is an open socket.
  * @param enable is !0 to enable, 0 to disable.
  * @return >=0 for success or <0 if an error occurred.
@@ -316,6 +371,11 @@ static inline int diminuto_ipc_set_nodelay(int fd, int enable) {
     return diminuto_ipc_set_socket(fd, IPPROTO_TCP, TCP_NODELAY, !!enable);
 }
 
+/**
+ * Return the value of the TCP no delay socket ption.
+ * @param fd is an open socket file descriptor.
+ * @return 0 for unset, >0 for set, or -1 for error.
+ */
 static inline int diminuto_ipc_get_nodelay(int fd) {
     int buffer = -1;
     (void)diminuto_ipc_get_socket(fd, IPPROTO_TCP, TCP_NODELAY, &buffer);
@@ -323,7 +383,7 @@ static inline int diminuto_ipc_get_nodelay(int fd) {
 }
 
 /**
- * Enable or disable the TCP Quick Acknowledgement option. (Useful for
+ * Enable or disable the TCP quick acknowledgement socket option. (Useful for
  * reducing latency when using small packets.)
  * @param fd is an open strean socket.
  * @param enable is !0 to enable, 0 to disable.
@@ -333,6 +393,11 @@ static inline int diminuto_ipc_set_quickack(int fd, int enable) {
     return diminuto_ipc_set_socket(fd, IPPROTO_TCP, TCP_QUICKACK, !!enable);
 }
 
+/**
+ * Return the value of the TCP quick ack socket option.
+ * @param fd is an open socket file descriptor.
+ * @return 0 for unset, >0 for set, or -1 for error.
+ */
 static inline int diminuto_ipc_get_quickack(int fd) {
     int buffer = -1;
     (void)diminuto_ipc_get_socket(fd, IPPROTO_TCP, TCP_QUICKACK, &buffer);
@@ -342,27 +407,39 @@ static inline int diminuto_ipc_get_quickack(int fd) {
 /**
  * Change the send TCP buffer size. (Useful for setting to the bandwidth-
  * delay product for long latency paths to achieve more throughput.)
- * @param fd is an open socket.
+ * @param fd is an open TCP socket file descriptor.
  * @param size is the buffer size in bytes or <0 for no change.
  * @return >=0 for success or <0 if an error occurred.
  */
 extern int diminuto_ipc_set_send(int fd, ssize_t size);
 
 /**
- * Change the receive TCP buffer size. (Useful for settig to the bandwidth-
- * delay product for long latency paths to achieve more throughput.)
- * @param fd is an open socket.
- * @param size is the buffer size in bytes or <0 for no change.
- * @return >=0 for success or <0 if an error occurred.
+ * Get the send TCP buffer size. (TCP increases the value set by the
+ * application, so don't expect them to be the same.)
+ * @param fd is an open TCP socket file descriptor.
+ * @return the TCP buffer size or -1 for error.
  */
-extern int diminuto_ipc_set_receive(int fd, ssize_t size);
-
 static inline ssize_t diminuto_ipc_get_send(int fd) {
     int buffer = -1;
     (void)diminuto_ipc_get_socket(fd, SOL_SOCKET, SO_SNDBUF, &buffer);
     return (ssize_t)buffer;
 }
 
+/**
+ * Change the receive TCP buffer size. (Useful for settig to the bandwidth-
+ * delay product for long latency paths to achieve more throughput.)
+ * @param fd is an open TCP socket file descriptor.
+ * @param size is the buffer size in bytes or <0 for no change.
+ * @return >=0 for success or <0 if an error occurred.
+ */
+extern int diminuto_ipc_set_receive(int fd, ssize_t size);
+
+/**
+ * Get the send TCP buffer size. (TCP increases the value set by the
+ * application, so don't expect them to be the same.)
+ * @param fd is an open TCP socket file descriptor.
+ * @return the TCP buffer size or -1 for error.
+ */
 static inline ssize_t diminuto_ipc_get_receive(int fd) {
     int buffer = -1;
     (void)diminuto_ipc_get_socket(fd, SOL_SOCKET, SO_RCVBUF, &buffer);
@@ -371,8 +448,8 @@ static inline ssize_t diminuto_ipc_get_receive(int fd) {
 
 /**
  * Enable or disable the ability to handle IPv4 packets on an ipc6 socket
- * via the IPV6 Only option.
- * @param fd is an open ipc6 socket.
+ * via the IPV6 only option.
+ * @param fd is an open IPv6 socket file descriptor.
  * @param enable is !0 to enable, 0 to disable.
  * @return >=0 for success or <0 if an error occurred.
  */
@@ -381,19 +458,36 @@ static inline int diminuto_ipc6_set_ipv6only(int fd, int enable) {
 }
 
 /**
+ * Get the vlaue of the IPv6 only option.
+ * @param fd is an open IPv6 socket file descriptor.
+ * @return the value of the IPv6 only option or -1 for error.
+ */
+static inline ssize_t diminuto_ipc6_get_ipv6only(int fd) {
+    int buffer = -1;
+    (void)diminuto_ipc_get_socket(fd, SOL_SOCKET, SO_RCVBUF, &buffer);
+    return (ssize_t)buffer;
+}
+
+
+/**
  * Convert a IPv6 stream socket into an IPv4 stream socket.
  * DEPRECATED and SKETCHY in the kernel, NOT RECOMMENDED:
  * IPV6_ADDRFORM appears to have been deprecated in the latest pertinent
  * internet standard, RFC 3943. And perusing the implementation of it in
  * the 4.2 kernel code I had some WTF moments (e.g. UDP is supported but
  * the socket has to have TCP Established set). Seems pretty sketchy to me.
- * @param fd is an open IPv6 stream socket.
+ * @param fd is an open IPv6 stream socket file descriptor.
  * @return >=0 for success or <0 if an error occurred.
  */
 static inline int diminuto_ipc6_stream_set_ipv6toipv4(int fd) {
     return diminuto_ipc_set_socket(fd, IPPROTO_TCP, IPV6_ADDRFORM, AF_INET);
 }
 
+/**
+ * Get the vlaue of the IPv6 to IPv4 option for a sream socket.
+ * @param fd is an open IPv6 stream socket file descriptor.
+ * @return the value of the IPv6 only option or -1 for error.
+ */
 static inline int diminuto_ipc_stream_get_ipv6toipv4(int fd) {
     int buffer = -1;
     (void)diminuto_ipc_get_socket(fd, IPPROTO_TCP, IPV6_ADDRFORM, &buffer);
@@ -414,6 +508,11 @@ static inline int diminuto_ipc6_datagram_set_ipv6toipv4(int fd) {
     return diminuto_ipc_set_socket(fd, IPPROTO_UDP, IPV6_ADDRFORM, AF_INET);
 }
 
+/**
+ * Get the vlaue of the IPv6 to IPv4 option for a datagram socket.
+ * @param fd is an open IPv6 datagram socket file descriptor.
+ * @return the value of the IPv6 only option or -1 for error.
+ */
 static inline int diminuto_ipc_datagram_get_ipv6toipv4(int fd) {
     int buffer = -1;
     (void)diminuto_ipc_get_socket(fd, IPPROTO_UDP, IPV6_ADDRFORM, &buffer);
@@ -452,6 +551,7 @@ extern int diminuto_ipc_type(int fd);
  * Get an I/O control option (ioctl(2)) on a socket.
  * @param fd is an open socket file descriptor.
  * @param option is the option to get.
+ * @param buffer points to where the result is stored.
  * @return the value of the option, or <0 for error.
  */
 extern int diminuto_ipc_get_control(int fd, int option, int * buffer);
@@ -463,7 +563,7 @@ extern int diminuto_ipc_get_control(int fd, int option, int * buffer);
  * diminuto_ipc_set_timestamp() socket option.
  * N.B. This mechanism only works with datagrams (or raw sockets).
  * @param fd is an open socket file descriptor.
- * @param buffer points to the buffer into which the result is placed.
+ * @param buffer points to where the result is stored.
  * @return the timestamp in ticks, or <0 for error.
  */
 extern int diminuto_ipc_get_datagram_timestamp(int fd, diminuto_sticks_t * buffer);

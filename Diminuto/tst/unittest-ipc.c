@@ -62,6 +62,8 @@ int main(int argc, char * argv[])
         int sock;
         int rc;
         ssize_t value;
+        diminuto_sticks_t ticks;
+        diminuto_sticks_t frequency;
 
         TEST();
 
@@ -140,6 +142,24 @@ int main(int argc, char * argv[])
             diminuto_ipc_debug = !0;
         }
 
+        frequency = diminuto_frequency();
+        EXPECT(frequency > 0);
+        rc = diminuto_ipc_get_linger(sock, (diminuto_sticks_t *)0);
+        EXPECT(rc == 0);
+        rc = diminuto_ipc_set_linger(sock, 1);
+        EXPECT(rc >= 0);
+        rc = diminuto_ipc_get_linger(sock, (diminuto_sticks_t *)0);
+        EXPECT(rc > 0);
+        rc = diminuto_ipc_get_linger(sock, &ticks);
+        EXPECT(rc > 0);
+        EXPECT(ticks == frequency);
+        rc = diminuto_ipc_set_linger(sock, 0);
+        EXPECT(rc >= 0);
+        rc = diminuto_ipc_get_linger(sock, (diminuto_sticks_t *)0);
+        EXPECT(rc == 0);
+        rc = diminuto_ipc_get_linger(sock, &ticks);
+        EXPECT(rc == 0);
+
         rc = diminuto_ipc_set_linger(sock, diminuto_maximumof(diminuto_ticks_t));
         EXPECT(rc >= 0);
         rc = diminuto_ipc_set_linger(sock, diminuto_maximumof(diminuto_ticks_t) - 1);
@@ -157,10 +177,6 @@ int main(int argc, char * argv[])
         rc = diminuto_ipc_set_linger(sock, diminuto_frequency() * 10);
         EXPECT(rc >= 0);
         rc = diminuto_ipc_set_linger(sock, diminuto_frequency());
-        EXPECT(rc >= 0);
-        rc = diminuto_ipc_set_linger(sock, 1);
-        EXPECT(rc >= 0);
-        rc = diminuto_ipc_set_linger(sock, 0);
         EXPECT(rc >= 0);
 
         {
