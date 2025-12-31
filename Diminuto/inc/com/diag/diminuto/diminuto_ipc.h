@@ -361,44 +361,44 @@ extern int diminuto_ipc_set_linger(int fd, diminuto_ticks_t ticks);
 extern int diminuto_ipc_get_linger(int fd, diminuto_sticks_t * buffer);
 
 /**
- * Enable or disable the TCP no delay socket option. (Useful for reducing
+ * Enable or disable the TCP no delay stream socket option. (Useful for reducing
  * latency when using small packets.)
- * @param fd is an open socket.
+ * @param fd is an open stream socket file descriptor.
  * @param enable is !0 to enable, 0 to disable.
  * @return >=0 for success or <0 if an error occurred.
  */
-static inline int diminuto_ipc_set_nodelay(int fd, int enable) {
+static inline int diminuto_ipc_stream_set_nodelay(int fd, int enable) {
     return diminuto_ipc_set_socket(fd, IPPROTO_TCP, TCP_NODELAY, !!enable);
 }
 
 /**
- * Return the value of the TCP no delay socket ption.
- * @param fd is an open socket file descriptor.
+ * Return the value of the TCP no delay stream socket option.
+ * @param fd is an open stream socket file descriptor.
  * @return 0 for unset, >0 for set, or -1 for error.
  */
-static inline int diminuto_ipc_get_nodelay(int fd) {
+static inline int diminuto_ipc_stream_get_nodelay(int fd) {
     int buffer = -1;
     (void)diminuto_ipc_get_socket(fd, IPPROTO_TCP, TCP_NODELAY, &buffer);
     return buffer;
 }
 
 /**
- * Enable or disable the TCP quick acknowledgement socket option. (Useful for
- * reducing latency when using small packets.)
- * @param fd is an open strean socket.
+ * Enable or disable the TCP quick acknowledgement stream socket option.
+ * (Useful for reducing latency when using small packets.)
+ * @param fd is an open strean socket file descriptor.
  * @param enable is !0 to enable, 0 to disable.
  * @return >=0 for success or <0 if an error occurred.
  */
-static inline int diminuto_ipc_set_quickack(int fd, int enable) {
+static inline int diminuto_ipc_stream_set_quickack(int fd, int enable) {
     return diminuto_ipc_set_socket(fd, IPPROTO_TCP, TCP_QUICKACK, !!enable);
 }
 
 /**
- * Return the value of the TCP quick ack socket option.
- * @param fd is an open socket file descriptor.
+ * Return the value of the TCP quick ack stream socket option.
+ * @param fd is an open stream socket file descriptor.
  * @return 0 for unset, >0 for set, or -1 for error.
  */
-static inline int diminuto_ipc_get_quickack(int fd) {
+static inline int diminuto_ipc_stream_get_quickack(int fd) {
     int buffer = -1;
     (void)diminuto_ipc_get_socket(fd, IPPROTO_TCP, TCP_QUICKACK, &buffer);
     return buffer;

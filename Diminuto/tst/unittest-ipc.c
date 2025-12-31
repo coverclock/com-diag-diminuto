@@ -188,27 +188,27 @@ int main(int argc, char * argv[])
         rc = diminuto_ipc_get_debug(sock);
         EXPECT(rc == 0);
 
-        rc = diminuto_ipc_get_nodelay(sock);
+        rc = diminuto_ipc_stream_get_nodelay(sock);
         EXPECT(rc == 0);
-        rc = diminuto_ipc_set_nodelay(sock, !0);
+        rc = diminuto_ipc_stream_set_nodelay(sock, !0);
         EXPECT(rc >= 0);
-        rc = diminuto_ipc_get_nodelay(sock);
+        rc = diminuto_ipc_stream_get_nodelay(sock);
         EXPECT(rc > 0);
-        rc = diminuto_ipc_set_nodelay(sock, 0);
+        rc = diminuto_ipc_stream_set_nodelay(sock, 0);
         EXPECT(rc >= 0);
-        rc = diminuto_ipc_get_nodelay(sock);
+        rc = diminuto_ipc_stream_get_nodelay(sock);
         EXPECT(rc == 0);
 
         /* N.B. on by default on some systems. */
-        rc = diminuto_ipc_get_quickack(sock);
+        rc = diminuto_ipc_stream_get_quickack(sock);
         EXPECT(rc >= 0);
-        rc = diminuto_ipc_set_quickack(sock, 0);
+        rc = diminuto_ipc_stream_set_quickack(sock, 0);
         EXPECT(rc >= 0);
-        rc = diminuto_ipc_get_quickack(sock);
+        rc = diminuto_ipc_stream_get_quickack(sock);
         EXPECT(rc == 0);
-        rc = diminuto_ipc_set_quickack(sock, !0);
+        rc = diminuto_ipc_stream_set_quickack(sock, !0);
         EXPECT(rc >= 0);
-        rc = diminuto_ipc_get_quickack(sock);
+        rc = diminuto_ipc_stream_get_quickack(sock);
         EXPECT(rc > 0);
 
         /* N.B. varies greatly on different systems. */
