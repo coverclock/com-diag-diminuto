@@ -1021,14 +1021,15 @@ header or .h files. Their source or .c files may have some documentation
 regarding any private API they might have.)
 
 These PDFs of the
-[manual pages](https://www.dropbox.com/s/sjkg31fti54lirj/manpages.pdf?dl=0)
+[manual pages](https://www.dropbox.com/scl/fi/4pb3u04e9xu5wfotluuml/manpages.pdf?rlkey=r5pntug03ldi0c2fr4qlimja3&dl=0)
 and associated
-[reference manual](https://www.dropbox.com/s/ss8s2fz7ki52ht7/refman.pdf?dl=0)
+[reference manual](https://www.dropbox.com/scl/fi/62vnr5j5so6mk9mm2cqen/refman.pdf?rlkey=xnhicdoy8j9u0ovyby0owwi2u&dl=0)
 were built from Diminuto's embedded Doxygen comments on
-2024-03-25
+2026-01-01
 using version
-`102.0.2`
+`109.0.0`
 . They will not reflect changes made since then.
+
 
 The unit tests (`Diminuto/tst`),  functional tests
 (`Diminuto/fun`), and command line utilities (`Diminuto/bin`)
