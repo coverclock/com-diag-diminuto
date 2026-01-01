@@ -1,4 +1,4 @@
-ucom-diag-diminuto
+com-diag-diminuto
 =================
 
 A Linux/GNU systems programming library in C.
