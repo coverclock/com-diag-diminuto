@@ -1645,7 +1645,7 @@ in Diminuto and Hazer", 2024-03,
 I owe a debt of gratitude to my mentors, particularly at Wright State
 University (Dayton Ohio), at the National Center for Atmospheric Research
 (Boulder Colorado), and at Bell Labs and its various spin-offs (Wesminster
-Colorado and environs), and at my various long time clients, who were so
+Colorado and environs), at my various long time clients, who were so
 generous with their time and expertise over the years, and to those
 employers and clients who both inspired and sometimes even shipped this
 software in their products.
