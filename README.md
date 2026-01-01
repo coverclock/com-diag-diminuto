@@ -828,6 +828,16 @@ modules in the Diminuto library. Those modules can be linked into
 an application. The project has a binary executable named vintage that
 displays this information.
 
+## Versioning 2.0
+
+I expressed an alternate viewpoint on a friend's social media post.
+You may find it more accurate.
+
+X.Y.Z:   
+X changes: Will break your shit. Why? It was more convenient for me. Sucks to be you.   
+Y changes: New feature. Probably won’t break your shit. But do I care? No.   
+Z changes: Bug fix. Code now matches my documentation. My bad. Will break your shit if it depended on the prior incorrect behavior.   
+
 # Building
 
 Clone, build, and sanity test Diminuto. The use of the src directory
@@ -1635,6 +1645,8 @@ in Diminuto and Hazer", 2024-03,
 
 I owe a debt of gratitude to my mentors, particularly at Wright State
 University (Dayton Ohio), at the National Center for Atmospheric Research
-(Boulder Colorado), and at Bell Labs and its various spin-offs, who were
-so generous with their time and expertise over the years, and to my various
-clients, who both inspired and sometimes even shipped this software.
+(Boulder Colorado), at Bell Labs and its various spin-offs (Wesminster
+Colorado and environs), and at my various long time clients, who were so
+generous with their time and expertise over the years; and to those
+employers and clients who both inspired and sometimes even shipped this
+software in their products.
