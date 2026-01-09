@@ -612,12 +612,18 @@ int main(int argc, char * argv[])
 
         sock = socket(AF_INET6, SOCK_STREAM, 0);
         ASSERT(sock >= 0);
-        rc = diminuto_ipc6_set_ipv6only(sock, !0);
+        rc = diminuto_ipc6_get_ipv6only(sock);
         EXPECT(rc >= 0);
         rc = diminuto_ipc6_set_ipv6only(sock, 0);
         EXPECT(rc >= 0);
-        rc = close(sock);
+        rc = diminuto_ipc6_get_ipv6only(sock);
+        EXPECT(rc == 0);
+        rc = diminuto_ipc6_set_ipv6only(sock, !0);
         EXPECT(rc >= 0);
+        rc = diminuto_ipc6_get_ipv6only(sock);
+        EXPECT(rc > 0);
+        rc = close(sock);
+        ASSERT(rc >= 0);
 
         STATUS();
     }
@@ -630,16 +636,23 @@ int main(int argc, char * argv[])
 
         sock = socket(AF_INET6, SOCK_DGRAM, 0);
         ASSERT(sock >= 0);
-        rc = diminuto_ipc6_set_ipv6only(sock, !0);
+        rc = diminuto_ipc6_get_ipv6only(sock);
         EXPECT(rc >= 0);
         rc = diminuto_ipc6_set_ipv6only(sock, 0);
         EXPECT(rc >= 0);
-        rc = close(sock);
+        rc = diminuto_ipc6_get_ipv6only(sock);
+        EXPECT(rc == 0);
+        rc = diminuto_ipc6_set_ipv6only(sock, !0);
         EXPECT(rc >= 0);
+        rc = diminuto_ipc6_get_ipv6only(sock);
+        EXPECT(rc > 0);
+        rc = close(sock);
+        ASSERT(rc >= 0);
 
         STATUS();
     }
 
+#if defined(COM_DIAG_DIMINUTO_DEPRECATED)
     {
         int sock;
         int rc;
@@ -655,7 +668,9 @@ int main(int argc, char * argv[])
 
         STATUS();
     }
+#endif
 
+#if defined(COM_DIAG_DIMINUTO_DEPRECATED)
     {
         int sock;
         int rc;
@@ -671,6 +686,7 @@ int main(int argc, char * argv[])
 
         STATUS();
     }
+#endif
 
     {
         int fd;

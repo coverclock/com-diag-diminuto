@@ -462,13 +462,13 @@ static inline int diminuto_ipc6_set_ipv6only(int fd, int enable) {
  * @param fd is an open IPv6 socket file descriptor.
  * @return the value of the IPv6 only option or -1 for error.
  */
-static inline ssize_t diminuto_ipc6_get_ipv6only(int fd) {
+static inline int diminuto_ipc6_get_ipv6only(int fd) {
     int buffer = -1;
-    (void)diminuto_ipc_get_socket(fd, SOL_SOCKET, SO_RCVBUF, &buffer);
-    return (ssize_t)buffer;
+    (void)diminuto_ipc_get_socket(fd, IPPROTO_IPV6, IPV6_V6ONLY, &buffer);
+    return buffer;
 }
 
-
+#if defined(COM_DIAG_DIMINUTO_DEPRECATED)
 /**
  * Convert a IPv6 stream socket into an IPv4 stream socket.
  * DEPRECATED and SKETCHY in the kernel, NOT RECOMMENDED:
@@ -482,7 +482,9 @@ static inline ssize_t diminuto_ipc6_get_ipv6only(int fd) {
 static inline int diminuto_ipc6_stream_set_ipv6toipv4(int fd) {
     return diminuto_ipc_set_socket(fd, IPPROTO_TCP, IPV6_ADDRFORM, AF_INET);
 }
+#endif
 
+#if defined(COM_DIAG_DIMINUTO_DEPRECATED)
 /**
  * Get the vlaue of the IPv6 to IPv4 option for a sream socket.
  * @param fd is an open IPv6 stream socket file descriptor.
@@ -493,7 +495,9 @@ static inline int diminuto_ipc_stream_get_ipv6toipv4(int fd) {
     (void)diminuto_ipc_get_socket(fd, IPPROTO_TCP, IPV6_ADDRFORM, &buffer);
     return buffer;
 }
+#endif
 
+#if defined(COM_DIAG_DIMINUTO_DEPRECATED)
 /**
  * Convert a IPv6 datagram socket into an IPv4 datagram socket.
  * DEPRECATED and SKETCHY in the kernel, NOT RECOMMENDED:
@@ -507,7 +511,9 @@ static inline int diminuto_ipc_stream_get_ipv6toipv4(int fd) {
 static inline int diminuto_ipc6_datagram_set_ipv6toipv4(int fd) {
     return diminuto_ipc_set_socket(fd, IPPROTO_UDP, IPV6_ADDRFORM, AF_INET);
 }
+#endif
 
+#if defined(COM_DIAG_DIMINUTO_DEPRECATED)
 /**
  * Get the vlaue of the IPv6 to IPv4 option for a datagram socket.
  * @param fd is an open IPv6 datagram socket file descriptor.
@@ -518,6 +524,7 @@ static inline int diminuto_ipc_datagram_get_ipv6toipv4(int fd) {
     (void)diminuto_ipc_get_socket(fd, IPPROTO_UDP, IPV6_ADDRFORM, &buffer);
     return buffer;
 }
+#endif
 
 /*
  * (Many other options are possible, but these are the ones I have used.)
