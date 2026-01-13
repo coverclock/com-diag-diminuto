@@ -909,9 +909,13 @@ Run more extended tests that may take a lunch break to complete.
 
     make extended-test
 
-Run long term tests that may take overnight to complete.
+Run extensive tests after changing something that is used in many places.
 
-    make geologic-test
+    make reassuring-test
+
+Run very long term probably overnight tests prior to tagging a new release.
+
+    make tagging-test
 
 ## Installing
 
