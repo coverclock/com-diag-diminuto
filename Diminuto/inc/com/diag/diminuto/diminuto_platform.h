@@ -4,7 +4,7 @@
 
 /**
  * @file
- * @copyright Copyright 2013-2017 Digital Aggregates Corporation, Colorado, USA.
+ * @copyright Copyright 2013-2026 Digital Aggregates Corporation, Colorado, USA.
  * @note Licensed under the terms in LICENSE.txt.
  * @brief Provides helper macros for determining the underlying platform.
  * @author Chip Overclock <mailto:coverclock@diag.com>
@@ -92,5 +92,14 @@
 #   endif
 
 #endif
+
+#include <sys/utsname.h>
+
+/**
+ * Return uname(1)-type information in the caller-provided utsname structure.
+ * @param bufferp points to a utsname structure.
+ * @return >= 0 for success, <0 with errno set for failure.
+ */
+extern int diminuto_platform_system(struct utsname * bufferp);
 
 #endif

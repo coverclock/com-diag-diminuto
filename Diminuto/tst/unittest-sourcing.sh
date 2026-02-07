@@ -36,7 +36,7 @@ for DD in ${BINDIR} ${SYMDIR}; do
             export LD_LIBRARY_PATH=
             source ${SS}
             PATH=${PATH}:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin
-            vintage 2> /dev/null | (
+            ${VV} 2> /dev/null | (
                 while read LL; do
                     echo ${VV}: ${LL}
                     eval LL_${LL}
