@@ -1510,6 +1510,8 @@ Wind River Systems, "VxWorks Reference Manual", 5.4
 
 G. Wright et al., "TCP/IP Illustrated Volume 2: The Implementation", Addison-Wesley, 1995
 
+Yoshi, "some C habits I employ for the modern day", 2026-03-02, <https://www.unix.dog/~yosh/blog/c-habits-for-me.html>
+
 J. Zweig, C. Partridge, "TCP Alternate Checksum Options", RFC 1146, IETF, February 1990, <https://tools.ietf.org/html/rfc1146>
 
 man page, cmsg(3)

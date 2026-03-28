@@ -18,7 +18,7 @@
 
 #if defined(COM_DIAG_DIMINUTO_PLATFORM_KERNEL)
 #   include <linux/types.h>
-#   include <linux/limits.h>    /* NAME_MAX, PATH_MAX */
+#   include <linux/limits.h>    /* CHAR_BIT, NAME_MAX, PATH_MAX */
 #   include <linux/un.h>
 #   if 0
        typedef unsigned long uintptr_t;
@@ -31,8 +31,16 @@
 #   include <limits.h>          /* _POSIX_PATH_MAX: 256 */
 #   include <sys/types.h>       /* pid_t */
 #   include <sys/param.h>       /* MAXPATHLEN: PATH_MAX */
-#   include <linux/limits.h>    /* PATH_MAX (includes terminating NUL): 4096 */
+#   include <linux/limits.h>    /* CHAR_BIT, NAME_MAX, PATH_MAX (includes terminating NUL): 4096 */
 #   include <linux/un.h>        /* UNIX_PATH_MAX: 108 */
+#endif
+
+#if !defined(CHAR_BIT)
+#   warning CHAR_BIT undefined!
+#elif (CHAR_BIT != 8)
+#   error CHAR_BIT != 8!
+#else
+    /* CHAR_BIT == 8 */
 #endif
 
 /**
